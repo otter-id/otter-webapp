@@ -18,7 +18,7 @@ import { useState } from "react";
 import { getRecommendations } from "@/lib/recommendations";
 import { toast } from "sonner";
 import { Check } from "lucide-react";
-import type { MenuItem } from "@/lib/db/schema";
+import type { MenuItem } from "@/types/menuItem";
 
 interface CartDrawerProps {
   isOpen: boolean;

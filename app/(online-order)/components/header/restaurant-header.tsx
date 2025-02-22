@@ -50,7 +50,7 @@ export function RestaurantHeader() {
         {/* Hero Image */}
         <div className="h-48 relative bg-muted">
           <Image
-            src="/placeholder.svg?height=192&width=448"
+            src="/placeholder/placeholder.svg?height=192&width=448"
             alt="Restaurant banner"
             fill
             className="object-cover brightness-90"
@@ -70,7 +70,7 @@ export function RestaurantHeader() {
             <div className="flex items-start gap-4">
               <div className="w-20 h-20 rounded-full overflow-hidden bg-muted relative flex-shrink-0">
                 <Image
-                  src="/placeholder.svg?"
+                  src="/placeholder/placeholder.svg?"
                   alt="Maicha logo"
                   fill
                   className="object-cover"

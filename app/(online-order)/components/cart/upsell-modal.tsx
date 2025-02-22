@@ -11,7 +11,7 @@ import {
 import { Button } from "@/components/ui/button";
 import { Plus } from "lucide-react";
 import { formatPrice } from "@/lib/utils";
-import type { MenuItem } from "@/lib/types";
+import type { MenuItem } from "@/types/menuItem";
 import { motion } from "framer-motion";
 
 interface UpsellModalProps {
@@ -54,7 +54,7 @@ export function UpsellModal({
             >
               <div className="relative w-20 h-20 flex-shrink-0 rounded-lg overflow-hidden bg-muted">
                 <Image
-                  src="/placeholder.svg?height=80&width=80"
+                  src="/placeholder/placeholder.svg?height=80&width=80"
                   alt={item.name}
                   fill
                   className="object-cover"

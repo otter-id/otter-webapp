@@ -1,22 +1,22 @@
 "use client";
 
 import { useState } from "react";
-import { RestaurantHeader } from "@/components/layout/restaurant-header";
-import { StickyFooter } from "@/components/layout/sticky-footer";
-import { CategoryNav } from "@/components/features/menu/category-nav";
-import { MenuItem } from "@/components/features/menu/menu-item";
-import { CartDrawer } from "@/components/features/cart/cart-drawer";
-import { ItemDrawer } from "@/components/features/item/item-drawer";
-import { useCart } from "@/hooks/use-cart";
-import { useScrollSync } from "@/hooks/use-scroll";
+import { RestaurantHeader } from "@/app/(online-order)/components/header/restaurant-header";
+import { StickyFooter } from "@/app/(online-order)/components/cart/sticky-footer";
+import { CategoryNav } from "@/app/(online-order)/components/menu/category-nav";
+import { MenuItem } from "@/app/(online-order)/components/menu/menu-item";
+import { CartDrawer } from "@/app/(online-order)/components/cart/cart-drawer";
+import { ItemDrawer } from "@/app/(online-order)/components/item/item-drawer";
+import { useCart } from "@/app/(online-order)/hooks/use-cart";
+import { useScrollSync } from "@/app/(online-order)/hooks/use-scroll";
 import { categories, menuItems } from "./sample-data";
-import { DeleteConfirmation } from "@/components/features/cart/delete-confirmation";
-import type { MenuItem as MenuItemType } from "@/lib/types";
+import { DeleteConfirmation } from "@/app/(online-order)/components/cart/delete-confirmation";
+import type { MenuItem as MenuItemType } from "@/types/menuItem";
 import { toast } from "sonner";
 import { Check } from "lucide-react";
 import { X } from "lucide-react";
 import type { CartItem } from "@/lib/types";
-import { SearchOverlay } from "@/components/features/search/search-overlay";
+import { SearchOverlay } from "@/app/(online-order)/components/search/search-overlay";
 
 export default function FoodOrderingPage() {
   const [selectedCategory, setSelectedCategory] = useState(categories[0]);

@@ -1,10 +1,9 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import type { MenuItem } from "@/lib/types";
+import type { MenuItem } from "@/types/menuItem";
 import Image from "next/image";
 import { Button } from "@/components/ui/button";
-import { Badge } from "@/components/ui/badge";
 import { Plus, ShoppingCart } from "lucide-react";
 import { formatPrice } from "@/lib/utils";
 
@@ -40,7 +39,7 @@ export function MenuItem({
       <div className="relative w-32 h-32 flex-shrink-0">
         <div className="w-full h-full rounded-lg overflow-hidden bg-muted">
           <Image
-            src="/placeholder.svg?height=128&width=128"
+            src="/placeholder/placeholder.svg?height=128&width=128"
             alt={typeof item.name === "string" ? item.name : "Menu item"}
             fill
             className="object-cover rounded-lg"

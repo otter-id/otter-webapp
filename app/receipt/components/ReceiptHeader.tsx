@@ -20,7 +20,7 @@ export function ReceiptHeader({ data }: ReceiptHeaderProps) {
     <MotionCard variants={cardVariants} className="rounded-xl">
       <CardHeader className="flex flex-row items-center space-x-4 pb-2">
         <Image
-          src={data.restaurantLogo || "/placeholder.svg"}
+          src={data.restaurantLogo || "/placeholder/placeholder.svg"}
           alt={data.restaurantName}
           width={60}
           height={60}

@@ -3,7 +3,7 @@
 import { useState, useEffect } from "react";
 import Image from "next/image";
 import { X, Minus, Plus } from "lucide-react";
-import type { MenuItem } from "@/lib/types";
+import type { MenuItem } from "@/types/menuItem";
 import {
   Drawer,
   DrawerContent,
@@ -19,7 +19,7 @@ import { Label } from "@/components/ui/label";
 import {
   categoryModifierMapping,
   modifiers,
-} from "@/app/(online-order)/restaurant/modifier";
+} from "@/app/(online-order)/store/modifier";
 import { formatPrice } from "@/lib/utils";
 
 interface ItemDrawerProps {
@@ -194,7 +194,7 @@ export function ItemDrawer({
               <div className="space-y-4">
                 <div className="aspect-square relative rounded-lg overflow-hidden bg-muted">
                   <Image
-                    src="/placeholder.svg?height=448&width=448"
+                    src="/placeholder/placeholder.svg?height=448&width=448"
                     alt={selectedItem.name}
                     fill
                     className="object-cover"

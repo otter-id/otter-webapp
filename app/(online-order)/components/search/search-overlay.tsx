@@ -1,12 +1,13 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import type { MenuItem, SearchResult, GroupedResults } from "@/lib/types";
+import type { MenuItem } from "@/types/menuItem";
+import type { SearchResult, GroupedResults } from "@/lib/types";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { X, SearchIcon, ChevronLeft } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
-import { MenuItem as MenuItemComponent } from "@/components/features/menu/menu-item";
+import { MenuItem as MenuItemComponent } from "@/app/(online-order)/components/menu/menu-item";
 import { highlightText } from "@/lib/utils";
 import { cn } from "@/lib/utils";
 

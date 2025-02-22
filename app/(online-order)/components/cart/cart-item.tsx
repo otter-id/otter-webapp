@@ -1,21 +1,31 @@
-import type { CartItem as CartItemType } from "@/lib/types"
-import Image from "next/image"
-import { Button } from "@/components/ui/button"
-import { Minus, Plus, Edit2, Trash2 } from "lucide-react"
-import { formatPrice, calculateItemTotal } from "@/lib/utils"
+import type { CartItem as CartItemType } from "@/lib/types";
+import Image from "next/image";
+import { Button } from "@/components/ui/button";
+import { Minus, Plus, Edit2, Trash2 } from "lucide-react";
+import { formatPrice, calculateItemTotal } from "@/lib/utils";
 
 interface CartItemProps {
-  item: CartItemType
-  onQuantityChange: (quantity: number) => void
-  onEdit: () => void
-  onDelete: () => void
+  item: CartItemType;
+  onQuantityChange: (quantity: number) => void;
+  onEdit: () => void;
+  onDelete: () => void;
 }
 
-export function CartItem({ item, onQuantityChange, onEdit, onDelete }: CartItemProps) {
+export function CartItem({
+  item,
+  onQuantityChange,
+  onEdit,
+  onDelete,
+}: CartItemProps) {
   return (
     <div className="flex items-start gap-3">
       <div className="relative w-20 h-20 flex-shrink-0 rounded-lg overflow-hidden bg-muted">
-        <Image src="/placeholder.svg?height=80&width=80" alt={item.name} fill className="object-cover" />
+        <Image
+          src="/placeholder/placeholder.svg?height=80&width=80"
+          alt={item.name}
+          fill
+          className="object-cover"
+        />
       </div>
       <div className="flex-1 min-w-0">
         <div className="flex justify-between items-start gap-2">
@@ -23,12 +33,15 @@ export function CartItem({ item, onQuantityChange, onEdit, onDelete }: CartItemP
             <h3 className="font-medium">{item.name}</h3>
             <div className="mt-1 text-sm text-muted-foreground space-y-1">
               {item.selectedModifiers &&
-                Object.entries(item.selectedModifiers).map(([category, modifier]) => (
-                  <div key={category}>
-                    {modifier.name}
-                    {modifier.price > 0 && ` (+${formatPrice(modifier.price)})`}
-                  </div>
-                ))}
+                Object.entries(item.selectedModifiers).map(
+                  ([category, modifier]) => (
+                    <div key={category}>
+                      {modifier.name}
+                      {modifier.price > 0 &&
+                        ` (+${formatPrice(modifier.price)})`}
+                    </div>
+                  )
+                )}
               {item.extraToppings &&
                 item.extraToppings.map((topping) => (
                   <div key={topping.id}>
@@ -38,8 +51,12 @@ export function CartItem({ item, onQuantityChange, onEdit, onDelete }: CartItemP
             </div>
           </div>
           <div className="text-sm space-y-1 text-right">
-            <div className="text-muted-foreground">{formatPrice(item.price * item.quantity)}</div>
-            <div className="font-medium">{formatPrice(calculateItemTotal(item))}</div>
+            <div className="text-muted-foreground">
+              {formatPrice(item.price * item.quantity)}
+            </div>
+            <div className="font-medium">
+              {formatPrice(calculateItemTotal(item))}
+            </div>
           </div>
         </div>
         <div className="flex items-center justify-between mt-3">
@@ -63,7 +80,12 @@ export function CartItem({ item, onQuantityChange, onEdit, onDelete }: CartItemP
             </Button>
           </div>
           <div className="flex items-center gap-2">
-            <Button variant="ghost" size="icon" className="h-8 w-8 rounded-full" onClick={onEdit}>
+            <Button
+              variant="ghost"
+              size="icon"
+              className="h-8 w-8 rounded-full"
+              onClick={onEdit}
+            >
               <Edit2 className="h-4 w-4" />
             </Button>
             <Button
@@ -78,6 +100,5 @@ export function CartItem({ item, onQuantityChange, onEdit, onDelete }: CartItemP
         </div>
       </div>
     </div>
-  )
+  );
 }
-

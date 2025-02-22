@@ -30,7 +30,7 @@ export function OrderDetails({ data }: OrderDetailsProps) {
           >
             <div className="flex space-x-4">
               <Image
-                src={item.image || "/placeholder.svg"}
+                src={item.image || "/placeholder/placeholder.svg"}
                 alt={item.name}
                 width={96}
                 height={80}
