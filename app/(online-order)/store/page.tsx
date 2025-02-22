@@ -62,6 +62,7 @@ export default function FoodOrderingPage() {
         block: "start",
       });
     }
+    scrollCategoryIntoView(category);
   };
 
   const handleItemClick = (item: MenuItemType) => {
@@ -149,6 +150,7 @@ export default function FoodOrderingPage() {
           {categories.map((category) => (
             <div
               key={category}
+              // ref={(el) => (categoryRefs.current[category] = el)}
               ref={(el) => {
                 if (el) {
                   categoryRefs.current[category] = el;

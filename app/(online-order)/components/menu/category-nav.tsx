@@ -1,19 +1,25 @@
-"use client"
+"use client";
 
-import { Button } from "@/components/ui/button"
-import { Drawer, DrawerClose, DrawerContent, DrawerHeader, DrawerTitle } from "@/components/ui/drawer"
-import { Menu, X } from "lucide-react"
-import { useState } from "react"
-import type { RefObject } from "react"
-import { cn } from "@/lib/utils"
+import { Button } from "@/components/ui/button";
+import {
+  Drawer,
+  DrawerClose,
+  DrawerContent,
+  DrawerHeader,
+  DrawerTitle,
+} from "@/components/ui/drawer";
+import { Menu, X } from "lucide-react";
+import { useState } from "react";
+import type { RefObject } from "react";
+import { cn } from "@/lib/utils";
 
 interface CategoryNavProps {
-  categories: string[]
-  selectedCategory: string
-  scrollContainerRef: RefObject<HTMLDivElement>
-  categoryButtonsRef: RefObject<Record<string, HTMLButtonElement | null>>
-  onCategorySelect: (category: string) => void
-  className?: string
+  categories: string[];
+  selectedCategory: string;
+  scrollContainerRef: RefObject<HTMLDivElement>;
+  categoryButtonsRef: RefObject<Record<string, HTMLButtonElement | null>>;
+  onCategorySelect: (category: string) => void;
+  className?: string;
 }
 
 export function CategoryNav({
@@ -24,17 +30,22 @@ export function CategoryNav({
   onCategorySelect,
   className,
 }: CategoryNavProps) {
-  const [isOpen, setIsOpen] = useState(false)
+  const [isOpen, setIsOpen] = useState(false);
 
   const handleCategoryClick = (category: string) => {
-    onCategorySelect(category)
-    setIsOpen(false)
-  }
+    onCategorySelect(category);
+    setIsOpen(false);
+  };
 
   return (
     <div className={cn("bg-white", className)}>
       <div className="flex items-center gap-2 py-3">
-        <Button variant="ghost" size="icon" className="flex-shrink-0 ml-3" onClick={() => setIsOpen(true)}>
+        <Button
+          variant="ghost"
+          size="icon"
+          className="flex-shrink-0 ml-3"
+          onClick={() => setIsOpen(true)}
+        >
           <Menu className="h-4 w-4" />
         </Button>
 
@@ -53,7 +64,7 @@ export function CategoryNav({
                 key={category}
                 ref={(el) => {
                   if (categoryButtonsRef.current) {
-                    categoryButtonsRef.current[category] = el
+                    categoryButtonsRef.current[category] = el;
                   }
                 }}
                 variant={category === selectedCategory ? "default" : "outline"}
@@ -72,7 +83,11 @@ export function CategoryNav({
               <DrawerHeader className="px-4 py-3 border-b flex items-center justify-between">
                 <DrawerTitle>Categories</DrawerTitle>
                 <DrawerClose asChild>
-                  <Button variant="ghost" size="icon" className="rounded-full h-8 w-8">
+                  <Button
+                    variant="ghost"
+                    size="icon"
+                    className="rounded-full h-8 w-8"
+                  >
                     <X className="h-4 w-4" />
                   </Button>
                 </DrawerClose>
@@ -81,7 +96,9 @@ export function CategoryNav({
                 {categories.map((category) => (
                   <Button
                     key={category}
-                    variant={category === selectedCategory ? "default" : "outline"}
+                    variant={
+                      category === selectedCategory ? "default" : "outline"
+                    }
                     className="w-full rounded-md"
                     onClick={() => handleCategoryClick(category)}
                   >
@@ -94,6 +111,5 @@ export function CategoryNav({
         </Drawer>
       </div>
     </div>
-  )
+  );
 }
-

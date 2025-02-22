@@ -7,17 +7,13 @@ export function useScrollSync(options: {
   headerOffset?: number;
 }) {
   const { onScroll, headerOffset = 145 } = options;
-  console.log("onScroll", onScroll);
   const categoryRefs = useRef<Record<string, HTMLDivElement | null>>({});
-  // console.log("categoryRefs", categoryRefs.current.[category]);
   const categoryButtonsRef = useRef<Record<string, HTMLButtonElement | null>>(
     {}
   );
   const scrollContainerRef = useRef<HTMLDivElement>(null);
-  const timeoutRef = useRef<NodeJS.Timeout>();
 
   const scrollCategoryIntoView = useCallback((category: string) => {
-    console.log("scrollCategoryIntoView", category);
     const button = categoryButtonsRef.current[category];
     if (button && scrollContainerRef.current) {
       const container = scrollContainerRef.current;
@@ -57,12 +53,11 @@ export function useScrollSync(options: {
     };
 
     window.addEventListener("scroll", onScrollThrottled, { passive: true });
+    console.log("onScrollThrottled", onScrollThrottled);
 
     return () => {
       window.removeEventListener("scroll", onScrollThrottled);
-      if (timeoutRef.current) {
-        clearTimeout(timeoutRef.current);
-      }
+      console.log("onScrollThrottled removed");
     };
   }, [onScroll, headerOffset]);
 
