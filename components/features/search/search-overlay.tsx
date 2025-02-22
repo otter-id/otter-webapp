@@ -1,24 +1,24 @@
-"use client"
+"use client";
 
-import { useState, useEffect } from "react"
-import type { MenuItem, SearchResult, GroupedResults } from "@/lib/types"
-import { Input } from "@/components/ui/input"
-import { Button } from "@/components/ui/button"
-import { X, SearchIcon } from "lucide-react"
-import { motion, AnimatePresence } from "framer-motion"
-import { MenuItem as MenuItemComponent } from "@/components/features/menu/menu-item"
-import { highlightText } from "@/lib/utils"
-import { cn } from "@/lib/utils"
+import { useState, useEffect } from "react";
+import type { MenuItem, SearchResult, GroupedResults } from "@/lib/types";
+import { Input } from "@/components/ui/input";
+import { Button } from "@/components/ui/button";
+import { X, SearchIcon, ChevronLeft } from "lucide-react";
+import { motion, AnimatePresence } from "framer-motion";
+import { MenuItem as MenuItemComponent } from "@/components/features/menu/menu-item";
+import { highlightText } from "@/lib/utils";
+import { cn } from "@/lib/utils";
 
 interface SearchOverlayProps {
-  menuItems: Record<string, MenuItem[]>
-  onItemClick: (item: MenuItem) => void
-  onAddItem: (item: MenuItem) => void
-  addedItems: number[]
-  isOpen: boolean
-  onOpenChange: (open: boolean) => void
-  className?: string
-  getItemQuantityInCart: (itemId: number) => number
+  menuItems: Record<string, MenuItem[]>;
+  onItemClick: (item: MenuItem) => void;
+  onAddItem: (item: MenuItem) => void;
+  addedItems: number[];
+  isOpen: boolean;
+  onOpenChange: (open: boolean) => void;
+  className?: string;
+  getItemQuantityInCart: (itemId: number) => number;
 }
 
 export function SearchOverlay({
@@ -30,71 +30,76 @@ export function SearchOverlay({
   className,
   getItemQuantityInCart,
 }: SearchOverlayProps) {
-  const [searchQuery, setSearchQuery] = useState("")
+  const [searchQuery, setSearchQuery] = useState("");
 
   // Reset search when closing
   useEffect(() => {
     if (!isOpen) {
-      setSearchQuery("")
+      setSearchQuery("");
     }
-  }, [isOpen])
+  }, [isOpen]);
 
   // Close search when clicking escape
   useEffect(() => {
     const handleEscape = (e: KeyboardEvent) => {
       if (e.key === "Escape") {
-        onOpenChange(false)
+        onOpenChange(false);
       }
-    }
-    window.addEventListener("keydown", handleEscape)
-    return () => window.removeEventListener("keydown", handleEscape)
-  }, [onOpenChange])
+    };
+    window.addEventListener("keydown", handleEscape);
+    return () => window.removeEventListener("keydown", handleEscape);
+  }, [onOpenChange]);
 
   // Prevent body scroll when overlay is open
   useEffect(() => {
     if (isOpen) {
-      document.body.style.overflow = "hidden"
+      document.body.style.overflow = "hidden";
     } else {
-      document.body.style.overflow = ""
+      document.body.style.overflow = "";
     }
     return () => {
-      document.body.style.overflow = ""
-    }
-  }, [isOpen])
+      document.body.style.overflow = "";
+    };
+  }, [isOpen]);
 
   const getSearchResults = (): GroupedResults => {
-    if (!searchQuery.trim()) return {}
+    if (!searchQuery.trim()) return {};
 
-    const query = searchQuery.toLowerCase()
-    const results: GroupedResults = {}
+    const query = searchQuery.toLowerCase();
+    const results: GroupedResults = {};
 
     Object.entries(menuItems).forEach(([category, items]) => {
       const matchedItems = items.filter((item) => {
-        const nameMatch = item.name.toLowerCase().includes(query)
-        const descMatch = item.description.toLowerCase().includes(query)
+        const nameMatch = item.name.toLowerCase().includes(query);
+        const descMatch = item.description.toLowerCase().includes(query);
 
         if (nameMatch || descMatch) {
           const result: SearchResult = {
             ...item,
-            matchedOn: nameMatch && descMatch ? "both" : nameMatch ? "name" : "description",
-          }
-          return true
+            matchedOn:
+              nameMatch && descMatch
+                ? "both"
+                : nameMatch
+                ? "name"
+                : "description",
+          };
+          return true;
         }
-        return false
-      }) as SearchResult[]
+        return false;
+      }) as SearchResult[];
 
       if (matchedItems.length > 0) {
-        results[category] = matchedItems
+        results[category] = matchedItems;
       }
-    })
+    });
 
-    return results
-  }
+    return results;
+  };
 
   const handleItemClick = (item: MenuItem) => {
-    onItemClick(item)
-    onOpenChange(false)
-  }
+    onItemClick(item);
+    onOpenChange(false);
+  };
 
   return (
     <>
@@ -102,11 +107,13 @@ export function SearchOverlay({
       <div className={cn("bg-white", className)}>
         <div className="px-4 py-3">
           <div
-            className="flex items-center gap-2 rounded-md border bg-background p-2 cursor-pointer"
+            className="flex items-center gap-2 rounded-lg border bg-background p-2 py-3 cursor-pointer"
             onClick={() => onOpenChange(true)}
           >
             <SearchIcon className="w-5 h-5 text-muted-foreground flex-shrink-0" />
-            <span className="text-muted-foreground text-base">Search menu...</span>
+            <span className="text-muted-foreground text-base">
+              Search menu...
+            </span>
           </div>
         </div>
       </div>
@@ -135,6 +142,14 @@ export function SearchOverlay({
                 {/* Sticky Search Header */}
                 <div className="sticky top-0 z-10 border-b bg-white/80 backdrop-blur-xl">
                   <div className="px-4 py-3 flex items-center gap-3">
+                    <Button
+                      variant="ghost"
+                      size="icon"
+                      className="h-10 w-10 rounded-full flex-shrink-0"
+                      onClick={() => onOpenChange(false)}
+                    >
+                      <ChevronLeft className="h-4 w-4" />
+                    </Button>
                     <div className="flex-1 flex items-center gap-2 rounded-md border bg-background p-2">
                       <SearchIcon className="w-5 h-5 text-muted-foreground flex-shrink-0" />
                       <Input
@@ -142,7 +157,7 @@ export function SearchOverlay({
                         placeholder="Search menu..."
                         value={searchQuery}
                         onChange={(e) => setSearchQuery(e.target.value)}
-                        className="border-0 bg-transparent p-0 focus-visible:ring-0 text-base placeholder:text-muted-foreground"
+                        className="border-0 bg-transparent p-0 focus-visible:ring-0 ring-0 text-base placeholder:text-muted-foreground"
                         autoFocus
                       />
                       {searchQuery && (
@@ -156,14 +171,6 @@ export function SearchOverlay({
                         </Button>
                       )}
                     </div>
-                    <Button
-                      variant="ghost"
-                      size="icon"
-                      className="h-10 w-10 rounded-full flex-shrink-0"
-                      onClick={() => onOpenChange(false)}
-                    >
-                      <X className="h-4 w-4" />
-                    </Button>
                   </div>
                 </div>
 
@@ -172,44 +179,58 @@ export function SearchOverlay({
                   <div className="p-4">
                     {searchQuery.trim() ? (
                       <div className="space-y-6">
-                        {Object.entries(getSearchResults()).map(([category, items]) => (
-                          <div key={category}>
-                            <h3 className="text-sm font-medium text-muted-foreground mb-3">{category}</h3>
-                            <div className="space-y-4">
-                              {items.map((item) => (
-                                <motion.div
-                                  key={item.id}
-                                  layout
-                                  initial={{ opacity: 0 }}
-                                  animate={{ opacity: 1 }}
-                                  transition={{ duration: 0.3 }}
-                                  onClick={() => handleItemClick(item)}
-                                  className="cursor-pointer"
-                                >
-                                  <MenuItemComponent
-                                    item={{
-                                      ...item,
-                                      name: highlightText(item.name, searchQuery),
-                                      description: highlightText(item.description, searchQuery),
-                                    }}
-                                    isAdded={addedItems.includes(item.id)}
-                                    onItemClick={() => handleItemClick(item)}
-                                    quantity={getItemQuantityInCart(item.id)}
-                                  />
-                                </motion.div>
-                              ))}
+                        {Object.entries(getSearchResults()).map(
+                          ([category, items]) => (
+                            <div key={category}>
+                              <h3 className="text-sm font-medium text-muted-foreground mb-3">
+                                {category}
+                              </h3>
+                              <div className="space-y-4">
+                                {items.map((item) => (
+                                  <motion.div
+                                    key={item.id}
+                                    layout
+                                    initial={{ opacity: 0 }}
+                                    animate={{ opacity: 1 }}
+                                    transition={{ duration: 0.3 }}
+                                    onClick={() => handleItemClick(item)}
+                                    className="cursor-pointer"
+                                  >
+                                    <MenuItemComponent
+                                      item={{
+                                        ...item,
+                                        name: highlightText(
+                                          item.name,
+                                          searchQuery
+                                        ) as string,
+                                        description: highlightText(
+                                          item.description,
+                                          searchQuery
+                                        ) as string,
+                                      }}
+                                      isAdded={addedItems.includes(item.id)}
+                                      onItemClick={() => handleItemClick(item)}
+                                      quantity={getItemQuantityInCart(item.id)}
+                                    />
+                                  </motion.div>
+                                ))}
+                              </div>
                             </div>
-                          </div>
-                        ))}
+                          )
+                        )}
                         {Object.keys(getSearchResults()).length === 0 && (
                           <div className="text-center py-8">
-                            <p className="text-muted-foreground">No items found for "{searchQuery}"</p>
+                            <p className="text-muted-foreground">
+                              No items found for "{searchQuery}"
+                            </p>
                           </div>
                         )}
                       </div>
                     ) : (
                       <div className="text-center py-8">
-                        <p className="text-muted-foreground">Start typing to search menu items</p>
+                        <p className="text-muted-foreground">
+                          Start typing to search menu items
+                        </p>
                       </div>
                     )}
                   </div>
@@ -220,6 +241,5 @@ export function SearchOverlay({
         )}
       </AnimatePresence>
     </>
-  )
+  );
 }
-
