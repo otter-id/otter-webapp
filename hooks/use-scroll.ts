@@ -6,7 +6,8 @@ export function useScrollSync(options: {
   onScroll?: (category: string) => void;
   headerOffset?: number;
 }) {
-  const { onScroll, headerOffset = 100 } = options;
+  const { onScroll, headerOffset = 145 } = options;
+  console.log("onScroll", onScroll);
   const categoryRefs = useRef<Record<string, HTMLDivElement | null>>({});
   // console.log("categoryRefs", categoryRefs.current.[category]);
   const categoryButtonsRef = useRef<Record<string, HTMLButtonElement | null>>(
@@ -16,6 +17,7 @@ export function useScrollSync(options: {
   const timeoutRef = useRef<NodeJS.Timeout>();
 
   const scrollCategoryIntoView = useCallback((category: string) => {
+    console.log("scrollCategoryIntoView", category);
     const button = categoryButtonsRef.current[category];
     if (button && scrollContainerRef.current) {
       const container = scrollContainerRef.current;
@@ -29,6 +31,7 @@ export function useScrollSync(options: {
     if (!onScroll) return;
 
     const handleScroll = () => {
+      console.log("handleScroll");
       for (const [category, element] of Object.entries(categoryRefs.current)) {
         if (element) {
           const titleElement = element.querySelector("h2");

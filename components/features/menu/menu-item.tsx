@@ -9,7 +9,10 @@ import { Plus, ShoppingCart } from "lucide-react";
 import { formatPrice } from "@/lib/utils";
 
 interface MenuItemProps {
-  item: MenuItem;
+  item: MenuItem & {
+    name: string | JSX.Element;
+    description: string | JSX.Element;
+  };
   isAdded: boolean;
   onItemClick: () => void;
   quantity?: number;
@@ -38,7 +41,7 @@ export function MenuItem({
         <div className="w-full h-full rounded-lg overflow-hidden bg-muted">
           <Image
             src="/placeholder.svg?height=128&width=128"
-            alt={item.name}
+            alt={typeof item.name === "string" ? item.name : "Menu item"}
             fill
             className="object-cover rounded-lg"
           />

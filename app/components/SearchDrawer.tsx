@@ -1,23 +1,29 @@
-"use client"
+"use client";
 
-import { useState } from "react"
-import type { MenuItem, SearchResult, GroupedResults } from "@/lib/types"
-import { Drawer, DrawerClose, DrawerContent, DrawerHeader, DrawerTitle } from "@/components/ui/drawer"
-import { Button } from "@/components/ui/button"
-import { Input } from "@/components/ui/input"
-import { X } from "lucide-react"
-import { motion } from "framer-motion"
-import { MenuItem as MenuItemComponent } from "@/components/features/menu/menu-item"
-import { highlightText } from "@/lib/utils"
-import { categoryModifierMapping } from "@/app/modifier"
+import { useState } from "react";
+import type { MenuItem, SearchResult, GroupedResults } from "@/lib/types";
+import {
+  Drawer,
+  DrawerClose,
+  DrawerContent,
+  DrawerHeader,
+  DrawerTitle,
+} from "@/components/ui/drawer";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { X } from "lucide-react";
+import { motion } from "framer-motion";
+import { MenuItem as MenuItemComponent } from "@/components/features/menu/menu-item";
+import { highlightText } from "@/lib/utils";
+import { categoryModifierMapping } from "@/app/(online-order)/restaurant/modifier";
 
 interface SearchDrawerProps {
-  isOpen: boolean
-  onOpenChange: (open: boolean) => void
-  menuItems: Record<string, MenuItem[]>
-  onItemClick: (item: MenuItem) => void
-  onQuickAdd: (item: MenuItem) => void
-  addedItems: number[]
+  isOpen: boolean;
+  onOpenChange: (open: boolean) => void;
+  menuItems: Record<string, MenuItem[]>;
+  onItemClick: (item: MenuItem) => void;
+  onQuickAdd: (item: MenuItem) => void;
+  addedItems: number[];
 }
 
 export default function SearchDrawer({
@@ -28,47 +34,55 @@ export default function SearchDrawer({
   onQuickAdd,
   addedItems,
 }: {
-  isOpen: boolean
-  onOpenChange: (open: boolean) => void
-  menuItems: any
-  onItemClick: (item: any) => void
-  onQuickAdd: (item: any) => void
-  addedItems: any[]
+  isOpen: boolean;
+  onOpenChange: (open: boolean) => void;
+  menuItems: any;
+  onItemClick: (item: any) => void;
+  onQuickAdd: (item: any) => void;
+  addedItems: any[];
 }) {
-  const [searchQuery, setSearchQuery] = useState("")
+  const [searchQuery, setSearchQuery] = useState("");
 
   const hasModifiers = (category: string) => {
-    return categoryModifierMapping[category as keyof typeof categoryModifierMapping]?.length > 0
-  }
+    return (
+      categoryModifierMapping[category as keyof typeof categoryModifierMapping]
+        ?.length > 0
+    );
+  };
 
   const getSearchResults = (): GroupedResults => {
-    if (!searchQuery.trim()) return {}
+    if (!searchQuery.trim()) return {};
 
-    const query = searchQuery.toLowerCase()
-    const results: GroupedResults = {}
+    const query = searchQuery.toLowerCase();
+    const results: GroupedResults = {};
 
     Object.entries(menuItems).forEach(([category, items]) => {
       const matchedItems = items.filter((item) => {
-        const nameMatch = item.name.toLowerCase().includes(query)
-        const descMatch = item.description.toLowerCase().includes(query)
+        const nameMatch = item.name.toLowerCase().includes(query);
+        const descMatch = item.description.toLowerCase().includes(query);
 
         if (nameMatch || descMatch) {
           const result: SearchResult = {
             ...item,
-            matchedOn: nameMatch && descMatch ? "both" : nameMatch ? "name" : "description",
-          }
-          return true
+            matchedOn:
+              nameMatch && descMatch
+                ? "both"
+                : nameMatch
+                ? "name"
+                : "description",
+          };
+          return true;
         }
-        return false
-      }) as SearchResult[]
+        return false;
+      }) as SearchResult[];
 
       if (matchedItems.length > 0) {
-        results[category] = matchedItems
+        results[category] = matchedItems;
       }
-    })
+    });
 
-    return results
-  }
+    return results;
+  };
 
   return (
     <Drawer open={isOpen} onOpenChange={onOpenChange}>
@@ -79,7 +93,11 @@ export default function SearchDrawer({
               <div className="flex items-center justify-between">
                 <DrawerTitle>Search</DrawerTitle>
                 <DrawerClose asChild>
-                  <Button variant="ghost" size="icon" className="rounded-full h-8 w-8">
+                  <Button
+                    variant="ghost"
+                    size="icon"
+                    className="rounded-full h-8 w-8"
+                  >
                     <X className="h-4 w-4" />
                   </Button>
                 </DrawerClose>
@@ -115,7 +133,9 @@ export default function SearchDrawer({
               <div className="space-y-6">
                 {Object.entries(getSearchResults()).map(([category, items]) => (
                   <div key={category}>
-                    <h3 className="text-sm font-medium text-muted-foreground mb-3">{category}</h3>
+                    <h3 className="text-sm font-medium text-muted-foreground mb-3">
+                      {category}
+                    </h3>
                     <div className="space-y-4">
                       {items.map((item) => (
                         <motion.div
@@ -129,12 +149,15 @@ export default function SearchDrawer({
                             item={{
                               ...item,
                               name: highlightText(item.name, searchQuery),
-                              description: highlightText(item.description, searchQuery),
+                              description: highlightText(
+                                item.description,
+                                searchQuery
+                              ),
                             }}
                             isAdded={addedItems.includes(item.id)}
                             onItemClick={() => {
-                              onItemClick(item)
-                              onOpenChange(false)
+                              onItemClick(item);
+                              onOpenChange(false);
                             }}
                             onQuickAdd={() => onQuickAdd(item)}
                             hasModifiers={hasModifiers(item.category)}
@@ -146,19 +169,22 @@ export default function SearchDrawer({
                 ))}
                 {Object.keys(getSearchResults()).length === 0 && (
                   <div className="text-center py-8">
-                    <p className="text-muted-foreground">No items found for "{searchQuery}"</p>
+                    <p className="text-muted-foreground">
+                      No items found for "{searchQuery}"
+                    </p>
                   </div>
                 )}
               </div>
             ) : (
               <div className="text-center py-8">
-                <p className="text-muted-foreground">Start typing to search menu items</p>
+                <p className="text-muted-foreground">
+                  Start typing to search menu items
+                </p>
               </div>
             )}
           </div>
         </div>
       </DrawerContent>
     </Drawer>
-  )
+  );
 }
-

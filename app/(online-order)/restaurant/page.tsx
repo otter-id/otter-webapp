@@ -48,6 +48,7 @@ export default function FoodOrderingPage() {
     scrollCategoryIntoView,
   } = useScrollSync({
     onScroll: (category) => {
+      console.log("onScroll", category);
       setSelectedCategory(category);
       scrollCategoryIntoView(category);
     },

@@ -1,13 +1,22 @@
-import type React from "react";
+import type { Metadata } from "next";
+
+import "@/app/(online-order)/restaurant/globals.css";
 import { Toaster } from "@/components/ui/toaster";
-import "@/app/globals.css";
+
+export const metadata: Metadata = {
+  title: "Otter Receipt System",
+  description: "Otter Receipt System",
+};
 
 export default function RootLayout({
   children,
-}: {
+}: Readonly<{
   children: React.ReactNode;
-}) {
+}>) {
   return (
+    // <html lang="en">
+    //   <body className={`${roboto.className} antialiased`}>{children}</body>
+    // </html>
     <html lang="en">
       <head>
         <meta
@@ -23,7 +32,3 @@ export default function RootLayout({
     </html>
   );
 }
-
-export const metadata = {
-  generator: "v0.dev",
-};
