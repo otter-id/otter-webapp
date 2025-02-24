@@ -1,6 +1,6 @@
 import type React from "react";
 import { Toaster } from "@/components/ui/toaster";
-import "@/app/(online-order)/store/globals.css";
+import "@/app/(order)/store/globals.css";
 
 export default function RootLayout({
   children,

@@ -1,7 +1,7 @@
 import type { MenuItem } from "@/types/menuItem";
 import type { CartItem } from "@/lib/types";
 
-import { menuItems } from "@/app/(online-order)/store/sample-data";
+import { menuItems } from "@/data/menuItem-sample";
 
 // Helper function to get all menu items in a flat array
 const getAllMenuItems = () => {

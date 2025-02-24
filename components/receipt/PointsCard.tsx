@@ -2,7 +2,7 @@
 
 import { Card, CardContent } from "@/components/ui/card";
 import { motion } from "framer-motion";
-import { cardVariants } from "../utils/animations";
+import { cardVariants } from "../../app/receipt/utils/animations";
 import { ReceiptData } from "@/types/receipt";
 
 const MotionCard = motion(Card);

@@ -4,7 +4,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Store, Phone, Info, MapPin } from "lucide-react";
 import { motion } from "framer-motion";
-import { cardVariants } from "../utils/animations";
+import { cardVariants } from "../../app/receipt/utils/animations";
 import { ReceiptData } from "@/types/receipt";
 
 const MotionCard = motion(Card);

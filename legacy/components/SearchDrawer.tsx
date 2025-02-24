@@ -14,7 +14,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { X } from "lucide-react";
 import { motion } from "framer-motion";
-import { MenuItem as MenuItemComponent } from "@/app/(online-order)/components/menu/menu-item";
+import { MenuItem as MenuItemComponent } from "@/components/order/menu/menuItem";
 import { highlightText } from "@/lib/utils";
 import { categoryModifierMapping } from "@/app/(online-order)/store/modifier";
 

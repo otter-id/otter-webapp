@@ -4,7 +4,7 @@ import Image from "next/image";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Separator } from "@/components/ui/separator";
 import { motion } from "framer-motion";
-import { cardVariants } from "../utils/animations";
+import { cardVariants } from "../../app/receipt/utils/animations";
 import { ReceiptData } from "@/types/receipt";
 
 const MotionCard = motion(Card);

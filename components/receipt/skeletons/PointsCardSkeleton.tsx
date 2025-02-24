@@ -1,5 +1,5 @@
 import { Card, CardContent } from "@/components/ui/card";
-import { skeletonClass } from "../../utils/animations";
+import { skeletonClass } from "../../../app/receipt/utils/animations";
 
 export function PointsCardSkeleton() {
   return (

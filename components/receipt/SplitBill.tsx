@@ -14,9 +14,9 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { motion } from "framer-motion";
-import { cardVariants } from "../utils/animations";
+import { cardVariants } from "../../app/receipt/utils/animations";
 import { ReceiptData } from "@/types/receipt";
-import { useSplitBill } from "../hooks/useSplitBill";
+import { useSplitBill } from "../../app/receipt/hooks/useSplitBill";
 import { Badge } from "@/components/ui/badge";
 
 const MotionCard = motion(Card);

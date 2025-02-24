@@ -2,7 +2,7 @@
 
 import Image from "next/image";
 import { motion } from "framer-motion";
-import { cardVariants } from "../utils/animations";
+import { cardVariants } from "../../app/receipt/utils/animations";
 
 export function Footer() {
   return (
@@ -12,7 +12,7 @@ export function Footer() {
     >
       <span>Powered by</span>
       <Image
-        src="/img/Asset 2.svg"
+        src="/img/OtterLogo.svg"
         alt="Otter"
         width={60}
         height={20}

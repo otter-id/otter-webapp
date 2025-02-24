@@ -6,27 +6,27 @@ import { motion } from "framer-motion";
 import { useReceiptData } from "./hooks/useReceiptData";
 import { useSplitBill } from "./hooks/useSplitBill";
 import { containerVariants } from "./utils/animations";
-import { ErrorState } from "./components/ErrorState";
-import { ReceiptHeader } from "./components/ReceiptHeader";
-import { ReceiptActions } from "./components/ReceiptActions";
-import { PickupInfo } from "./components/PickupInfo";
-import { OrderDetails } from "./components/OrderDetails";
-import { OrderSummary } from "./components/OrderSummary";
-import { PointsCard } from "./components/PointsCard";
-import { SplitBill } from "./components/SplitBill";
-import { RestaurantFeedback } from "./components/RestaurantFeedback";
-import { Footer } from "./components/Footer";
+import { ErrorState } from "../../components/receipt/ErrorState";
+import { ReceiptHeader } from "../../components/receipt/ReceiptHeader";
+import { ReceiptActions } from "../../components/receipt/ReceiptActions";
+import { PickupInfo } from "../../components/receipt/PickupInfo";
+import { OrderDetails } from "../../components/receipt/OrderDetails";
+import { OrderSummary } from "../../components/receipt/OrderSummary";
+import { PointsCard } from "../../components/receipt/PointsCard";
+import { SplitBill } from "../../components/receipt/SplitBill";
+import { RestaurantFeedback } from "../../components/receipt/RestaurantFeedback";
+import { Footer } from "../../components/receipt/Footer";
 
 // Skeleton components
-import { ReceiptHeaderSkeleton } from "./components/skeletons/ReceiptHeaderSkeleton";
-import { ReceiptActionsSkeleton } from "./components/skeletons/ReceiptActionsSkeleton";
-import { PickupInfoSkeleton } from "./components/skeletons/PickupInfoSkeleton";
-import { OrderDetailsSkeleton } from "./components/skeletons/OrderDetailsSkeleton";
-import { OrderSummarySkeleton } from "./components/skeletons/OrderSummarySkeleton";
-import { PointsCardSkeleton } from "./components/skeletons/PointsCardSkeleton";
+import { ReceiptHeaderSkeleton } from "../../components/receipt/skeletons/ReceiptHeaderSkeleton";
+import { ReceiptActionsSkeleton } from "../../components/receipt/skeletons/ReceiptActionsSkeleton";
+import { PickupInfoSkeleton } from "../../components/receipt/skeletons/PickupInfoSkeleton";
+import { OrderDetailsSkeleton } from "../../components/receipt/skeletons/OrderDetailsSkeleton";
+import { OrderSummarySkeleton } from "../../components/receipt/skeletons/OrderSummarySkeleton";
+import { PointsCardSkeleton } from "../../components/receipt/skeletons/PointsCardSkeleton";
 
 // Temporary data for development
-import { fakeData } from "./data";
+import { fakeData } from "../../data/receipt-sample";
 
 const ReceiptContent = () => {
   const searchParams = useSearchParams();

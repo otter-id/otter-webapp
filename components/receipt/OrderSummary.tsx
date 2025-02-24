@@ -5,7 +5,7 @@ import { Separator } from "@/components/ui/separator";
 import { Button } from "@/components/ui/button";
 import { Users } from "lucide-react";
 import { motion } from "framer-motion";
-import { cardVariants } from "../utils/animations";
+import { cardVariants } from "../../app/receipt/utils/animations";
 import { ReceiptData } from "@/types/receipt";
 
 const MotionCard = motion(Card);

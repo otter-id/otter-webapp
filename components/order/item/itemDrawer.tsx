@@ -16,10 +16,7 @@ import { Separator } from "@/components/ui/separator";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Label } from "@/components/ui/label";
-import {
-  categoryModifierMapping,
-  modifiers,
-} from "@/app/(online-order)/store/modifier";
+import { categoryModifierMapping, modifiers } from "@/data/modifier-sample";
 import { formatPrice } from "@/lib/utils";
 
 interface ItemDrawerProps {
