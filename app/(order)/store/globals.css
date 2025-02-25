@@ -49,10 +49,10 @@
   }
 
   /* Prevent pull-to-refresh and overscroll effects */
-  html {
+  /* html {
     height: 100%;
     overflow: hidden;
-  }
+  } */
 
   body {
     height: 100%;

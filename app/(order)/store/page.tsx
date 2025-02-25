@@ -62,7 +62,7 @@ export default function FoodOrderingPage() {
         block: "start",
       });
     }
-    scrollCategoryIntoView(category);
+    // scrollCategoryIntoView(category);
   };
 
   const handleItemClick = (item: MenuItemType) => {
