@@ -6,12 +6,17 @@ export function useScrollSync(options: {
   onScroll?: (category: string) => void;
   headerOffset?: number;
 }) {
+  const containerRef = useRef<HTMLElement | null>(null);
   const { onScroll, headerOffset = 145 } = options;
   const categoryRefs = useRef<Record<string, HTMLDivElement | null>>({});
   const categoryButtonsRef = useRef<Record<string, HTMLButtonElement | null>>(
     {}
   );
   const scrollContainerRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    containerRef.current = document.querySelector("body");
+  }, []);
 
   const scrollCategoryIntoView = useCallback((category: string) => {
     const button = categoryButtonsRef.current[category];
@@ -24,6 +29,7 @@ export function useScrollSync(options: {
   }, []);
 
   useEffect(() => {
+    console.log("useEffect");
     if (!onScroll) return;
 
     const handleScroll = () => {
@@ -41,23 +47,12 @@ export function useScrollSync(options: {
       }
     };
 
-    let isThrottled = false;
-    const onScrollThrottled = () => {
-      if (!isThrottled) {
-        isThrottled = true;
-        requestAnimationFrame(() => {
-          handleScroll();
-          isThrottled = false;
-        });
-      }
-    };
-
-    window.addEventListener("scroll", onScrollThrottled, { passive: true });
-    console.log("onScrollThrottled", onScrollThrottled);
+    containerRef?.current?.addEventListener("scroll", handleScroll, {
+      passive: true,
+    });
 
     return () => {
-      window.removeEventListener("scroll", onScrollThrottled);
-      console.log("onScrollThrottled removed");
+      containerRef?.current?.removeEventListener("scroll", handleScroll);
     };
   }, [onScroll, headerOffset]);
 
