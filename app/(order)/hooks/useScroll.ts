@@ -28,7 +28,7 @@ export function useScrollSync(options: {
     if (!onScroll) return;
 
     const handleScroll = () => {
-      console.log("HS");
+      // console.log("HS");
       for (const [category, element] of Object.entries(categoryRefs.current)) {
         if (element) {
           const titleElement = element.querySelector("h2");
@@ -54,11 +54,11 @@ export function useScrollSync(options: {
     };
 
     window.addEventListener("scroll", onScrollThrottled, { passive: true });
-    console.log("OST");
+    // console.log("OST");
 
     return () => {
       window.removeEventListener("scroll", onScrollThrottled);
-      console.log("OST REM");
+      // console.log("OST REM");
       if (timeoutRef.current) {
         clearTimeout(timeoutRef.current);
       }
