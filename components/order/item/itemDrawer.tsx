@@ -337,6 +337,7 @@ export function ItemDrawer({
                       {category.type === "checkbox" && (
                         <Badge className="bg-blue-50 text-blue-700 hover:bg-blue-50">
                           {getSelectedCount(category.$id)}/{category.maxAmount}
+                          {" Selected"}
                         </Badge>
                       )}
                       {category.isRequired &&
