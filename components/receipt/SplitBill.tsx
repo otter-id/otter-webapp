@@ -100,7 +100,6 @@ export function SplitBill({ data, onClose, splitBillState }: SplitBillProps) {
                   Person {index + 1}
                 </Label>
                 <Input
-                  variant="otter"
                   id={`person${index}`}
                   value={people[index] || ""}
                   onChange={(e) =>

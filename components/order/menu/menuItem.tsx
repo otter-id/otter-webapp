@@ -5,20 +5,50 @@ import { MenuItem as MenuItemType } from "@/types/restaurant";
 import Image from "next/image";
 import { Button } from "@/components/ui/button";
 import { Plus, ShoppingCart } from "lucide-react";
-import { formatPrice } from "@/lib/utils";
+import { formatPrice, formatTextForPlaceholder } from "@/lib/utils";
 import { Badge } from "@/components/ui/badge";
+
+// Extend the MenuItemType to allow JSX.Element for name and description
+// This is needed for search results where text is highlighted
+interface ExtendedMenuItemProps extends Omit<MenuItemProps, "item"> {
+  item: MenuItemType & {
+    name: string | JSX.Element;
+    description: string | JSX.Element;
+  };
+}
+
 interface MenuItemProps {
   item: MenuItemType;
   onItemClick: () => void;
   quantity?: number;
+  isInPopularCategory?: boolean;
 }
 
-export function MenuItem({ item, onItemClick, quantity = 0 }: MenuItemProps) {
+export function MenuItem({
+  item,
+  onItemClick,
+  quantity = 0,
+  isInPopularCategory = false,
+}: ExtendedMenuItemProps) {
   const [mounted, setMounted] = useState(false);
+  const [imageError, setImageError] = useState(false);
 
   useEffect(() => {
     setMounted(true);
   }, []);
+
+  // Extract plain text from item name for the badge
+  const getPlainTextName = (): string => {
+    if (typeof item.name === "string") {
+      return item.name;
+    }
+    // Try to get a reasonable string representation
+    try {
+      return String(item.name);
+    } catch (e) {
+      return "Menu Item";
+    }
+  };
 
   return (
     <div
@@ -28,16 +58,23 @@ export function MenuItem({ item, onItemClick, quantity = 0 }: MenuItemProps) {
       onClick={onItemClick}
     >
       <div className="relative w-32 h-32 flex-shrink-0">
-        <div className="w-full h-full rounded-lg overflow-hidden bg-muted">
-          <Image
-            src={
-              item.image || "/placeholder/placeholder.svg?height=128&width=128"
-            }
-            alt={item.name}
-            fill
-            className="object-cover rounded-lg"
-          />
-        </div>
+        {item.image && !imageError ? (
+          <div className="w-full h-full rounded-lg overflow-hidden bg-muted">
+            <Image
+              src={item.image}
+              alt={typeof item.name === "string" ? item.name : "Menu item"}
+              fill
+              className="object-cover rounded-lg"
+              onError={() => setImageError(true)}
+            />
+          </div>
+        ) : (
+          <div className="w-full h-full rounded-lg overflow-hidden bg-yellow-50 border-2 border-yellow-100 flex items-center justify-center p-2 text-center">
+            <span className="text-yellow-800 font-medium text-sm whitespace-pre-line">
+              {formatTextForPlaceholder(item.name)}
+            </span>
+          </div>
+        )}
         {quantity > 0 && mounted && (
           <div className="absolute -top-3 -right-3 h-8 min-w-[32px] px-2 flex items-center justify-center gap-1 bg-black text-white rounded-full">
             <ShoppingCart className="w-3 h-3" />
@@ -50,8 +87,8 @@ export function MenuItem({ item, onItemClick, quantity = 0 }: MenuItemProps) {
           <div className="space-y-1 flex-1 min-w-0">
             <div className="flex items-center gap-2">
               <h3 className="font-bold leading-tight">{item.name}</h3>
-              {item.isRecommended && (
-                <Badge className="bg-yellow-100 text-yellow-800 text-xs px-2 py-0.5 rounded-full font-normal">
+              {item.isRecommended && !isInPopularCategory && (
+                <Badge className="bg-yellow-100 text-yellow-800 hover:bg-yellow-100 text-xs px-2 py-0.5 rounded-full font-normal">
                   Popular
                 </Badge>
               )}

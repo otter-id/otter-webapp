@@ -3,6 +3,12 @@
 import { useState, useCallback, useEffect } from "react";
 import { MenuItem, MenuOption, MenuOptionCategory } from "@/types/restaurant";
 
+// Extended MenuItem type to handle JSX elements
+interface ExtendedMenuItem extends Omit<MenuItem, "name" | "description"> {
+  name: string | JSX.Element;
+  description: string | JSX.Element;
+}
+
 const CART_STORAGE_KEY = "otter-cart";
 
 export interface CartItem {
@@ -116,7 +122,7 @@ export function useCart() {
 
   // Helper function to create a cart item from a menu item
   const createCartItemFromMenuItem = (
-    menuItem: MenuItem,
+    menuItem: MenuItem | ExtendedMenuItem,
     selectedOptions: { [categoryId: string]: MenuOption[] }
   ): CartItem => {
     // Format the selected options for the cart
@@ -130,9 +136,23 @@ export function useCart() {
       }));
     });
 
+    // Convert JSX.Element name to string if needed
+    let itemName: string;
+    if (typeof menuItem.name === "string") {
+      itemName = menuItem.name;
+    } else {
+      // Try to get a reasonable string representation
+      try {
+        const stringName = String(menuItem.name);
+        itemName = stringName === "[object Object]" ? "Menu Item" : stringName;
+      } catch (e) {
+        itemName = "Menu Item";
+      }
+    }
+
     return {
       $id: menuItem.$id,
-      name: menuItem.name,
+      name: itemName,
       price: menuItem.price,
       quantity: 1,
       image: menuItem.image,

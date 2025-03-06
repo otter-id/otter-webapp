@@ -10,15 +10,22 @@ import {
 } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Plus } from "lucide-react";
-import { formatPrice } from "@/lib/utils";
+import { formatPrice, formatTextForPlaceholder } from "@/lib/utils";
 import type { MenuItem } from "@/types/restaurant";
 import { motion } from "framer-motion";
+import { useState } from "react";
+
+// Extended MenuItem type to handle JSX elements
+interface ExtendedMenuItem extends Omit<MenuItem, "name" | "description"> {
+  name: string | JSX.Element;
+  description: string | JSX.Element;
+}
 
 interface UpsellModalProps {
   isOpen: boolean;
   onOpenChange: (open: boolean) => void;
-  recommendations: MenuItem[];
-  onAddItem: (item: MenuItem) => void;
+  recommendations: MenuItem[] | ExtendedMenuItem[];
+  onAddItem: (item: MenuItem | ExtendedMenuItem) => void;
   onContinue: () => void;
   addedItems?: string[];
 }
@@ -31,9 +38,18 @@ export function UpsellModal({
   onContinue,
   addedItems = [],
 }: UpsellModalProps) {
+  const [imageErrors, setImageErrors] = useState<Record<string, boolean>>({});
+
   if (recommendations.length === 0) {
     return null;
   }
+
+  const handleImageError = (itemId: string) => {
+    setImageErrors((prev) => ({
+      ...prev,
+      [itemId]: true,
+    }));
+  };
 
   return (
     <Dialog open={isOpen} onOpenChange={onOpenChange}>
@@ -45,23 +61,31 @@ export function UpsellModal({
           </DialogDescription>
         </DialogHeader>
         <div className="px-6 pb-4 space-y-4">
-          {recommendations.map((item) => (
+          {recommendations.map((item, index) => (
             <motion.div
-              key={item.$id}
+              key={`upsell-${item.$id}-${index}`}
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
               className="flex gap-3"
             >
               <div className="relative w-20 h-20 flex-shrink-0 rounded-lg overflow-hidden bg-muted">
-                <Image
-                  src={
-                    item.image ||
-                    "/placeholder/placeholder.svg?height=80&width=80"
-                  }
-                  alt={item.name}
-                  fill
-                  className="object-cover"
-                />
+                {item.image && !imageErrors[item.$id] ? (
+                  <Image
+                    src={item.image}
+                    alt={
+                      typeof item.name === "string" ? item.name : "Menu item"
+                    }
+                    fill
+                    className="object-cover"
+                    onError={() => handleImageError(item.$id)}
+                  />
+                ) : (
+                  <div className="w-full h-full rounded-lg overflow-hidden bg-yellow-50 border-2 border-yellow-100 flex items-center justify-center p-2 text-center">
+                    <span className="text-yellow-800 font-medium text-xs whitespace-pre-line">
+                      {formatTextForPlaceholder(item.name, 1, 2)}
+                    </span>
+                  </div>
+                )}
               </div>
               <div className="flex-1 min-w-0">
                 <div className="flex justify-between items-start gap-2">

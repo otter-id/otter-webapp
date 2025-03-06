@@ -48,6 +48,16 @@ export default function FoodOrderingPage() {
     }
   }, [menuCategories, selectedCategoryId]);
 
+  // Handle ItemDrawer open/close
+  const handleItemDrawerOpenChange = (isOpen: boolean) => {
+    setIsItemDrawerOpen(isOpen);
+
+    // Reset editing state when drawer is closed
+    if (!isOpen) {
+      setEditingCartItem(null);
+    }
+  };
+
   const {
     categoryRefs,
     categoryButtonsRef,
@@ -205,14 +215,25 @@ export default function FoodOrderingPage() {
             >
               <h2 className="text-lg font-bold mb-3">{category.name}</h2>
               <div className="space-y-4">
-                {category.menuId.map((item) => (
-                  <MenuItem
-                    key={item.$id}
-                    item={item}
-                    onItemClick={() => handleItemClick(item)}
-                    quantity={getItemQuantityInCart(item.$id)}
-                  />
-                ))}
+                {category.menuId.map((item, index) => {
+                  // Create a unique key for items in the Popular category
+                  const isPopularCategory =
+                    category.name === "Popular" ||
+                    category.$id === "popular-category";
+                  const itemKey = isPopularCategory
+                    ? `popular-${item.$id}-${index}`
+                    : item.$id;
+
+                  return (
+                    <MenuItem
+                      key={itemKey}
+                      item={item}
+                      onItemClick={() => handleItemClick(item)}
+                      quantity={getItemQuantityInCart(item.$id)}
+                      isInPopularCategory={isPopularCategory}
+                    />
+                  );
+                })}
               </div>
             </div>
           ))}
@@ -227,7 +248,7 @@ export default function FoodOrderingPage() {
 
       <ItemDrawer
         isOpen={isItemDrawerOpen}
-        onOpenChange={setIsItemDrawerOpen}
+        onOpenChange={handleItemDrawerOpenChange}
         selectedItem={selectedItem}
         editingCartItem={editingCartItem}
         onAddToCart={handleAddToCartWithToast}

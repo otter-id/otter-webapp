@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from "react";
 import Image from "next/image";
-import { X, Minus, Plus, AlertTriangle, Check } from "lucide-react";
+import { X, Minus, Plus, AlertTriangle, Check, Info } from "lucide-react";
 import { MenuItem, MenuOption } from "@/types/restaurant";
 import { CartItem } from "@/app/(order)/hooks/useCart";
 import {
@@ -18,17 +18,23 @@ import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Label } from "@/components/ui/label";
 import { Badge } from "@/components/ui/badge";
-import { formatPrice } from "@/lib/utils";
+import { formatPrice, formatTextForPlaceholder } from "@/lib/utils";
+
+// Extended MenuItem type to handle JSX elements
+interface ExtendedMenuItem extends Omit<MenuItem, "name" | "description"> {
+  name: string | JSX.Element;
+  description: string | JSX.Element;
+}
 
 interface ItemDrawerProps {
   isOpen: boolean;
   onOpenChange: (open: boolean) => void;
-  selectedItem: MenuItem | null;
+  selectedItem: MenuItem | ExtendedMenuItem | null;
   editingCartItem: CartItem | null;
   onAddToCart: (item: CartItem) => void;
   onUpdateCartItem: (item: CartItem) => void;
   createCartItemFromMenuItem: (
-    menuItem: MenuItem,
+    menuItem: MenuItem | ExtendedMenuItem,
     selectedOptions: { [categoryId: string]: MenuOption[] }
   ) => CartItem;
 }
@@ -46,6 +52,7 @@ export function ItemDrawer({
   const [selectedOptions, setSelectedOptions] = useState<{
     [categoryId: string]: MenuOption[];
   }>({});
+  const [imageError, setImageError] = useState(false);
 
   // Reset quantity when switching between different items (not when editing)
   useEffect(() => {
@@ -68,6 +75,7 @@ export function ItemDrawer({
         setQuantity(1);
         setSelectedOptions({});
       }
+      setImageError(false);
     }
   }, [isOpen, editingCartItem]);
 
@@ -106,27 +114,8 @@ export function ItemDrawer({
 
         setSelectedOptions(options);
       } else {
-        // Set default options for required categories
-        const defaults: { [categoryId: string]: MenuOption[] } = {};
-
-        selectedItem.menuOptionCategory.forEach((category) => {
-          if (category.isRequired && category.menuOptionId.length > 0) {
-            // We no longer auto-select options for radio buttons
-            if (
-              category.type === "check" &&
-              category.minAmount &&
-              category.minAmount > 0
-            ) {
-              // For checkboxes with minimum required, select the first minAmount options
-              defaults[category.$id] = category.menuOptionId.slice(
-                0,
-                category.minAmount
-              );
-            }
-          }
-        });
-
-        setSelectedOptions(defaults);
+        // Don't pre-select any options when adding a new item
+        setSelectedOptions({});
       }
     }
   }, [selectedItem, editingCartItem]);
@@ -144,19 +133,39 @@ export function ItemDrawer({
         newOptions[categoryId] = [option];
       } else {
         // For checkboxes, toggle the selection
-        const currentOptions = prev[categoryId] || [];
-        const optionExists = currentOptions.some(
-          (opt) => opt.$id === option.$id
-        );
-
-        if (optionExists) {
-          // Remove the option if it exists
-          newOptions[categoryId] = currentOptions.filter(
-            (opt) => opt.$id !== option.$id
-          );
+        if (!newOptions[categoryId]) {
+          newOptions[categoryId] = [option];
         } else {
-          // Add the option if it doesn't exist
-          newOptions[categoryId] = [...currentOptions, option];
+          const existingIndex = newOptions[categoryId].findIndex(
+            (opt) => opt.$id === option.$id
+          );
+
+          if (existingIndex >= 0) {
+            // Remove if already selected
+            newOptions[categoryId] = newOptions[categoryId].filter(
+              (_, i) => i !== existingIndex
+            );
+            if (newOptions[categoryId].length === 0) {
+              delete newOptions[categoryId];
+            }
+          } else {
+            // Check if adding this option would exceed maxAmount
+            if (selectedItem) {
+              const category = selectedItem.menuOptionCategory.find(
+                (cat) => cat.$id === categoryId
+              );
+              if (
+                category &&
+                newOptions[categoryId].length >= category.maxAmount
+              ) {
+                // Don't add if it would exceed maxAmount
+                return prev;
+              }
+            }
+
+            // Add if not selected and not exceeding maxAmount
+            newOptions[categoryId] = [...newOptions[categoryId], option];
+          }
         }
       }
 
@@ -165,45 +174,55 @@ export function ItemDrawer({
   };
 
   const isOptionSelected = (categoryId: string, optionId: string): boolean => {
-    const options = selectedOptions[categoryId] || [];
-    return options.some((option) => option.$id === optionId);
+    return !!selectedOptions[categoryId]?.some(
+      (option) => option.$id === optionId
+    );
   };
 
   const calculateTotalPrice = (): number => {
     if (!selectedItem) return 0;
 
-    // Base price of the item
-    let total = selectedItem.price;
+    let total = selectedItem.price * quantity;
 
-    // Add the price of all selected options
+    // Add option prices
     Object.values(selectedOptions).forEach((options) => {
       options.forEach((option) => {
-        total += option.price;
+        total += option.price * quantity;
       });
     });
 
-    // Multiply by quantity
-    return total * quantity;
+    return total;
   };
 
   const isRequiredOptionsMissing = (): boolean => {
     if (!selectedItem) return true;
 
     return selectedItem.menuOptionCategory.some((category) => {
-      if (!category.isRequired) return false;
-
-      const selected = selectedOptions[category.$id] || [];
-
-      if (category.type === "radio") {
-        // For radio buttons, one option must be selected
-        return selected.length === 0;
-      } else if (category.type === "check" && category.minAmount) {
-        // For checkboxes, at least minAmount options must be selected
-        return selected.length < category.minAmount;
+      if (category.isRequired) {
+        return (
+          !selectedOptions[category.$id] ||
+          selectedOptions[category.$id].length === 0
+        );
       }
-
       return false;
     });
+  };
+
+  const getSelectedCount = (categoryId: string): number => {
+    return selectedOptions[categoryId]?.length || 0;
+  };
+
+  const isMaxReached = (categoryId: string): boolean => {
+    if (!selectedItem) return false;
+
+    const category = selectedItem.menuOptionCategory.find(
+      (cat) => cat.$id === categoryId
+    );
+
+    if (!category) return false;
+
+    const selectedCount = getSelectedCount(categoryId);
+    return selectedCount >= category.maxAmount;
   };
 
   const handleSubmit = () => {
@@ -241,15 +260,25 @@ export function ItemDrawer({
             <div className="px-4 py-6 space-y-6">
               <div className="space-y-4">
                 <div className="aspect-square relative rounded-lg overflow-hidden bg-muted">
-                  <Image
-                    src={
-                      selectedItem.image ||
-                      "/placeholder/placeholder.svg?height=448&width=448"
-                    }
-                    alt={selectedItem.name}
-                    fill
-                    className="object-cover"
-                  />
+                  {selectedItem.image && !imageError ? (
+                    <Image
+                      src={selectedItem.image}
+                      alt={
+                        typeof selectedItem.name === "string"
+                          ? selectedItem.name
+                          : "Menu item"
+                      }
+                      fill
+                      className="object-cover"
+                      onError={() => setImageError(true)}
+                    />
+                  ) : (
+                    <div className="w-full h-full bg-yellow-50 border-2 border-yellow-100 flex items-center justify-center p-4 text-center">
+                      <span className="text-yellow-800 font-bold text-xl whitespace-pre-line">
+                        {formatTextForPlaceholder(selectedItem.name, 2, 4)}
+                      </span>
+                    </div>
+                  )}
                 </div>
                 <div>
                   <h2 className="text-xl font-bold">{selectedItem.name}</h2>
@@ -294,19 +323,35 @@ export function ItemDrawer({
               {selectedItem.menuOptionCategory.map((category) => (
                 <div key={category.$id} className="space-y-3">
                   <div className="flex items-center justify-between">
-                    <h3 className="font-semibold">{category.name}</h3>
-                    {category.isRequired &&
-                      (selectedOptions[category.$id]?.length > 0 ? (
-                        <Badge className="bg-green-100 text-green-700 hover:bg-green-100 flex gap-1">
-                          <Check className="h-3 w-3" />
-                          <span>Selected</span>
+                    <div>
+                      <h3 className="font-semibold">{category.name}</h3>
+                      {category.type === "checkbox" && (
+                        <p className="text-xs text-muted-foreground">
+                          Select up to {category.maxAmount}{" "}
+                          {category.maxAmount === 1 ? "option" : "options"}
+                          {category.isRequired && " (Required)"}
+                        </p>
+                      )}
+                    </div>
+                    <div className="flex items-center gap-2">
+                      {category.type === "checkbox" && (
+                        <Badge className="bg-blue-50 text-blue-700 hover:bg-blue-50">
+                          {getSelectedCount(category.$id)}/{category.maxAmount}
                         </Badge>
-                      ) : (
-                        <Badge className="bg-red-100 text-red-700 hover:bg-red-100 flex gap-1">
-                          <AlertTriangle className="h-3 w-3" />
-                          <span>Required</span>
-                        </Badge>
-                      ))}
+                      )}
+                      {category.isRequired &&
+                        (selectedOptions[category.$id]?.length > 0 ? (
+                          <Badge className="bg-green-100 text-green-700 hover:bg-green-100 flex gap-1">
+                            <Check className="h-3 w-3" />
+                            <span>Selected</span>
+                          </Badge>
+                        ) : (
+                          <Badge className="bg-red-100 text-red-700 flex gap-1 hover:bg-red-100">
+                            <AlertTriangle className="h-3 w-3" />
+                            <span>Required</span>
+                          </Badge>
+                        ))}
+                    </div>
                   </div>
 
                   {category.type === "radio" ? (
@@ -325,7 +370,20 @@ export function ItemDrawer({
                         {category.menuOptionId.map((option) => (
                           <div
                             key={option.$id}
-                            className="flex items-center justify-between py-2 px-3 border rounded-md"
+                            className="flex items-center justify-between py-2 px-3 border rounded-md cursor-pointer"
+                            onClick={() => {
+                              const value = option.$id;
+                              const foundOption = category.menuOptionId.find(
+                                (opt) => opt.$id === value
+                              );
+                              if (foundOption) {
+                                handleOptionChange(
+                                  category.$id,
+                                  foundOption,
+                                  true
+                                );
+                              }
+                            }}
                           >
                             <div className="flex items-center gap-3">
                               <RadioGroupItem
@@ -350,36 +408,64 @@ export function ItemDrawer({
                     </RadioGroup>
                   ) : (
                     <div className="space-y-2">
-                      {category.menuOptionId.map((option) => (
-                        <div
-                          key={option.$id}
-                          className="flex items-center justify-between py-2 px-3 border rounded-md"
-                        >
-                          <div className="flex items-center gap-3">
-                            <Checkbox
-                              id={option.$id}
-                              checked={isOptionSelected(
-                                category.$id,
-                                option.$id
-                              )}
-                              onCheckedChange={() => {
+                      {category.menuOptionId.map((option) => {
+                        const maxReached = isMaxReached(category.$id);
+                        const isSelected = isOptionSelected(
+                          category.$id,
+                          option.$id
+                        );
+
+                        return (
+                          <div
+                            key={option.$id}
+                            className={`flex items-center justify-between py-2 px-3 border rounded-md ${
+                              !maxReached || isSelected
+                                ? "cursor-pointer"
+                                : "cursor-not-allowed opacity-60"
+                            }`}
+                            onClick={() => {
+                              if (!maxReached || isSelected) {
                                 handleOptionChange(category.$id, option, false);
-                              }}
-                            />
-                            <Label
-                              htmlFor={option.$id}
-                              className="cursor-pointer"
-                            >
-                              {option.name}
-                            </Label>
+                              }
+                            }}
+                          >
+                            <div className="flex items-center gap-3">
+                              <Checkbox
+                                id={option.$id}
+                                checked={isOptionSelected(
+                                  category.$id,
+                                  option.$id
+                                )}
+                                onCheckedChange={() => {
+                                  if (!maxReached || isSelected) {
+                                    handleOptionChange(
+                                      category.$id,
+                                      option,
+                                      false
+                                    );
+                                  }
+                                }}
+                                disabled={maxReached && !isSelected}
+                              />
+                              <Label
+                                htmlFor={option.$id}
+                                className={`${
+                                  maxReached && !isSelected
+                                    ? "text-gray-400"
+                                    : "cursor-pointer"
+                                }`}
+                              >
+                                {option.name}
+                              </Label>
+                            </div>
+                            {option.price > 0 && (
+                              <span className="text-sm font-medium">
+                                +{formatPrice(option.price)}
+                              </span>
+                            )}
                           </div>
-                          {option.price > 0 && (
-                            <span className="text-sm font-medium">
-                              +{formatPrice(option.price)}
-                            </span>
-                          )}
-                        </div>
-                      ))}
+                        );
+                      })}
                     </div>
                   )}
                 </div>

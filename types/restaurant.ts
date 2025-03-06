@@ -52,7 +52,7 @@ export interface MenuOptionCategory {
   name: string;
   isRequired: boolean;
   maxAmount: number;
-  type: "radio" | "check";
+  type: "radio" | "checkbox";
   minAmount: number | null;
   $id: string;
   menuOptionId: MenuOption[];

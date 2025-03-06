@@ -209,9 +209,9 @@ export function SearchOverlay({
                                 {category}
                               </h3>
                               <div className="space-y-4">
-                                {items.map((item) => (
+                                {items.map((item, index) => (
                                   <motion.div
-                                    key={item.$id}
+                                    key={`search-result-${item.$id}-${index}`}
                                     layout
                                     initial={{ opacity: 0 }}
                                     animate={{ opacity: 1 }}
