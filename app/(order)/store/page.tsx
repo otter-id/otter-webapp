@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { RestaurantHeader } from "@/components/order/header/restaurantHeader";
 import { StickyFooter } from "@/components/order/cart/stickyFooter";
 import { CategoryNav } from "@/components/order/menu/categoryNav";
@@ -9,24 +9,23 @@ import { CartDrawer } from "@/components/order/cart/cartDrawer";
 import { ItemDrawer } from "@/components/order/item/itemDrawer";
 import { useCart } from "@/app/(order)/hooks/useCart";
 import { useScrollSync } from "@/app/(order)/hooks/useScroll";
-import { categories, menuItems } from "@/data/menuItem-sample";
+import { useRestaurant } from "@/app/(order)/hooks/useRestaurant";
 import { DeleteConfirmation } from "@/components/order/cart/deleteDialog";
-import type { MenuItem as MenuItemType } from "@/types/menuItem";
+import { MenuItem as MenuItemType } from "@/types/restaurant";
 import { toast } from "sonner";
-import { Check } from "lucide-react";
-import { X } from "lucide-react";
-import type { CartItem } from "@/lib/types";
+import { Check, X, AlertTriangle } from "lucide-react";
 import { SearchOverlay } from "@/components/order/search/searchOverlay";
+import { Button } from "@/components/ui/button";
 
 export default function FoodOrderingPage() {
-  const [selectedCategory, setSelectedCategory] = useState(categories[0]);
-  const [addedItems, setAddedItems] = useState<number[]>([]);
+  const { loading, error, restaurant, menuCategories } = useRestaurant();
+  const [selectedCategoryId, setSelectedCategoryId] = useState<string>("");
   const [isCartOpen, setIsCartOpen] = useState(false);
   const [isItemDrawerOpen, setIsItemDrawerOpen] = useState(false);
   const [selectedItem, setSelectedItem] = useState<MenuItemType | null>(null);
   const [isFeesExpanded, setIsFeesExpanded] = useState(false);
   const [isDeleteConfirmOpen, setIsDeleteConfirmOpen] = useState(false);
-  const [itemToDelete, setItemToDelete] = useState<CartItem | null>(null);
+  const [itemToDelete, setItemToDelete] = useState<any | null>(null);
   const [isSearchOpen, setIsSearchOpen] = useState(false);
 
   const {
@@ -39,7 +38,15 @@ export default function FoodOrderingPage() {
     updateCartItem,
     updateItemQuantity,
     removeItem,
+    createCartItemFromMenuItem,
   } = useCart();
+
+  // Set the first category as selected once data is loaded
+  useEffect(() => {
+    if (menuCategories.length > 0 && !selectedCategoryId) {
+      setSelectedCategoryId(menuCategories[0].$id);
+    }
+  }, [menuCategories, selectedCategoryId]);
 
   const {
     categoryRefs,
@@ -47,22 +54,20 @@ export default function FoodOrderingPage() {
     scrollContainerRef,
     scrollCategoryIntoView,
   } = useScrollSync({
-    onScroll: (category) => {
-      console.log("onScroll", category);
-      setSelectedCategory(category);
-      scrollCategoryIntoView(category);
+    onScroll: (categoryId) => {
+      setSelectedCategoryId(categoryId);
+      scrollCategoryIntoView(categoryId);
     },
   });
 
-  const handleCategorySelect = (category: string) => {
-    setSelectedCategory(category);
-    if (categoryRefs.current[category]) {
-      categoryRefs.current[category]?.scrollIntoView({
+  const handleCategorySelect = (categoryId: string) => {
+    setSelectedCategoryId(categoryId);
+    if (categoryRefs.current[categoryId]) {
+      categoryRefs.current[categoryId]?.scrollIntoView({
         behavior: "smooth",
         block: "start",
       });
     }
-    // scrollCategoryIntoView(category);
   };
 
   const handleItemClick = (item: MenuItemType) => {
@@ -82,18 +87,22 @@ export default function FoodOrderingPage() {
   };
 
   const handleEditCartItem = (item: any) => {
-    const originalItem = menuItems[
-      item.category as keyof typeof menuItems
-    ].find((menuItem) => menuItem.id === item.id);
-    if (originalItem) {
-      setSelectedItem(originalItem);
-      setEditingCartItem(item);
-      setIsItemDrawerOpen(true);
-      setIsCartOpen(false);
+    // Find the original menu item
+    for (const category of menuCategories) {
+      const menuItem = category.menuId.find(
+        (menuItem) => menuItem.$id === item.$id
+      );
+      if (menuItem) {
+        setSelectedItem(menuItem);
+        setEditingCartItem(item);
+        setIsItemDrawerOpen(true);
+        setIsCartOpen(false);
+        break;
+      }
     }
   };
 
-  const handleDeleteConfirmation = (item: CartItem) => {
+  const handleDeleteConfirmation = (item: any) => {
     removeItem(item);
     setItemToDelete(null);
     setIsDeleteConfirmOpen(false);
@@ -105,31 +114,64 @@ export default function FoodOrderingPage() {
     });
   };
 
-  const handleDeleteRequest = (item: CartItem) => {
+  const handleDeleteRequest = (item: any) => {
     setItemToDelete(item);
     setIsDeleteConfirmOpen(true);
   };
 
-  const getItemQuantityInCart = (itemId: number) => {
+  const getItemQuantityInCart = (itemId: string) => {
     return cart.reduce((total, cartItem) => {
-      if (cartItem.id === itemId) {
+      if (cartItem.$id === itemId) {
         return total + cartItem.quantity;
       }
       return total;
     }, 0);
   };
 
+  if (loading) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-gray-50">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-gray-900 mx-auto"></div>
+          <p className="mt-4 text-gray-600">Loading restaurant data...</p>
+        </div>
+      </div>
+    );
+  }
+
+  if (error) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-gray-50">
+        <div className="max-w-sm mx-auto text-center p-6 bg-white rounded-lg shadow-lg">
+          <AlertTriangle className="h-12 w-12 text-red-500 mx-auto mb-4" />
+          <h3 className="text-lg font-semibold text-gray-900 mb-2">
+            Something went wrong
+          </h3>
+          <p className="text-gray-600 mb-6">{error}</p>
+          <Button onClick={() => window.location.reload()} className="w-full">
+            Try again
+          </Button>
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div className="min-h-screen bg-gray-50 pb-[72px]">
       <div className="max-w-md mx-auto bg-white shadow-sm">
-        <RestaurantHeader />
+        <RestaurantHeader
+          name={restaurant?.name || ""}
+          logo={restaurant?.logo || ""}
+          waitTime={restaurant?.waitTime || 0}
+          isOpen={restaurant?.isOpen || false}
+          openingTimes={restaurant?.openingTimes}
+        />
 
         <div className="sticky top-0 z-20">
           <SearchOverlay
-            menuItems={menuItems}
+            menuItems={menuCategories.flatMap((category) => category.menuId)}
             onItemClick={handleItemClick}
             onAddItem={handleAddToCartWithToast}
-            addedItems={addedItems}
             isOpen={isSearchOpen}
             onOpenChange={setIsSearchOpen}
             className="border-b shadow-sm"
@@ -137,8 +179,11 @@ export default function FoodOrderingPage() {
           />
 
           <CategoryNav
-            categories={categories}
-            selectedCategory={selectedCategory}
+            categories={menuCategories.map((cat) => ({
+              id: cat.$id,
+              name: cat.name,
+            }))}
+            selectedCategoryId={selectedCategoryId}
             scrollContainerRef={scrollContainerRef}
             categoryButtonsRef={categoryButtonsRef}
             onCategorySelect={handleCategorySelect}
@@ -147,27 +192,25 @@ export default function FoodOrderingPage() {
         </div>
 
         <div className="px-3 py-4 space-y-6">
-          {categories.map((category) => (
+          {menuCategories.map((category) => (
             <div
-              key={category}
-              // ref={(el) => (categoryRefs.current[category] = el)}
+              key={category.$id}
               ref={(el) => {
                 if (el) {
-                  categoryRefs.current[category] = el;
+                  categoryRefs.current[category.$id] = el;
                 }
               }}
-              data-category={category}
-              className="scroll-mt-[145px]" //HERE adjust the scroll margin top to the height of the header
+              data-category={category.$id}
+              className="scroll-mt-[145px]"
             >
-              <h2 className="text-lg font-bold mb-3">{category}</h2>
+              <h2 className="text-lg font-bold mb-3">{category.name}</h2>
               <div className="space-y-4">
-                {menuItems[category as keyof typeof menuItems].map((item) => (
+                {category.menuId.map((item) => (
                   <MenuItem
-                    key={item.id}
+                    key={item.$id}
                     item={item}
-                    isAdded={addedItems.includes(item.id)}
                     onItemClick={() => handleItemClick(item)}
-                    quantity={getItemQuantityInCart(item.id)}
+                    quantity={getItemQuantityInCart(item.$id)}
                   />
                 ))}
               </div>
@@ -200,6 +243,7 @@ export default function FoodOrderingPage() {
             description: `${item.name} has been updated in your cart`,
           });
         }}
+        createCartItemFromMenuItem={createCartItemFromMenuItem}
       />
 
       <CartDrawer
@@ -213,8 +257,6 @@ export default function FoodOrderingPage() {
         onUpdateQuantity={updateItemQuantity}
         onEditItem={handleEditCartItem}
         onDeleteItem={handleDeleteRequest}
-        onAddItem={handleAddToCartWithToast}
-        addedItems={addedItems}
       />
 
       <DeleteConfirmation

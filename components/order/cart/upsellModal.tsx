@@ -11,7 +11,7 @@ import {
 import { Button } from "@/components/ui/button";
 import { Plus } from "lucide-react";
 import { formatPrice } from "@/lib/utils";
-import type { MenuItem } from "@/types/menuItem";
+import type { MenuItem } from "@/types/restaurant";
 import { motion } from "framer-motion";
 
 interface UpsellModalProps {
@@ -20,7 +20,7 @@ interface UpsellModalProps {
   recommendations: MenuItem[];
   onAddItem: (item: MenuItem) => void;
   onContinue: () => void;
-  addedItems: number[];
+  addedItems?: string[];
 }
 
 export function UpsellModal({
@@ -29,7 +29,7 @@ export function UpsellModal({
   recommendations,
   onAddItem,
   onContinue,
-  addedItems,
+  addedItems = [],
 }: UpsellModalProps) {
   if (recommendations.length === 0) {
     return null;
@@ -47,14 +47,17 @@ export function UpsellModal({
         <div className="px-6 pb-4 space-y-4">
           {recommendations.map((item) => (
             <motion.div
-              key={item.id}
+              key={item.$id}
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
               className="flex gap-3"
             >
               <div className="relative w-20 h-20 flex-shrink-0 rounded-lg overflow-hidden bg-muted">
                 <Image
-                  src="/placeholder/placeholder.svg?height=80&width=80"
+                  src={
+                    item.image ||
+                    "/placeholder/placeholder.svg?height=80&width=80"
+                  }
                   alt={item.name}
                   fill
                   className="object-cover"
@@ -81,7 +84,7 @@ export function UpsellModal({
                   >
                     <Plus
                       className={`h-4 w-4 transition-transform ${
-                        addedItems.includes(item.id) ? "scale-150" : ""
+                        addedItems.includes(item.$id) ? "scale-150" : ""
                       }`}
                     />
                   </Button>

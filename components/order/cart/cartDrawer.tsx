@@ -1,6 +1,6 @@
 "use client";
 
-import type { CartItem as CartItemType } from "@/lib/types";
+import type { CartItem as CartItemType } from "@/app/(order)/hooks/useCart";
 import {
   Drawer,
   DrawerContent,
@@ -18,7 +18,7 @@ import { useState } from "react";
 import { getRecommendations } from "@/lib/recommendations";
 import { toast } from "sonner";
 import { Check } from "lucide-react";
-import type { MenuItem } from "@/types/menuItem";
+import type { MenuItem } from "@/types/restaurant";
 
 interface CartDrawerProps {
   isOpen: boolean;
@@ -31,8 +31,8 @@ interface CartDrawerProps {
   onUpdateQuantity: (item: CartItemType, quantity: number) => void;
   onEditItem: (item: CartItemType) => void;
   onDeleteItem: (item: CartItemType) => void;
-  onAddItem: (item: any) => void;
-  addedItems: number[];
+  onAddItem?: (item: MenuItem) => void;
+  addedItems?: string[];
 }
 
 export function CartDrawer({
@@ -75,11 +75,13 @@ export function CartDrawer({
   };
 
   const handleAddRecommendedItem = (item: MenuItem) => {
-    onAddItem(item);
-    toast("Item added to cart", {
-      icon: <Check className="h-4 w-4 text-green-500" />,
-      description: `${item.name} has been added to your cart`,
-    });
+    if (onAddItem) {
+      onAddItem(item);
+      toast("Item added to cart", {
+        icon: <Check className="h-4 w-4 text-green-500" />,
+        description: `${item.name} has been added to your cart`,
+      });
+    }
   };
 
   return (
@@ -106,7 +108,7 @@ export function CartDrawer({
                 <div className="space-y-6">
                   <div className="space-y-4">
                     {cart.map((item, index) => (
-                      <div key={`${item.id}-${index}`} className="space-y-3">
+                      <div key={`${item.$id}-${index}`} className="space-y-3">
                         <CartItem
                           item={item}
                           onQuantityChange={(quantity) =>

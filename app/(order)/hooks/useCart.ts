@@ -1,9 +1,32 @@
 "use client";
 
 import { useState, useCallback, useEffect } from "react";
-import type { CartItem, CartTotals } from "@/lib/types";
+import { MenuItem, MenuOption, MenuOptionCategory } from "@/types/restaurant";
 
 const CART_STORAGE_KEY = "otter-cart";
+
+export interface CartItem {
+  $id: string;
+  name: string;
+  price: number;
+  quantity: number;
+  image: string;
+  selectedOptions: {
+    [categoryId: string]: {
+      $id: string;
+      name: string;
+      price: number;
+    }[];
+  };
+}
+
+export interface CartTotals {
+  subtotal: number;
+  tax: number;
+  serviceFee: number;
+  deliveryFee: number;
+  total: number;
+}
 
 export function useCart() {
   const [cart, setCart] = useState<CartItem[]>(() => {
@@ -28,16 +51,17 @@ export function useCart() {
 
   const calculateCartTotals = useCallback((): CartTotals => {
     const subtotal = cart.reduce((sum, item) => {
-      const modifierPrice = item.selectedModifiers
-        ? Object.values(item.selectedModifiers).reduce(
-            (sum, mod) => sum + mod.price,
-            0
-          )
+      // Calculate the total price of all selected options
+      const optionsPrice = item.selectedOptions
+        ? Object.values(item.selectedOptions).reduce((optionSum, options) => {
+            return (
+              optionSum +
+              options.reduce((total, option) => total + option.price, 0)
+            );
+          }, 0)
         : 0;
-      const toppingsPrice = item.extraToppings
-        ? item.extraToppings.reduce((sum, topping) => sum + topping.price, 0)
-        : 0;
-      return sum + (item.price + modifierPrice + toppingsPrice) * item.quantity;
+
+      return sum + (item.price + optionsPrice) * item.quantity;
     }, 0);
 
     const tax = Math.round(subtotal * 0.11);
@@ -54,13 +78,23 @@ export function useCart() {
   }, [cart]);
 
   const addToCart = useCallback((item: CartItem) => {
-    setCart((prev) => [...prev, item]);
+    // Ensure selectedOptions is initialized
+    const safeItem = {
+      ...item,
+      selectedOptions: item.selectedOptions || {},
+    };
+    setCart((prev) => [...prev, safeItem]);
   }, []);
 
   const updateCartItem = useCallback(
     (updatedItem: CartItem) => {
+      // Ensure selectedOptions is initialized
+      const safeItem = {
+        ...updatedItem,
+        selectedOptions: updatedItem.selectedOptions || {},
+      };
       setCart((prevCart) =>
-        prevCart.map((item) => (item === editingCartItem ? updatedItem : item))
+        prevCart.map((item) => (item === editingCartItem ? safeItem : item))
       );
       setEditingCartItem(null);
     },
@@ -80,6 +114,32 @@ export function useCart() {
     setCart((prevCart) => prevCart.filter((cartItem) => cartItem !== item));
   }, []);
 
+  // Helper function to create a cart item from a menu item
+  const createCartItemFromMenuItem = (
+    menuItem: MenuItem,
+    selectedOptions: { [categoryId: string]: MenuOption[] }
+  ): CartItem => {
+    // Format the selected options for the cart
+    const formattedOptions: CartItem["selectedOptions"] = {};
+
+    Object.entries(selectedOptions).forEach(([categoryId, options]) => {
+      formattedOptions[categoryId] = options.map((option) => ({
+        $id: option.$id,
+        name: option.name,
+        price: option.price,
+      }));
+    });
+
+    return {
+      $id: menuItem.$id,
+      name: menuItem.name,
+      price: menuItem.price,
+      quantity: 1,
+      image: menuItem.image,
+      selectedOptions: formattedOptions,
+    };
+  };
+
   return {
     cart,
     cartItemCount,
@@ -92,5 +152,6 @@ export function useCart() {
     updateCartItem,
     updateItemQuantity,
     removeItem,
+    createCartItemFromMenuItem,
   };
 }

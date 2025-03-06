@@ -8,23 +8,40 @@ import {
   DrawerHeader,
   DrawerTitle,
 } from "@/components/ui/drawer";
-import { Menu, X } from "lucide-react";
+import { Menu, X, Sparkles } from "lucide-react";
 import { useState } from "react";
 import type { RefObject } from "react";
 import { cn } from "@/lib/utils";
 
+interface Category {
+  id: string;
+  name: string;
+}
+
 interface CategoryNavProps {
-  categories: string[];
-  selectedCategory: string;
+  categories: Category[];
+  selectedCategoryId: string;
   scrollContainerRef: RefObject<HTMLDivElement>;
   categoryButtonsRef: RefObject<Record<string, HTMLButtonElement | null>>;
-  onCategorySelect: (category: string) => void;
+  onCategorySelect: (categoryId: string) => void;
   className?: string;
 }
 
+// Define the button variant types
+type ButtonVariant =
+  | "default"
+  | "destructive"
+  | "outline"
+  | "secondary"
+  | "ghost"
+  | "link"
+  | "destructive-outline"
+  | "otter"
+  | "outline-otter";
+
 export function CategoryNav({
   categories,
-  selectedCategory,
+  selectedCategoryId,
   scrollContainerRef,
   categoryButtonsRef,
   onCategorySelect,
@@ -32,9 +49,14 @@ export function CategoryNav({
 }: CategoryNavProps) {
   const [isOpen, setIsOpen] = useState(false);
 
-  const handleCategoryClick = (category: string) => {
-    onCategorySelect(category);
+  const handleCategoryClick = (categoryId: string) => {
+    onCategorySelect(categoryId);
     setIsOpen(false);
+  };
+
+  // Helper function to determine if a category is the "Popular" category
+  const isPopularCategory = (category: Category) => {
+    return category.id === "popular-category" || category.name === "Popular";
   };
 
   return (
@@ -59,21 +81,42 @@ export function CategoryNav({
           }}
         >
           <div className="flex gap-2 w-max">
-            {categories.map((category) => (
-              <Button
-                key={category}
-                ref={(el) => {
-                  if (categoryButtonsRef.current) {
-                    categoryButtonsRef.current[category] = el;
-                  }
-                }}
-                variant={category === selectedCategory ? "default" : "outline"}
-                className="flex-shrink-0 rounded-md"
-                onClick={() => onCategorySelect(category)}
-              >
-                {category}
-              </Button>
-            ))}
+            {categories.map((category) => {
+              const isPopular = isPopularCategory(category);
+              const isSelected = category.id === selectedCategoryId;
+
+              // Determine the variant based on whether it's popular and selected
+              const variant: ButtonVariant = isPopular
+                ? isSelected
+                  ? "default"
+                  : "ghost"
+                : isSelected
+                ? "default"
+                : "outline";
+
+              return (
+                <Button
+                  key={category.id}
+                  ref={(el) => {
+                    if (categoryButtonsRef.current) {
+                      categoryButtonsRef.current[category.id] = el;
+                    }
+                  }}
+                  variant={variant}
+                  className={cn(
+                    "flex-shrink-0 rounded-md",
+                    isPopular && "popular-category-button"
+                  )}
+                  onClick={() => onCategorySelect(category.id)}
+                >
+                  {isPopular && (
+                    <Sparkles className="h-3 w-3 mr-1 text-yellow-400" />
+                  )}
+                  {category.name}
+                  {isPopular && <span className="popular-glow-effect"></span>}
+                </Button>
+              );
+            })}
           </div>
         </div>
 
@@ -93,18 +136,39 @@ export function CategoryNav({
                 </DrawerClose>
               </DrawerHeader>
               <div className="p-3 space-y-2 overflow-y-auto">
-                {categories.map((category) => (
-                  <Button
-                    key={category}
-                    variant={
-                      category === selectedCategory ? "default" : "outline"
-                    }
-                    className="w-full rounded-md"
-                    onClick={() => handleCategoryClick(category)}
-                  >
-                    {category}
-                  </Button>
-                ))}
+                {categories.map((category) => {
+                  const isPopular = isPopularCategory(category);
+                  const isSelected = category.id === selectedCategoryId;
+
+                  // Determine the variant based on whether it's popular and selected
+                  const variant: ButtonVariant = isPopular
+                    ? isSelected
+                      ? "default"
+                      : "ghost"
+                    : isSelected
+                    ? "default"
+                    : "outline";
+
+                  return (
+                    <Button
+                      key={category.id}
+                      variant={variant}
+                      className={cn(
+                        "w-full rounded-md",
+                        isPopular && "popular-category-button"
+                      )}
+                      onClick={() => handleCategoryClick(category.id)}
+                    >
+                      {isPopular && (
+                        <Sparkles className="h-3 w-3 mr-1 text-yellow-400" />
+                      )}
+                      {category.name}
+                      {isPopular && (
+                        <span className="popular-glow-effect"></span>
+                      )}
+                    </Button>
+                  );
+                })}
               </div>
             </div>
           </DrawerContent>

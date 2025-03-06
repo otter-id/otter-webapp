@@ -1,8 +1,8 @@
-import type { CartItem as CartItemType } from "@/lib/types";
+import type { CartItem as CartItemType } from "@/app/(order)/hooks/useCart";
 import Image from "next/image";
 import { Button } from "@/components/ui/button";
 import { Minus, Plus, Edit2, Trash2 } from "lucide-react";
-import { formatPrice, calculateItemTotal } from "@/lib/utils";
+import { formatPrice } from "@/lib/utils";
 
 interface CartItemProps {
   item: CartItemType;
@@ -17,11 +17,26 @@ export function CartItem({
   onEdit,
   onDelete,
 }: CartItemProps) {
+  // Calculate the total price for this item
+  const calculateItemTotal = (item: CartItemType): number => {
+    // Calculate the total price of all selected options
+    const optionsPrice = item.selectedOptions
+      ? Object.values(item.selectedOptions).reduce((optionSum, options) => {
+          return (
+            optionSum +
+            options.reduce((total, option) => total + option.price, 0)
+          );
+        }, 0)
+      : 0;
+
+    return (item.price + optionsPrice) * item.quantity;
+  };
+
   return (
     <div className="flex items-start gap-3">
       <div className="relative w-20 h-20 flex-shrink-0 rounded-lg overflow-hidden bg-muted">
         <Image
-          src="/placeholder/placeholder.svg?height=80&width=80"
+          src={item.image || "/placeholder/placeholder.svg?height=80&width=80"}
           alt={item.name}
           fill
           className="object-cover"
@@ -32,22 +47,16 @@ export function CartItem({
           <div>
             <h3 className="font-medium">{item.name}</h3>
             <div className="mt-1 text-sm text-muted-foreground space-y-1">
-              {item.selectedModifiers &&
-                Object.entries(item.selectedModifiers).map(
-                  ([category, modifier]) => (
-                    <div key={category}>
-                      {modifier.name}
-                      {modifier.price > 0 &&
-                        ` (+${formatPrice(modifier.price)})`}
-                    </div>
-                  )
+              {item.selectedOptions &&
+                Object.entries(item.selectedOptions).map(
+                  ([categoryId, options]) =>
+                    options.map((option) => (
+                      <div key={option.$id}>
+                        {option.name}
+                        {option.price > 0 && ` (+${formatPrice(option.price)})`}
+                      </div>
+                    ))
                 )}
-              {item.extraToppings &&
-                item.extraToppings.map((topping) => (
-                  <div key={topping.id}>
-                    {topping.name} (+{formatPrice(topping.price)})
-                  </div>
-                ))}
             </div>
           </div>
           <div className="text-sm space-y-1 text-right">

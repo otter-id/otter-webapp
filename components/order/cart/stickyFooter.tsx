@@ -29,13 +29,7 @@ export function StickyFooter({
   return (
     <div className="fixed bottom-0 left-1/2 -translate-x-1/2 w-full max-w-md bg-white border-t">
       <div className="px-4 py-3">
-        <div
-          className={`transition-all duration-300 transform ${
-            cartItemCount > 0
-              ? "translate-y-0 opacity-100"
-              : "translate-y-4 opacity-0"
-          }`}
-        >
+        <div className="transition-all duration-300">
           {cartItemCount > 0 ? (
             <Button
               variant="default"
@@ -51,10 +45,14 @@ export function StickyFooter({
               </div>
             </Button>
           ) : (
-            <Button variant="outline" disabled className="w-full h-12">
+            <Button
+              variant="outline"
+              disabled
+              className="w-full h-12 opacity-70"
+            >
               <div className="flex items-center gap-2">
                 <ShoppingBag className="h-5 w-5" />
-                <span className="font-medium">Nothing in cart</span>
+                <span className="font-medium">No items in cart</span>
               </div>
             </Button>
           )}

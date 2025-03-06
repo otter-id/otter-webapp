@@ -14,21 +14,27 @@ import {
 import { useState } from "react";
 import { Separator } from "@/components/ui/separator";
 
-// Opening hours data
-const openingHours = [
-  { day: "Monday", hours: "09:00 - 19:00" },
-  { day: "Tuesday", hours: "09:00 - 19:00" },
-  { day: "Wednesday", hours: "09:00 - 19:00" },
-  { day: "Thursday", hours: "09:00 - 19:00" },
-  { day: "Friday", hours: "09:00 - 20:00" },
-  { day: "Saturday", hours: "10:00 - 20:00" },
-  { day: "Sunday", hours: "10:00 - 18:00" },
-];
+interface RestaurantHeaderProps {
+  name: string;
+  logo: string;
+  waitTime: number;
+  isOpen: boolean;
+  openingTimes?: {
+    [key: string]: {
+      openTime: string;
+      closeTime: string;
+    }[];
+  };
+}
 
-export function RestaurantHeader() {
+export function RestaurantHeader({
+  name,
+  logo,
+  waitTime,
+  isOpen,
+  openingTimes,
+}: RestaurantHeaderProps) {
   const [showHours, setShowHours] = useState(false);
-  // Estimated wait time in minutes
-  const waitTime = 15;
 
   // Calculate wait time status and color
   const getWaitTimeStatus = (minutes: number) => {
@@ -43,6 +49,92 @@ export function RestaurantHeader() {
   const currentDay = new Date().toLocaleDateString("en-US", {
     weekday: "long",
   });
+
+  // Format time from ISO string to readable format
+  const formatTime = (isoString: string) => {
+    try {
+      const date = new Date(isoString);
+      return date.toLocaleTimeString("en-US", {
+        hour: "2-digit",
+        minute: "2-digit",
+        hour12: true,
+      });
+    } catch (error) {
+      return "Invalid time";
+    }
+  };
+
+  // Convert API openingTimes to a more readable format
+  const dayMapping = {
+    Monday: "MON",
+    Tuesday: "TUE",
+    Wednesday: "WED",
+    Thursday: "THU",
+    Friday: "FRI",
+    Saturday: "SAT",
+    Sunday: "SUN",
+  };
+
+  const openingHours = [
+    {
+      day: "Monday",
+      hours: openingTimes?.[dayMapping["Monday"]]?.length
+        ? `${formatTime(
+            openingTimes[dayMapping["Monday"]][0].openTime
+          )} - ${formatTime(openingTimes[dayMapping["Monday"]][0].closeTime)}`
+        : "Closed",
+    },
+    {
+      day: "Tuesday",
+      hours: openingTimes?.[dayMapping["Tuesday"]]?.length
+        ? `${formatTime(
+            openingTimes[dayMapping["Tuesday"]][0].openTime
+          )} - ${formatTime(openingTimes[dayMapping["Tuesday"]][0].closeTime)}`
+        : "Closed",
+    },
+    {
+      day: "Wednesday",
+      hours: openingTimes?.[dayMapping["Wednesday"]]?.length
+        ? `${formatTime(
+            openingTimes[dayMapping["Wednesday"]][0].openTime
+          )} - ${formatTime(
+            openingTimes[dayMapping["Wednesday"]][0].closeTime
+          )}`
+        : "Closed",
+    },
+    {
+      day: "Thursday",
+      hours: openingTimes?.[dayMapping["Thursday"]]?.length
+        ? `${formatTime(
+            openingTimes[dayMapping["Thursday"]][0].openTime
+          )} - ${formatTime(openingTimes[dayMapping["Thursday"]][0].closeTime)}`
+        : "Closed",
+    },
+    {
+      day: "Friday",
+      hours: openingTimes?.[dayMapping["Friday"]]?.length
+        ? `${formatTime(
+            openingTimes[dayMapping["Friday"]][0].openTime
+          )} - ${formatTime(openingTimes[dayMapping["Friday"]][0].closeTime)}`
+        : "Closed",
+    },
+    {
+      day: "Saturday",
+      hours: openingTimes?.[dayMapping["Saturday"]]?.length
+        ? `${formatTime(
+            openingTimes[dayMapping["Saturday"]][0].openTime
+          )} - ${formatTime(openingTimes[dayMapping["Saturday"]][0].closeTime)}`
+        : "Closed",
+    },
+    {
+      day: "Sunday",
+      hours: openingTimes?.[dayMapping["Sunday"]]?.length
+        ? `${formatTime(
+            openingTimes[dayMapping["Sunday"]][0].openTime
+          )} - ${formatTime(openingTimes[dayMapping["Sunday"]][0].closeTime)}`
+        : "Closed",
+    },
+  ];
 
   return (
     <>
@@ -70,8 +162,8 @@ export function RestaurantHeader() {
             <div className="flex items-start gap-4">
               <div className="w-20 h-20 rounded-full overflow-hidden bg-muted relative flex-shrink-0">
                 <Image
-                  src="/placeholder/placeholder.svg?"
-                  alt="Maicha logo"
+                  src={logo || "/placeholder/placeholder.svg"}
+                  alt={`${name} logo`}
                   fill
                   className="object-cover"
                 />
@@ -79,7 +171,7 @@ export function RestaurantHeader() {
               <div className="flex-1 min-w-0">
                 <div className="flex items-start justify-between gap-2">
                   <div className="pt-2">
-                    <h1 className="text-xl font-bold">Maicha Tea House</h1>
+                    <h1 className="text-xl font-bold">{name}</h1>
                     <div className="flex items-center gap-1 mt-1 text-sm">
                       <div className="flex items-center">
                         <Star className="w-4 h-4 fill-yellow-400 text-yellow-400" />
@@ -101,8 +193,14 @@ export function RestaurantHeader() {
             <div className="grid gap-3">
               <div className="flex items-center justify-between">
                 <div className="flex items-center gap-2">
-                  <div className="w-2 h-2 rounded-full bg-green-500 animate-pulse" />
-                  <span className="font-medium">Open Now</span>
+                  <div
+                    className={`w-2 h-2 rounded-full ${
+                      isOpen ? "bg-green-500 animate-pulse" : "bg-red-500"
+                    }`}
+                  />
+                  <span className="font-medium">
+                    {isOpen ? "Open Now" : "Closed"}
+                  </span>
                   <div className="w-1 h-1 rounded-full bg-muted-foreground/30" />
                   <span className="text-muted-foreground">Closes at 19:00</span>
                 </div>

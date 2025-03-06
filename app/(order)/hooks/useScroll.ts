@@ -1,9 +1,10 @@
 "use client";
 
 import { useCallback, useRef, useEffect } from "react";
+import { MenuCategory } from "@/types/restaurant";
 
 export function useScrollSync(options: {
-  onScroll?: (category: string) => void;
+  onScroll?: (categoryId: string) => void;
   headerOffset?: number;
 }) {
   const { onScroll, headerOffset = 145 } = options;
@@ -14,8 +15,8 @@ export function useScrollSync(options: {
   const scrollContainerRef = useRef<HTMLDivElement>(null);
   const timeoutRef = useRef<NodeJS.Timeout>();
 
-  const scrollCategoryIntoView = useCallback((category: string) => {
-    const button = categoryButtonsRef.current[category];
+  const scrollCategoryIntoView = useCallback((categoryId: string) => {
+    const button = categoryButtonsRef.current[categoryId];
     if (button && scrollContainerRef.current) {
       const container = scrollContainerRef.current;
       const scrollLeft =
@@ -28,14 +29,15 @@ export function useScrollSync(options: {
     if (!onScroll) return;
 
     const handleScroll = () => {
-      // console.log("HS");
-      for (const [category, element] of Object.entries(categoryRefs.current)) {
+      for (const [categoryId, element] of Object.entries(
+        categoryRefs.current
+      )) {
         if (element) {
           const titleElement = element.querySelector("h2");
           if (titleElement) {
             const titleRect = titleElement.getBoundingClientRect();
             if (titleRect.top <= headerOffset) {
-              onScroll(category);
+              onScroll(categoryId);
             }
           }
         }
@@ -54,11 +56,9 @@ export function useScrollSync(options: {
     };
 
     window.addEventListener("scroll", onScrollThrottled, { passive: true });
-    // console.log("OST");
 
     return () => {
       window.removeEventListener("scroll", onScrollThrottled);
-      // console.log("OST REM");
       if (timeoutRef.current) {
         clearTimeout(timeoutRef.current);
       }

@@ -1,8 +1,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import type { MenuItem } from "@/types/menuItem";
-import type { SearchResult, GroupedResults } from "@/lib/types";
+import type { MenuItem } from "@/types/restaurant";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { X, SearchIcon, ChevronLeft } from "lucide-react";
@@ -11,21 +10,27 @@ import { MenuItem as MenuItemComponent } from "@/components/order/menu/menuItem"
 import { highlightText } from "@/lib/utils";
 import { cn } from "@/lib/utils";
 
+interface SearchResult extends MenuItem {
+  matchedOn: "name" | "description" | "both";
+}
+
+type GroupedResults = {
+  [category: string]: SearchResult[];
+};
+
 interface SearchOverlayProps {
-  menuItems: Record<string, MenuItem[]>;
+  menuItems: MenuItem[];
   onItemClick: (item: MenuItem) => void;
   onAddItem: (item: MenuItem) => void;
-  addedItems: number[];
   isOpen: boolean;
   onOpenChange: (open: boolean) => void;
   className?: string;
-  getItemQuantityInCart: (itemId: number) => number;
+  getItemQuantityInCart: (itemId: string) => number;
 }
 
 export function SearchOverlay({
   menuItems,
   onItemClick,
-  addedItems,
   isOpen,
   onOpenChange,
   className,
@@ -69,7 +74,24 @@ export function SearchOverlay({
     const query = searchQuery.toLowerCase();
     const results: GroupedResults = {};
 
-    Object.entries(menuItems).forEach(([category, items]) => {
+    // Group items by category name
+    const itemsByCategory: Record<string, MenuItem[]> = {};
+
+    menuItems.forEach((item) => {
+      // Create a category name for each item
+      // Since we don't have direct category info in the new structure,
+      // we'll use a placeholder or derive it from another property
+      const categoryName = "Menu Items"; // Default category name
+
+      if (!itemsByCategory[categoryName]) {
+        itemsByCategory[categoryName] = [];
+      }
+
+      itemsByCategory[categoryName].push(item);
+    });
+
+    // Search within each category
+    Object.entries(itemsByCategory).forEach(([category, items]) => {
       const matchedItems = items.filter((item) => {
         const nameMatch = item.name.toLowerCase().includes(query);
         const descMatch = item.description.toLowerCase().includes(query);
@@ -189,7 +211,7 @@ export function SearchOverlay({
                               <div className="space-y-4">
                                 {items.map((item) => (
                                   <motion.div
-                                    key={item.id}
+                                    key={item.$id}
                                     layout
                                     initial={{ opacity: 0 }}
                                     animate={{ opacity: 1 }}
@@ -209,9 +231,8 @@ export function SearchOverlay({
                                           searchQuery
                                         ) as string,
                                       }}
-                                      isAdded={addedItems.includes(item.id)}
                                       onItemClick={() => handleItemClick(item)}
-                                      quantity={getItemQuantityInCart(item.id)}
+                                      quantity={getItemQuantityInCart(item.$id)}
                                     />
                                   </motion.div>
                                 ))}

@@ -2,8 +2,9 @@
 
 import { useState, useEffect } from "react";
 import Image from "next/image";
-import { X, Minus, Plus } from "lucide-react";
-import type { MenuItem } from "@/types/menuItem";
+import { X, Minus, Plus, AlertTriangle, Check } from "lucide-react";
+import { MenuItem, MenuOption } from "@/types/restaurant";
+import { CartItem } from "@/app/(order)/hooks/useCart";
 import {
   Drawer,
   DrawerContent,
@@ -16,16 +17,20 @@ import { Separator } from "@/components/ui/separator";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Label } from "@/components/ui/label";
-import { categoryModifierMapping, modifiers } from "@/data/modifier-sample";
+import { Badge } from "@/components/ui/badge";
 import { formatPrice } from "@/lib/utils";
 
 interface ItemDrawerProps {
   isOpen: boolean;
   onOpenChange: (open: boolean) => void;
   selectedItem: MenuItem | null;
-  editingCartItem: any | null;
-  onAddToCart: (item: any) => void;
-  onUpdateCartItem: (item: any) => void;
+  editingCartItem: CartItem | null;
+  onAddToCart: (item: CartItem) => void;
+  onUpdateCartItem: (item: CartItem) => void;
+  createCartItemFromMenuItem: (
+    menuItem: MenuItem,
+    selectedOptions: { [categoryId: string]: MenuOption[] }
+  ) => CartItem;
 }
 
 export function ItemDrawer({
@@ -35,8 +40,12 @@ export function ItemDrawer({
   editingCartItem,
   onAddToCart,
   onUpdateCartItem,
+  createCartItemFromMenuItem,
 }: ItemDrawerProps) {
   const [quantity, setQuantity] = useState(1);
+  const [selectedOptions, setSelectedOptions] = useState<{
+    [categoryId: string]: MenuOption[];
+  }>({});
 
   // Reset quantity when switching between different items (not when editing)
   useEffect(() => {
@@ -57,116 +66,158 @@ export function ItemDrawer({
     if (!isOpen) {
       if (!editingCartItem) {
         setQuantity(1);
+        setSelectedOptions({});
       }
     }
   }, [isOpen, editingCartItem]);
 
-  const [selectedModifiers, setSelectedModifiers] = useState<{
-    [key: string]: {
-      id: number;
-      name: string;
-      price: number;
-    };
-  }>(editingCartItem?.selectedModifiers || {});
+  // Initialize selected options when item changes or when editing
+  useEffect(() => {
+    if (selectedItem) {
+      if (editingCartItem) {
+        // Convert from cart format to internal format
+        const options: { [categoryId: string]: MenuOption[] } = {};
 
-  const [selectedToppings, setSelectedToppings] = useState<
-    {
-      id: number;
-      name: string;
-      price: number;
-    }[]
-  >(editingCartItem?.extraToppings || []);
+        Object.entries(editingCartItem.selectedOptions).forEach(
+          ([categoryId, cartOptions]) => {
+            // Find the original option objects from the menu item
+            const category = selectedItem.menuOptionCategory.find(
+              (cat) => cat.$id === categoryId
+            );
+            if (category) {
+              options[categoryId] = cartOptions.map((cartOption) => {
+                const originalOption = category.menuOptionId.find(
+                  (opt) => opt.$id === cartOption.$id
+                );
+                return (
+                  originalOption || {
+                    $id: cartOption.$id,
+                    name: cartOption.name,
+                    price: cartOption.price,
+                    description: null,
+                    isInStock: true,
+                    index: null,
+                  }
+                );
+              });
+            }
+          }
+        );
 
-  const handleModifierChange = (
-    category: string,
-    modifier: { id: number; name: string; price: number }
+        setSelectedOptions(options);
+      } else {
+        // Set default options for required categories
+        const defaults: { [categoryId: string]: MenuOption[] } = {};
+
+        selectedItem.menuOptionCategory.forEach((category) => {
+          if (category.isRequired && category.menuOptionId.length > 0) {
+            // We no longer auto-select options for radio buttons
+            if (
+              category.type === "check" &&
+              category.minAmount &&
+              category.minAmount > 0
+            ) {
+              // For checkboxes with minimum required, select the first minAmount options
+              defaults[category.$id] = category.menuOptionId.slice(
+                0,
+                category.minAmount
+              );
+            }
+          }
+        });
+
+        setSelectedOptions(defaults);
+      }
+    }
+  }, [selectedItem, editingCartItem]);
+
+  const handleOptionChange = (
+    categoryId: string,
+    option: MenuOption,
+    isRadio: boolean
   ) => {
-    setSelectedModifiers((prev) => ({
-      ...prev,
-      [category]: modifier,
-    }));
-  };
+    setSelectedOptions((prev) => {
+      const newOptions = { ...prev };
 
-  const handleToppingToggle = (topping: {
-    id: number;
-    name: string;
-    price: number;
-  }) => {
-    setSelectedToppings((prev) => {
-      const exists = prev.find((t) => t.id === topping.id);
-      if (exists) {
-        return prev.filter((t) => t.id !== topping.id);
+      if (isRadio) {
+        // For radio buttons, replace the selection
+        newOptions[categoryId] = [option];
+      } else {
+        // For checkboxes, toggle the selection
+        const currentOptions = prev[categoryId] || [];
+        const optionExists = currentOptions.some(
+          (opt) => opt.$id === option.$id
+        );
+
+        if (optionExists) {
+          // Remove the option if it exists
+          newOptions[categoryId] = currentOptions.filter(
+            (opt) => opt.$id !== option.$id
+          );
+        } else {
+          // Add the option if it doesn't exist
+          newOptions[categoryId] = [...currentOptions, option];
+        }
       }
-      if (prev.length >= 3) {
-        return prev;
-      }
-      return [...prev, topping];
+
+      return newOptions;
     });
   };
 
-  const calculateTotalPrice = () => {
+  const isOptionSelected = (categoryId: string, optionId: string): boolean => {
+    const options = selectedOptions[categoryId] || [];
+    return options.some((option) => option.$id === optionId);
+  };
+
+  const calculateTotalPrice = (): number => {
     if (!selectedItem) return 0;
-    const basePrice = selectedItem.price;
-    const modifierPrice = Object.values(selectedModifiers).reduce(
-      (sum, mod) => sum + mod.price,
-      0
-    );
-    const toppingsPrice = selectedToppings.reduce(
-      (sum, topping) => sum + topping.price,
-      0
-    );
-    return (basePrice + modifierPrice + toppingsPrice) * quantity;
+
+    // Base price of the item
+    let total = selectedItem.price;
+
+    // Add the price of all selected options
+    Object.values(selectedOptions).forEach((options) => {
+      options.forEach((option) => {
+        total += option.price;
+      });
+    });
+
+    // Multiply by quantity
+    return total * quantity;
+  };
+
+  const isRequiredOptionsMissing = (): boolean => {
+    if (!selectedItem) return true;
+
+    return selectedItem.menuOptionCategory.some((category) => {
+      if (!category.isRequired) return false;
+
+      const selected = selectedOptions[category.$id] || [];
+
+      if (category.type === "radio") {
+        // For radio buttons, one option must be selected
+        return selected.length === 0;
+      } else if (category.type === "check" && category.minAmount) {
+        // For checkboxes, at least minAmount options must be selected
+        return selected.length < category.minAmount;
+      }
+
+      return false;
+    });
   };
 
   const handleSubmit = () => {
     if (!selectedItem) return;
 
-    const item = {
-      id: selectedItem.id,
-      name: selectedItem.name,
-      price: selectedItem.price,
-      quantity: quantity,
-      category: selectedItem.category,
-      selectedModifiers,
-      extraToppings: selectedToppings,
-    };
+    const cartItem = createCartItemFromMenuItem(selectedItem, selectedOptions);
+    cartItem.quantity = quantity;
 
     if (editingCartItem) {
-      onUpdateCartItem(item);
+      onUpdateCartItem(cartItem);
     } else {
-      onAddToCart(item);
+      onAddToCart(cartItem);
     }
   };
-
-  // Reset modifiers and toppings when selectedItem changes (not when editing)
-  useEffect(() => {
-    if (!editingCartItem && selectedItem) {
-      // Set default modifiers based on category
-      const defaultModifiers: { [key: string]: any } = {};
-      const availableModifiers =
-        categoryModifierMapping[
-          selectedItem.category as keyof typeof categoryModifierMapping
-        ] || [];
-
-      availableModifiers.forEach((modifierCategory) => {
-        if (modifierCategory !== "Extra Toppings") {
-          const defaultOption = modifiers[
-            modifierCategory as keyof typeof modifiers
-          ].find((mod) => mod.default);
-          if (defaultOption) {
-            defaultModifiers[modifierCategory] = {
-              id: defaultOption.id,
-              name: defaultOption.name,
-              price: defaultOption.price,
-            };
-          }
-        }
-      });
-
-      setSelectedModifiers(defaultModifiers);
-      setSelectedToppings([]);
-    }
-  }, [selectedItem, editingCartItem]);
 
   return (
     <Drawer open={isOpen} onOpenChange={onOpenChange}>
@@ -191,7 +242,10 @@ export function ItemDrawer({
               <div className="space-y-4">
                 <div className="aspect-square relative rounded-lg overflow-hidden bg-muted">
                   <Image
-                    src="/placeholder/placeholder.svg?height=448&width=448"
+                    src={
+                      selectedItem.image ||
+                      "/placeholder/placeholder.svg?height=448&width=448"
+                    }
                     alt={selectedItem.name}
                     fill
                     className="object-cover"
@@ -236,134 +290,116 @@ export function ItemDrawer({
                 </div>
               </div>
 
-              {Object.entries(categoryModifierMapping).map(
-                ([category, availableModifiers]) => {
-                  if (
-                    category === selectedItem.category &&
-                    availableModifiers.length > 0
-                  ) {
-                    return (
-                      <div key={category} className="space-y-4">
-                        {availableModifiers.map((modifierCategory) => {
-                          if (modifierCategory === "Extra Toppings") {
-                            return (
-                              <div key={modifierCategory}>
-                                <h3 className="font-semibold mb-3">
-                                  {modifierCategory}{" "}
-                                  <span className="text-sm font-normal text-muted-foreground">
-                                    (Max 3)
-                                  </span>
-                                </h3>
-                                <div className="grid grid-cols-1 gap-2">
-                                  {modifiers[modifierCategory].map(
-                                    (modifier) => (
-                                      <Label
-                                        key={modifier.id}
-                                        className="flex items-center space-x-3 space-y-0 border rounded-lg p-3"
-                                      >
-                                        <Checkbox
-                                          checked={selectedToppings.some(
-                                            (t) => t.id === modifier.id
-                                          )}
-                                          onCheckedChange={() =>
-                                            handleToppingToggle(modifier)
-                                          }
-                                          disabled={
-                                            selectedToppings.length >= 3 &&
-                                            !selectedToppings.some(
-                                              (t) => t.id === modifier.id
-                                            )
-                                          }
-                                        />
-                                        <div className="flex-1 flex justify-between items-center">
-                                          <span>{modifier.name}</span>
-                                          {modifier.price > 0 && (
-                                            <span className="text-muted-foreground">
-                                              +{formatPrice(modifier.price)}
-                                            </span>
-                                          )}
-                                        </div>
-                                      </Label>
-                                    )
-                                  )}
-                                </div>
-                              </div>
-                            );
-                          }
+              {/* Option Categories */}
+              {selectedItem.menuOptionCategory.map((category) => (
+                <div key={category.$id} className="space-y-3">
+                  <div className="flex items-center justify-between">
+                    <h3 className="font-semibold">{category.name}</h3>
+                    {category.isRequired &&
+                      (selectedOptions[category.$id]?.length > 0 ? (
+                        <Badge className="bg-green-100 text-green-700 hover:bg-green-100 flex gap-1">
+                          <Check className="h-3 w-3" />
+                          <span>Selected</span>
+                        </Badge>
+                      ) : (
+                        <Badge className="bg-red-100 text-red-700 hover:bg-red-100 flex gap-1">
+                          <AlertTriangle className="h-3 w-3" />
+                          <span>Required</span>
+                        </Badge>
+                      ))}
+                  </div>
 
-                          return (
-                            <div key={modifierCategory}>
-                              <h3 className="font-semibold mb-3">
-                                {modifierCategory}
-                              </h3>
-                              <RadioGroup
-                                value={String(
-                                  selectedModifiers[modifierCategory]?.id
-                                )}
-                                onValueChange={(value) => {
-                                  const modifier = modifiers[
-                                    modifierCategory as keyof typeof modifiers
-                                  ].find((mod) => String(mod.id) === value);
-                                  if (modifier) {
-                                    handleModifierChange(
-                                      modifierCategory,
-                                      modifier
-                                    );
-                                  }
-                                }}
+                  {category.type === "radio" ? (
+                    <RadioGroup
+                      value={selectedOptions[category.$id]?.[0]?.$id || ""}
+                      onValueChange={(value) => {
+                        const option = category.menuOptionId.find(
+                          (opt) => opt.$id === value
+                        );
+                        if (option) {
+                          handleOptionChange(category.$id, option, true);
+                        }
+                      }}
+                    >
+                      <div className="space-y-2">
+                        {category.menuOptionId.map((option) => (
+                          <div
+                            key={option.$id}
+                            className="flex items-center justify-between py-2 px-3 border rounded-md"
+                          >
+                            <div className="flex items-center gap-3">
+                              <RadioGroupItem
+                                value={option.$id}
+                                id={option.$id}
+                              />
+                              <Label
+                                htmlFor={option.$id}
+                                className="cursor-pointer"
                               >
-                                <div className="grid grid-cols-1 gap-2">
-                                  {modifiers[
-                                    modifierCategory as keyof typeof modifiers
-                                  ].map((modifier) => (
-                                    <Label
-                                      key={modifier.id}
-                                      className="flex items-center space-x-3 space-y-0 border rounded-lg p-3"
-                                    >
-                                      <RadioGroupItem
-                                        value={String(modifier.id)}
-                                      />
-                                      <div className="flex-1 flex justify-between items-center">
-                                        <span>{modifier.name}</span>
-                                        {modifier.price > 0 && (
-                                          <span className="text-muted-foreground">
-                                            +{formatPrice(modifier.price)}
-                                          </span>
-                                        )}
-                                      </div>
-                                    </Label>
-                                  ))}
-                                </div>
-                              </RadioGroup>
+                                {option.name}
+                              </Label>
                             </div>
-                          );
-                        })}
+                            {option.price > 0 && (
+                              <span className="text-sm font-medium">
+                                +{formatPrice(option.price)}
+                              </span>
+                            )}
+                          </div>
+                        ))}
                       </div>
-                    );
-                  }
-                  return null;
-                }
-              )}
+                    </RadioGroup>
+                  ) : (
+                    <div className="space-y-2">
+                      {category.menuOptionId.map((option) => (
+                        <div
+                          key={option.$id}
+                          className="flex items-center justify-between py-2 px-3 border rounded-md"
+                        >
+                          <div className="flex items-center gap-3">
+                            <Checkbox
+                              id={option.$id}
+                              checked={isOptionSelected(
+                                category.$id,
+                                option.$id
+                              )}
+                              onCheckedChange={() => {
+                                handleOptionChange(category.$id, option, false);
+                              }}
+                            />
+                            <Label
+                              htmlFor={option.$id}
+                              className="cursor-pointer"
+                            >
+                              {option.name}
+                            </Label>
+                          </div>
+                          {option.price > 0 && (
+                            <span className="text-sm font-medium">
+                              +{formatPrice(option.price)}
+                            </span>
+                          )}
+                        </div>
+                      ))}
+                    </div>
+                  )}
+                </div>
+              ))}
             </div>
           )}
-        </div>
 
-        <DrawerFooter className="px-4 py-4 border-t">
-          <Button
-            onClick={handleSubmit}
-            className="w-full h-12 bg-black hover:bg-black/90"
-            disabled={!selectedItem}
-          >
-            <div className="flex items-center justify-between w-full">
-              <span className="font-medium">
-                {editingCartItem ? "Update Cart" : "Add to Cart"}
-              </span>
-              <span className="font-medium">
-                {formatPrice(calculateTotalPrice())}
-              </span>
-            </div>
-          </Button>
-        </DrawerFooter>
+          <DrawerFooter className="border-t sticky bottom-0 bg-white z-10">
+            <Button
+              className="w-full"
+              size="lg"
+              onClick={handleSubmit}
+              disabled={!selectedItem || isRequiredOptionsMissing()}
+            >
+              {editingCartItem
+                ? `Update Item • ${formatPrice(calculateTotalPrice())}`
+                : `Add to Cart • ${formatPrice(calculateTotalPrice())}`}
+            </Button>
+          </DrawerFooter>
+        </div>
       </DrawerContent>
     </Drawer>
   );
