@@ -24,7 +24,6 @@ export const useReceiptData = (orderId: string | null) => {
               Accept: "application/json",
               "Content-Type": "application/json",
             },
-            withCredentials: true,
           }
         );
         setReceiptData(response.data);

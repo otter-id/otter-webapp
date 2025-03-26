@@ -32,7 +32,6 @@ const ReceiptContent = () => {
   const searchParams = useSearchParams();
   const orderId = searchParams.get("id");
   const { receiptData, isLoading, error } = useReceiptData(orderId);
-  const splitBillState = useSplitBill(fakeData.data);
 
   // Show error only if there's an error and we're not loading
   if (error && !isLoading) {
@@ -44,9 +43,10 @@ const ReceiptContent = () => {
     return <ErrorState error="Receipt not found" />;
   }
 
-  const { data } = fakeData;
+  // const { data } = fakeData;
 
-  // const data = isLoading ? fakeData.data : receiptData!.data; // Replace with receiptData when API is ready
+  const data = isLoading ? fakeData.data : receiptData!.data; // Replace with receiptData when API is ready
+  const splitBillState = useSplitBill(data);
 
   // If split bill is active, show only the split bill UI
   if (splitBillState.splitBillStep > 0) {
