@@ -57,7 +57,7 @@ export async function generateReceiptPDF(
   //   };
 
   // Generate QR Code
-  const qrUrl = `${process.env.NEXT_PUBLIC_SERVER_URL}/receipt?id=${orderId}`;
+  const qrUrl = `https://app.otter.id/receipt?id=${orderId}`;
   const qrCodeDataUrl = await QRCode.toDataURL(qrUrl, {
     margin: 1,
     width: 100,
