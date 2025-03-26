@@ -6,6 +6,7 @@ import { Separator } from "@/components/ui/separator";
 import { motion } from "framer-motion";
 import { cardVariants } from "../../app/receipt/utils/animations";
 import { ReceiptData } from "@/types/receipt";
+import { useState } from "react";
 
 const MotionCard = motion(Card);
 
@@ -14,6 +15,15 @@ interface OrderDetailsProps {
 }
 
 export function OrderDetails({ data }: OrderDetailsProps) {
+  const [imageErrors, setImageErrors] = useState<Record<number, boolean>>({});
+
+  const handleImageError = (index: number) => {
+    setImageErrors((prev) => ({
+      ...prev,
+      [index]: true,
+    }));
+  };
+
   return (
     <MotionCard variants={cardVariants} className="rounded-xl">
       <CardHeader>
@@ -29,14 +39,23 @@ export function OrderDetails({ data }: OrderDetailsProps) {
             className="space-y-3"
           >
             <div className="flex space-x-4">
-              <Image
-                src={item.image || "/placeholder/placeholder.svg"}
-                alt={item.name}
-                width={96}
-                height={80}
-                className="w-24 h-20 object-cover rounded-md flex-shrink-0"
-                draggable={false}
-              />
+              {!imageErrors[index] ? (
+                <Image
+                  src={item.image || "/placeholder/placeholder.svg"}
+                  alt={item.name}
+                  width={96}
+                  height={80}
+                  className="w-24 h-20 object-cover rounded-md flex-shrink-0"
+                  draggable={false}
+                  onError={() => handleImageError(index)}
+                />
+              ) : (
+                <div className="w-24 h-20 bg-yellow-50 border-2 border-yellow-100 rounded-md flex-shrink-0 flex items-center justify-center">
+                  <span className="text-yellow-800 text-sm text-center px-2">
+                    {item.name}
+                  </span>
+                </div>
+              )}
               <div className="flex-grow space-y-1">
                 <div className="flex justify-between items-start">
                   <span
@@ -68,7 +87,7 @@ export function OrderDetails({ data }: OrderDetailsProps) {
               </div>
             </div>
             {index < data.items.length - 1 && (
-              <Separator orientation="horizontal" variant="otter" />
+              <Separator className="bg-yellow-100" />
             )}
           </motion.div>
         ))}
