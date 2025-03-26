@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, Suspense } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { motion } from "framer-motion";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -43,7 +43,7 @@ interface CustomerData {
   phoneNumber: string;
 }
 
-export default function PaymentPage() {
+function PaymentContent() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const [step, setStep] = useState(1);
@@ -284,5 +284,35 @@ export default function PaymentPage() {
         </CardContent>
       </MotionCard>
     </div>
+  );
+}
+
+export default function PaymentPage() {
+  return (
+    <Suspense
+      fallback={
+        <div className="container max-w-md mx-auto px-4 py-8">
+          <div className="mb-8">
+            <Button variant="ghost" className="flex items-center p-0 h-auto">
+              <ChevronLeft className="h-5 w-5 mr-1" />
+              <span>Back</span>
+            </Button>
+            <h1 className="text-2xl font-bold mt-4">Loading...</h1>
+            <p className="text-muted-foreground">
+              Please wait while we load your order details
+            </p>
+          </div>
+          <Card className="rounded-xl">
+            <CardContent className="p-6">
+              <div className="flex items-center justify-center h-40">
+                <Clock className="h-8 w-8 animate-spin text-yellow-400" />
+              </div>
+            </CardContent>
+          </Card>
+        </div>
+      }
+    >
+      <PaymentContent />
+    </Suspense>
   );
 }
