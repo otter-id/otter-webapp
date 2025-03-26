@@ -10,7 +10,7 @@ import {
 } from "@/components/ui/drawer";
 import { Button } from "@/components/ui/button";
 import { Separator } from "@/components/ui/separator";
-import { X } from "lucide-react";
+import { X, RefreshCw, AlertTriangle } from "lucide-react";
 import { CartItem } from "./cartItem";
 import { CartTotals } from "./cartTotal";
 import { UpsellModal } from "./upsellModal";
@@ -19,6 +19,23 @@ import { getRecommendations } from "@/lib/recommendations";
 import { toast } from "sonner";
 import { Check } from "lucide-react";
 import type { MenuItem } from "@/types/restaurant";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
+import { StartOverDialog } from "./startOverDialog";
+
+// Extended MenuItem type to handle JSX elements
+interface ExtendedMenuItem extends Omit<MenuItem, "name" | "description"> {
+  name: string | JSX.Element;
+  description: string | JSX.Element;
+}
 
 interface CartDrawerProps {
   isOpen: boolean;
@@ -31,8 +48,9 @@ interface CartDrawerProps {
   onUpdateQuantity: (item: CartItemType, quantity: number) => void;
   onEditItem: (item: CartItemType) => void;
   onDeleteItem: (item: CartItemType) => void;
-  onAddItem?: (item: MenuItem) => void;
+  onAddItem?: (item: MenuItem | ExtendedMenuItem) => void;
   addedItems?: string[];
+  onClearCart: () => void;
 }
 
 export function CartDrawer({
@@ -48,8 +66,10 @@ export function CartDrawer({
   onDeleteItem,
   onAddItem,
   addedItems,
+  onClearCart,
 }: CartDrawerProps) {
   const [isUpsellOpen, setIsUpsellOpen] = useState(false);
+  const [isStartOverDialogOpen, setIsStartOverDialogOpen] = useState(false);
   const recommendations = getRecommendations(cart);
 
   const handleDeleteItem = (item: CartItemType) => {
@@ -57,10 +77,9 @@ export function CartDrawer({
   };
 
   const handleContinueToPayment = () => {
-    if (cart.length > 0) {
-      setIsUpsellOpen(true);
-      onOpenChange(false);
-    }
+    onOpenChange(false);
+    // setIsUpsellOpen(true);
+    window.location.href = "/payment";
   };
 
   const handleContinueShopping = () => {
@@ -69,44 +88,68 @@ export function CartDrawer({
 
   const handleUpsellContinue = () => {
     setIsUpsellOpen(false);
-    toast("Proceeding to payment...", {
-      description: "This is a demo, no actual payment will be processed.",
-    });
+    // Navigate to payment page
+    window.location.href = "/payment";
   };
 
-  const handleAddRecommendedItem = (item: MenuItem) => {
+  const handleAddRecommendedItem = (item: MenuItem | ExtendedMenuItem) => {
     if (onAddItem) {
       onAddItem(item);
+
+      // Get a string representation of the name for the toast
+      const itemName = typeof item.name === "string" ? item.name : "Item";
+
       toast("Item added to cart", {
         icon: <Check className="h-4 w-4 text-green-500" />,
-        description: `${item.name} has been added to your cart`,
+        description: `${itemName} has been added to your cart`,
       });
     }
+  };
+
+  const handleStartOver = () => {
+    setIsStartOverDialogOpen(true);
+  };
+
+  const confirmStartOver = () => {
+    onClearCart();
+    setIsStartOverDialogOpen(false);
+    onOpenChange(false);
+
+    // Show toast
+    toast("Cart cleared", {
+      icon: <RefreshCw className="h-4 w-4 text-blue-500" />,
+      description: "Your cart has been cleared. Starting over...",
+    });
+
+    // Refresh the page after a short delay
+    setTimeout(() => {
+      window.location.reload();
+    }, 500);
   };
 
   return (
     <>
       <Drawer open={isOpen} onOpenChange={onOpenChange}>
-        <DrawerContent className="max-h-[80vh] p-0 max-w-md mx-auto rounded-t-[20px]">
-          <div className="h-full overflow-y-auto">
-            <DrawerHeader className="px-4 py-3 border-b sticky top-0 bg-white z-10">
+        <DrawerContent className="max-h-[85vh] p-0 max-w-md mx-auto rounded-t-[20px]">
+          <div className="h-full flex flex-col">
+            <DrawerHeader className="px-4 py-3 border-b">
               <div className="flex items-center justify-between">
-                <DrawerTitle>Your Cart ({cartItemCount})</DrawerTitle>
+                <DrawerTitle>Your Cart</DrawerTitle>
                 <Button
                   variant="ghost"
                   size="icon"
                   className="rounded-full h-8 w-8"
-                  onClick={handleContinueShopping}
+                  onClick={() => onOpenChange(false)}
                 >
                   <X className="h-4 w-4" />
                 </Button>
               </div>
             </DrawerHeader>
 
-            <div className="px-4 py-6">
+            <div className="flex-1 overflow-y-auto">
               {cart.length > 0 ? (
-                <div className="space-y-6">
-                  <div className="space-y-4">
+                <div>
+                  <div className="px-4 py-4 space-y-3">
                     {cart.map((item, index) => (
                       <div key={`${item.$id}-${index}`} className="space-y-3">
                         <CartItem
@@ -122,11 +165,15 @@ export function CartDrawer({
                     ))}
                   </div>
 
-                  <CartTotals
-                    totals={cartTotals}
-                    isFeesExpanded={isFeesExpanded}
-                    onFeesExpandedChange={onFeesExpandedChange}
-                  />
+                  <Separator />
+
+                  <div className="px-4 py-4">
+                    <CartTotals
+                      totals={cartTotals}
+                      isFeesExpanded={isFeesExpanded}
+                      onFeesExpandedChange={onFeesExpandedChange}
+                    />
+                  </div>
                 </div>
               ) : (
                 <div className="text-center py-8">
@@ -136,7 +183,7 @@ export function CartDrawer({
             </div>
 
             {cart.length > 0 && (
-              <DrawerFooter className="px-4 py-4 border-t">
+              <DrawerFooter className="px-4 py-4 border-t space-y-3">
                 <Button
                   className="w-full h-12 bg-black hover:bg-black/90"
                   onClick={handleContinueToPayment}
@@ -149,6 +196,14 @@ export function CartDrawer({
                   onClick={handleContinueShopping}
                 >
                   Continue Shopping
+                </Button>
+                <Button
+                  variant="destructive-outline"
+                  className="w-full text-red-500 hover:text-red-600 hover:bg-red-50"
+                  onClick={handleStartOver}
+                >
+                  <RefreshCw className="h-4 w-4 mr-2" />
+                  Start Over
                 </Button>
               </DrawerFooter>
             )}
@@ -163,6 +218,12 @@ export function CartDrawer({
         onAddItem={handleAddRecommendedItem}
         onContinue={handleUpsellContinue}
         addedItems={addedItems}
+      />
+
+      <StartOverDialog
+        isOpen={isStartOverDialogOpen}
+        onOpenChange={setIsStartOverDialogOpen}
+        onConfirm={confirmStartOver}
       />
     </>
   );

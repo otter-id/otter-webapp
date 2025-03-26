@@ -19,6 +19,7 @@ import { Checkbox } from "@/components/ui/checkbox";
 import { Label } from "@/components/ui/label";
 import { Badge } from "@/components/ui/badge";
 import { formatPrice, formatTextForPlaceholder } from "@/lib/utils";
+import { Textarea } from "@/components/ui/textarea";
 
 // Extended MenuItem type to handle JSX elements
 interface ExtendedMenuItem extends Omit<MenuItem, "name" | "description"> {
@@ -35,7 +36,8 @@ interface ItemDrawerProps {
   onUpdateCartItem: (item: CartItem) => void;
   createCartItemFromMenuItem: (
     menuItem: MenuItem | ExtendedMenuItem,
-    selectedOptions: { [categoryId: string]: MenuOption[] }
+    selectedOptions: { [categoryId: string]: MenuOption[] },
+    note?: string
   ) => CartItem;
 }
 
@@ -53,6 +55,7 @@ export function ItemDrawer({
     [categoryId: string]: MenuOption[];
   }>({});
   const [imageError, setImageError] = useState(false);
+  const [note, setNote] = useState("");
 
   // Reset quantity when switching between different items (not when editing)
   useEffect(() => {
@@ -65,6 +68,7 @@ export function ItemDrawer({
   useEffect(() => {
     if (editingCartItem) {
       setQuantity(editingCartItem.quantity);
+      setNote(editingCartItem.note || "");
     }
   }, [editingCartItem]);
 
@@ -74,6 +78,7 @@ export function ItemDrawer({
       if (!editingCartItem) {
         setQuantity(1);
         setSelectedOptions({});
+        setNote("");
       }
       setImageError(false);
     }
@@ -228,7 +233,11 @@ export function ItemDrawer({
   const handleSubmit = () => {
     if (!selectedItem) return;
 
-    const cartItem = createCartItemFromMenuItem(selectedItem, selectedOptions);
+    const cartItem = createCartItemFromMenuItem(
+      selectedItem,
+      selectedOptions,
+      note
+    );
     cartItem.quantity = quantity;
 
     if (editingCartItem) {
@@ -471,6 +480,16 @@ export function ItemDrawer({
                   )}
                 </div>
               ))}
+              <div>
+                <h3 className="font-semibold mb-3">Order Notes</h3>
+                <Textarea
+                  placeholder="Add any special requests, allergies, dietary restrictions, etc."
+                  className="resize-none"
+                  value={note}
+                  onChange={(e) => setNote(e.target.value)}
+                  rows={3}
+                />
+              </div>
             </div>
           )}
 

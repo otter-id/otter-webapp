@@ -17,8 +17,15 @@ import { Check, X, AlertTriangle } from "lucide-react";
 import { SearchOverlay } from "@/components/order/search/searchOverlay";
 import { Button } from "@/components/ui/button";
 
-export default function FoodOrderingPage() {
-  const { loading, error, restaurant, menuCategories } = useRestaurant();
+import { use } from "react";
+
+export default function FoodOrderingPage({
+  params,
+}: {
+  params: Promise<{ id: string }>;
+}) {
+  const { id } = use(params);
+  const { loading, error, restaurant, menuCategories } = useRestaurant(id);
   const [selectedCategoryId, setSelectedCategoryId] = useState<string>("");
   const [isCartOpen, setIsCartOpen] = useState(false);
   const [isItemDrawerOpen, setIsItemDrawerOpen] = useState(false);
@@ -38,6 +45,7 @@ export default function FoodOrderingPage() {
     updateCartItem,
     updateItemQuantity,
     removeItem,
+    clearCart,
     createCartItemFromMenuItem,
   } = useCart();
 
@@ -278,6 +286,7 @@ export default function FoodOrderingPage() {
         onUpdateQuantity={updateItemQuantity}
         onEditItem={handleEditCartItem}
         onDeleteItem={handleDeleteRequest}
+        onClearCart={clearCart}
       />
 
       <DeleteConfirmation

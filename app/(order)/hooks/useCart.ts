@@ -17,6 +17,7 @@ export interface CartItem {
   price: number;
   quantity: number;
   image: string;
+  note?: string;
   selectedOptions: {
     [categoryId: string]: {
       $id: string;
@@ -123,7 +124,8 @@ export function useCart() {
   // Helper function to create a cart item from a menu item
   const createCartItemFromMenuItem = (
     menuItem: MenuItem | ExtendedMenuItem,
-    selectedOptions: { [categoryId: string]: MenuOption[] }
+    selectedOptions: { [categoryId: string]: MenuOption[] },
+    note: string = ""
   ): CartItem => {
     // Format the selected options for the cart
     const formattedOptions: CartItem["selectedOptions"] = {};
@@ -156,9 +158,19 @@ export function useCart() {
       price: menuItem.price,
       quantity: 1,
       image: menuItem.image,
+      note,
       selectedOptions: formattedOptions,
     };
   };
+
+  // Clear the entire cart
+  const clearCart = useCallback(() => {
+    setCart([]);
+    setEditingCartItem(null);
+    if (typeof window !== "undefined") {
+      localStorage.removeItem(CART_STORAGE_KEY);
+    }
+  }, []);
 
   return {
     cart,
@@ -172,6 +184,7 @@ export function useCart() {
     updateCartItem,
     updateItemQuantity,
     removeItem,
+    clearCart,
     createCartItemFromMenuItem,
   };
 }

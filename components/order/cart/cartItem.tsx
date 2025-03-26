@@ -57,6 +57,11 @@ export function CartItem({
                       </div>
                     ))
                 )}
+              {item.note && (
+                <div className="mt-2 italic text-xs border-l-2 border-gray-200 pl-2">
+                  {item.note}
+                </div>
+              )}
             </div>
           </div>
           <div className="text-sm space-y-1 text-right">

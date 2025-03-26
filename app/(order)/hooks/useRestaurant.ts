@@ -8,7 +8,7 @@ import {
   RestaurantData,
 } from "@/types/restaurant";
 
-export function useRestaurant() {
+export function useRestaurant(id: string) {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [restaurantData, setRestaurantData] = useState<RestaurantData | null>(
