@@ -7,6 +7,7 @@ export interface ReceiptData {
     orderDateTime: string;
     orderNumber: string;
     firstName: string;
+    status: "PAID" | "UNPAID";
     items: Array<{
       name: string;
       quantity: number;

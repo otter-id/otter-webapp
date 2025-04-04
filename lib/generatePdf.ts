@@ -16,6 +16,21 @@ export async function generateReceiptPDF(
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
   let currentPage = 1;
 
+  // Add watermark based on status
+  doc.saveGraphicsState();
+  doc.setGState(new (doc as any).GState({ opacity: 0.3 }));
+  doc.setFontSize(60);
+  doc.setTextColor(200, 200, 200);
+  const watermarkText = data.status === "UNPAID" ? "UNPAID" : "PAID";
+  const watermarkWidth =
+    (doc.getStringUnitWidth(watermarkText) * doc.getFontSize()) /
+    doc.internal.scaleFactor;
+  const watermarkHeight = doc.getFontSize() / doc.internal.scaleFactor;
+  const x = (pageWidth - watermarkWidth) / 2;
+  const y = (pageHeight - watermarkHeight) / 2;
+  doc.text(watermarkText, x, y);
+  doc.restoreGraphicsState();
+
   // Helper function to check if we need a new page
   const checkNewPage = (heightNeeded: number) => {
     if (yPos + heightNeeded > pageHeight - margin * 2) {

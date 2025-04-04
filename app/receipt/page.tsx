@@ -16,6 +16,7 @@ import { PointsCard } from "../../components/receipt/PointsCard";
 import { SplitBill } from "../../components/receipt/SplitBill";
 import { RestaurantFeedback } from "../../components/receipt/RestaurantFeedback";
 import { Footer } from "../../components/receipt/Footer";
+import { UnpaidWarning } from "../../components/receipt/UnpaidWarning";
 
 // Skeleton components
 import { ReceiptHeaderSkeleton } from "../../components/receipt/skeletons/ReceiptHeaderSkeleton";
@@ -60,6 +61,7 @@ const ReceiptContent = () => {
           animate="visible"
           className="space-y-4"
         >
+          {data.status === "UNPAID" && <UnpaidWarning />}
           <ReceiptHeader data={data} />
           <SplitBill
             data={data}
@@ -93,6 +95,7 @@ const ReceiptContent = () => {
           </>
         ) : (
           <>
+            {data.status === "UNPAID" && <UnpaidWarning />}
             <ReceiptHeader data={data} />
             <ReceiptActions data={data} orderId={orderId} />
             <RestaurantFeedback />
