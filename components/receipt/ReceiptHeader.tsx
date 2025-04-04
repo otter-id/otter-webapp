@@ -3,6 +3,7 @@
 import { format } from "date-fns";
 import Image from "next/image";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Badge } from "@/components/ui/badge";
 import { motion } from "framer-motion";
 import { cardVariants } from "../../app/receipt/utils/animations";
 import { ReceiptData } from "@/types/receipt";
@@ -39,6 +40,16 @@ export function ReceiptHeader({ data }: ReceiptHeaderProps) {
           <p className="text-5xl font-bold mb-1 bg-clip-text text-transparent bg-gradient-to-r from-yellow-300 to-amber-600">
             #{data.orderNumber}
           </p>
+          <Badge
+            variant={data.status === "PAID" ? "default" : "secondary"}
+            className={`mb-2 ${
+              data.status === "PAID"
+                ? "bg-green-500 hover:bg-green-600 text-white"
+                : ""
+            }`}
+          >
+            {data.status}
+          </Badge>
           <p className="text-2xl font-medium mb-2">{data.firstName}</p>
           <p className="text-sm text-muted-foreground">
             {format(orderDate, "PPpp")}

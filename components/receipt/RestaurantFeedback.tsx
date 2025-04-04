@@ -8,12 +8,12 @@ import { cardVariants } from "../../app/receipt/utils/animations";
 import { useState } from "react";
 import { cn } from "@/lib/utils";
 import { Textarea } from "@/components/ui/textarea";
-
+import { ReceiptData } from "@/types/receipt";
 const MotionCard = motion(Card);
 const MotionThumbsUp = motion(ThumbsUp);
 const MotionThumbsDown = motion(ThumbsDown);
 
-export function RestaurantFeedback() {
+export function RestaurantFeedback({ data }: { data: ReceiptData["data"] }) {
   const [feedback, setFeedback] = useState<"like" | "dislike" | null>(null);
   const [improvementFeedback, setImprovementFeedback] = useState("");
   const [isSubmitted, setIsSubmitted] = useState(false);
@@ -35,7 +35,9 @@ export function RestaurantFeedback() {
     <MotionCard variants={cardVariants} className="rounded-xl">
       <CardContent className="py-4">
         <div className="text-center space-y-2">
-          <h3 className="font-medium text-black">How was your experience?</h3>
+          <h3 className="font-medium text-black">
+            How was your experience with {data.restaurantName}?
+          </h3>
           <div className="flex justify-center gap-4">
             <Button
               variant="outline"
