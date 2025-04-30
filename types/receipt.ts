@@ -8,6 +8,7 @@ export interface ReceiptData {
     orderNumber: string;
     firstName: string;
     status: "PAID" | "UNPAID";
+    orderStatus: "ONGOING" | "READY" | "FINISHED";
     items: Array<{
       name: string;
       quantity: number;

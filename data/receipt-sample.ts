@@ -3,6 +3,7 @@ import { ReceiptData } from "@/types/receipt";
 export const fakeData: ReceiptData = {
   data: {
     status: "UNPAID",
+    orderStatus: "ONGOING",
     restaurantName: "Sharetea",
     restaurantLogo:
       "https://franchise.sharetea.com.au/wp-content/uploads/2021/08/cropped-Favicon.png",

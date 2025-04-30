@@ -7,7 +7,7 @@ import { Badge } from "@/components/ui/badge";
 import { motion } from "framer-motion";
 import { cardVariants } from "../../app/receipt/utils/animations";
 import { ReceiptData } from "@/types/receipt";
-
+import OrderStepper from "@/components/receipt/order-stepper";
 const MotionCard = motion.create(Card);
 
 interface ReceiptHeaderProps {
@@ -37,7 +37,7 @@ export function ReceiptHeader({ data }: ReceiptHeaderProps) {
       </CardHeader>
       <CardContent>
         <div className="text-center py-4">
-          <p className="text-5xl font-bold mb-1 bg-clip-text text-transparent bg-gradient-to-r from-yellow-300 to-amber-600">
+          <p className="text-5xl font-bold mb-1 text-[#F2C94C]">
             #{data.orderNumber}
           </p>
           <Badge
@@ -50,11 +50,15 @@ export function ReceiptHeader({ data }: ReceiptHeaderProps) {
           >
             {data.status}
           </Badge>
-          <p className="text-2xl font-medium mb-2">{data.firstName}</p>
+          <p className="text-2xl font-semibold mb-2">{data.firstName}</p>
           <p className="text-sm text-muted-foreground">
-            {format(orderDate, "PPpp")}
+            {format(orderDate, "d MMM yyyy | HH:mm")}
           </p>
         </div>
+        <OrderStepper
+          orderStatus={data.orderStatus}
+          paymentStatus={data.status}
+        />
       </CardContent>
     </MotionCard>
   );
