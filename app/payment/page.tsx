@@ -1,318 +1,478 @@
 "use client";
 
-import { useState, useEffect, Suspense } from "react";
-import { useRouter, useSearchParams } from "next/navigation";
-import { motion } from "framer-motion";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Separator } from "@/components/ui/separator";
+import { useState, useEffect } from "react";
+import { useRouter } from "next/navigation";
+import Image from "next/image";
+import { ArrowLeft, QrCode, User, Phone, Check, FileText } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { QrCode, Clock, Check, ChevronLeft, ChevronRight } from "lucide-react";
-import { toast } from "sonner";
-import PaymentForm from "@/components/payment/paymentForm";
-import OtpVerification from "@/components/payment/otpVerification";
-import OrderSummary from "@/components/payment/orderSummary";
+import { Separator } from "@/components/ui/separator";
+import { formatPrice } from "@/lib/utils";
+import { PaymentMethodDrawer } from "@/components/payment/payment-method-drawer";
+import { QrisPayment } from "@/components/payment/qris-payment";
+import { useToast } from "@/components/ui/use-toast";
+import { Stepper } from "@/components/ui/stepper";
+import { PhoneInput } from "@/components/payment/phone-input";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
 
-const MotionCard = motion(Card);
-
-const cardVariants = {
-  hidden: { opacity: 0, y: 20 },
-  visible: {
-    opacity: 1,
-    y: 0,
-    transition: { duration: 0.3 },
-  },
-};
-
-interface OrderItem {
-  id: string;
-  name: string;
-  price: number;
-  quantity: number;
-}
-
-interface OrderData {
-  items: OrderItem[];
-  subtotal: number;
-  tax: number;
-  serviceFee: number;
-  total: number;
-}
-
-interface CustomerData {
-  name: string;
-  phoneNumber: string;
-}
-
-function PaymentContent() {
+export default function PaymentPage() {
   const router = useRouter();
-  const searchParams = useSearchParams();
-  const [step, setStep] = useState(1);
-  const [isLoading, setIsLoading] = useState(false);
-  const [orderData, setOrderData] = useState<OrderData>({
-    items: [],
-    subtotal: 0,
-    tax: 0,
-    serviceFee: 0,
-    total: 0,
-  });
+  const { toast } = useToast();
+  const [currentStep, setCurrentStep] = useState(0);
+  const [isMethodDrawerOpen, setIsMethodDrawerOpen] = useState(false);
+  const [selectedMethod, setSelectedMethod] = useState<string>("QRIS");
+  const [isPaymentProcessing, setIsPaymentProcessing] = useState(false);
+  const [orderNumber, setOrderNumber] = useState("");
 
-  // Customer data state
-  const [customerData, setCustomerData] = useState<CustomerData>({
-    name: "",
-    phoneNumber: "",
-  });
+  // User details
+  const [name, setName] = useState("");
+  const [phone, setPhone] = useState("");
+  const [isPhoneValid, setIsPhoneValid] = useState(false);
 
-  // Mock function to fetch order data
+  // Payment confirmation
+  const [isPaid, setIsPaid] = useState(false);
+
+  // Steps
+  const steps = ["Details", "Payment", "Confirmation"];
+
+  // Mock cart data - in a real app, this would come from context
+  const [cart, setCart] = useState([
+    {
+      id: 6,
+      name: "Classic Pearl Milk Tea",
+      price: 28000,
+      quantity: 1,
+      category: "Milk Tea Series",
+      selectedModifiers: {
+        "Ice Level": { id: 3, name: "Normal Ice", price: 0 },
+        "Sugar Level": { id: 9, name: "Normal Sugar (100%)", price: 0 },
+        Size: { id: 10, name: "Regular", price: 0 },
+      },
+      extraToppings: [{ id: 12, name: "Extra Boba/Pearls", price: 5000 }],
+    },
+    {
+      id: 15,
+      name: "Passion Fruit Tea",
+      price: 28000,
+      quantity: 2,
+      category: "Fruit Tea Series",
+      selectedModifiers: {
+        "Ice Level": { id: 2, name: "Less Ice", price: 0 },
+        "Sugar Level": { id: 7, name: "Half Sugar (50%)", price: 0 },
+        Size: { id: 10, name: "Regular", price: 0 },
+      },
+    },
+  ]);
+
+  // Generate a random order number on component mount
   useEffect(() => {
-    const fetchOrderData = async () => {
-      setIsLoading(true);
-      try {
-        // This would be replaced with actual API call
-        setTimeout(() => {
-          // Sample data - this would come from your API
-          setOrderData({
-            items: [
-              { id: "1", name: "Chicken Rice Bowl", price: 35000, quantity: 1 },
-              { id: "2", name: "Iced Tea", price: 15000, quantity: 2 },
-            ],
-            subtotal: 65000,
-            tax: 7150,
-            serviceFee: 3250,
-            total: 75400,
-          });
-          setIsLoading(false);
-        }, 1000);
-      } catch (error) {
-        console.error("Error fetching order data:", error);
-        setIsLoading(false);
-        toast.error("Failed to load order data");
-      }
-    };
-
-    fetchOrderData();
+    const randomOrderNumber = `ORD-${Math.floor(
+      100000 + Math.random() * 900000
+    )}`;
+    setOrderNumber(randomOrderNumber);
   }, []);
 
-  const handleCustomerDataSubmit = (data: CustomerData) => {
-    setCustomerData(data);
-    // Simulate sending OTP
-    toast.success("OTP sent to your phone number", {
-      description: "Please enter the verification code",
-    });
-    setStep(2);
+  const calculateItemTotal = (item: any) => {
+    const modifierPrice = item.selectedModifiers
+      ? Object.values(item.selectedModifiers).reduce(
+          (sum: number, mod: any) => sum + mod.price,
+          0
+        )
+      : 0;
+    const toppingsPrice = item.extraToppings
+      ? item.extraToppings.reduce(
+          (sum: number, topping: any) => sum + topping.price,
+          0
+        )
+      : 0;
+    return (item.price + modifierPrice + toppingsPrice) * item.quantity;
   };
 
-  const handleOtpVerification = () => {
-    setIsLoading(true);
-    // Simulate verification process
-    setTimeout(() => {
-      setIsLoading(false);
-      toast.success("Phone number verified successfully");
-      setStep(3);
-    }, 1500);
+  const calculateCartTotals = () => {
+    const subtotal = cart.reduce(
+      (sum, item) => sum + calculateItemTotal(item),
+      0
+    );
+    const tax = Math.round(subtotal * 0.11); // 11% tax
+    const serviceFee = Math.round(subtotal * 0.05); // 5% service fee
+    const deliveryFee = 0; // No delivery fee for now
+
+    return {
+      subtotal,
+      tax,
+      serviceFee,
+      deliveryFee,
+      total: subtotal + tax + serviceFee + deliveryFee,
+    };
   };
 
-  const handlePayment = () => {
-    setIsLoading(true);
-    // Simulate payment process
-    setTimeout(() => {
-      setIsLoading(false);
-      toast.success("Payment successful!");
-      router.push("/receipt");
-    }, 2000);
+  const handleSelectPaymentMethod = (method: string) => {
+    setSelectedMethod(method);
+    setIsMethodDrawerOpen(false);
   };
 
-  const handleBack = () => {
-    if (step > 1) {
-      setStep(step - 1);
+  const handleGoBack = () => {
+    if (currentStep > 0) {
+      setCurrentStep(currentStep - 1);
     } else {
       router.back();
     }
   };
 
-  return (
-    <div className="container max-w-md mx-auto px-4 py-8">
-      <div className="mb-8">
-        <Button
-          variant="ghost"
-          className="flex items-center p-0 h-auto"
-          onClick={handleBack}
-        >
-          <ChevronLeft className="h-5 w-5 mr-1" />
-          <span>Back</span>
-        </Button>
-        <h1 className="text-2xl font-bold mt-4">Checkout</h1>
-        <p className="text-muted-foreground">
-          {step === 1
-            ? "Enter your details"
-            : step === 2
-            ? "Verify your phone number"
-            : "Complete your payment"}
-        </p>
-      </div>
-
-      {/* Step indicators */}
-      <div className="flex justify-between mb-6">
-        <div className="flex flex-col items-center">
-          <div
-            className={`w-8 h-8 rounded-full flex items-center justify-center ${
-              step >= 1 ? "bg-yellow-400" : "bg-gray-200"
-            }`}
-          >
-            {step > 1 ? <Check className="h-5 w-5" /> : 1}
-          </div>
-          <span className="text-xs mt-1">Details</span>
-        </div>
-        <div className="flex-1 flex items-center px-2">
-          <div
-            className={`h-1 w-full ${
-              step > 1 ? "bg-yellow-400" : "bg-gray-200"
-            }`}
-          ></div>
-        </div>
-        <div className="flex flex-col items-center">
-          <div
-            className={`w-8 h-8 rounded-full flex items-center justify-center ${
-              step >= 2 ? "bg-yellow-400" : "bg-gray-200"
-            }`}
-          >
-            {step > 2 ? <Check className="h-5 w-5" /> : 2}
-          </div>
-          <span className="text-xs mt-1">Verify</span>
-        </div>
-        <div className="flex-1 flex items-center px-2">
-          <div
-            className={`h-1 w-full ${
-              step > 2 ? "bg-yellow-400" : "bg-gray-200"
-            }`}
-          ></div>
-        </div>
-        <div className="flex flex-col items-center">
-          <div
-            className={`w-8 h-8 rounded-full flex items-center justify-center ${
-              step >= 3 ? "bg-yellow-400" : "bg-gray-200"
-            }`}
-          >
-            3
-          </div>
-          <span className="text-xs mt-1">Pay</span>
-        </div>
-      </div>
-
-      {/* Order Summary */}
-      <MotionCard
-        variants={cardVariants}
-        initial="hidden"
-        animate="visible"
-        className="rounded-xl mb-6"
-      >
-        <CardHeader className="pb-2">
-          <CardTitle className="text-lg">Order Summary</CardTitle>
-        </CardHeader>
-        <CardContent>
-          <OrderSummary data={orderData} isLoading={isLoading} />
-        </CardContent>
-      </MotionCard>
-
-      {/* Step Content */}
-      <MotionCard
-        variants={cardVariants}
-        initial="hidden"
-        animate="visible"
-        className="rounded-xl"
-      >
-        <CardContent className="p-6">
-          {step === 1 && (
-            <PaymentForm
-              onSubmit={handleCustomerDataSubmit}
-              isLoading={isLoading}
-              initialData={customerData}
-            />
-          )}
-
-          {step === 2 && (
-            <OtpVerification
-              onVerify={handleOtpVerification}
-              phoneNumber={customerData.phoneNumber}
-              isLoading={isLoading}
-              onResendOtp={() => {
-                toast.success("New OTP sent to your phone number");
-              }}
-            />
-          )}
-
-          {step === 3 && (
-            <div className="space-y-6">
-              <div>
-                <h2 className="text-lg font-semibold mb-4">Payment Method</h2>
-                <div className="border rounded-md p-4 bg-gray-50 flex items-center space-x-3">
-                  <QrCode className="h-6 w-6 text-yellow-500" />
-                  <div>
-                    <p className="font-medium">QRIS</p>
-                    <p className="text-sm text-muted-foreground">
-                      Scan the QR code with your mobile banking app
-                    </p>
-                  </div>
-                </div>
-              </div>
-
-              <div className="border rounded-md p-4 flex flex-col items-center justify-center">
-                <div className="bg-white p-3 rounded-md border mb-2">
-                  {/* This would be your actual QR code */}
-                  <div className="w-48 h-48 bg-gray-200 flex items-center justify-center">
-                    <QrCode className="h-24 w-24 text-gray-400" />
-                  </div>
-                </div>
-                <p className="text-sm text-muted-foreground text-center">
-                  Scan this QR code with your mobile banking app to complete
-                  payment
-                </p>
-                <div className="flex items-center mt-2 text-yellow-500">
-                  <Clock className="h-4 w-4 mr-1" />
-                  <span className="text-sm">Expires in 15:00</span>
-                </div>
-              </div>
-
-              <Button
-                onClick={handlePayment}
-                className="w-full bg-black hover:bg-black/90"
-                disabled={isLoading}
-              >
-                {isLoading ? "Processing..." : "I have completed payment"}
-              </Button>
-            </div>
-          )}
-        </CardContent>
-      </MotionCard>
-    </div>
-  );
-}
-
-export default function PaymentPage() {
-  return (
-    <Suspense
-      fallback={
-        <div className="container max-w-md mx-auto px-4 py-8">
-          <div className="mb-8">
-            <Button variant="ghost" className="flex items-center p-0 h-auto">
-              <ChevronLeft className="h-5 w-5 mr-1" />
-              <span>Back</span>
-            </Button>
-            <h1 className="text-2xl font-bold mt-4">Loading...</h1>
-            <p className="text-muted-foreground">
-              Please wait while we load your order details
-            </p>
-          </div>
-          <Card className="rounded-xl">
-            <CardContent className="p-6">
-              <div className="flex items-center justify-center h-40">
-                <Clock className="h-8 w-8 animate-spin text-yellow-400" />
-              </div>
-            </CardContent>
-          </Card>
-        </div>
+  const handleContinue = () => {
+    if (currentStep === 0) {
+      // Validate details
+      if (!name) {
+        toast({
+          title: "Name is required",
+          description: "Please enter your name to continue",
+          variant: "destructive",
+        });
+        return;
       }
-    >
-      <PaymentContent />
-    </Suspense>
+
+      if (!isPhoneValid) {
+        toast({
+          title: "Valid phone number is required",
+          description: "Please enter a valid phone number to continue",
+          variant: "destructive",
+        });
+        return;
+      }
+
+      if (!selectedMethod) {
+        toast({
+          title: "Payment method is required",
+          description: "Please select a payment method to continue",
+          variant: "destructive",
+        });
+        return;
+      }
+
+      // Proceed to payment step
+      setCurrentStep(1);
+
+      // Simulate payment processing
+      setIsPaymentProcessing(true);
+      setTimeout(() => {
+        setIsPaymentProcessing(false);
+      }, 1000);
+    } else if (currentStep === 1) {
+      // Confirm payment
+      setIsPaid(true);
+      setCurrentStep(2);
+
+      toast({
+        title: "Payment confirmed",
+        description: "Your order has been placed successfully",
+      });
+    }
+  };
+
+  const handlePhoneChange = (value: string, isValid: boolean) => {
+    setPhone(value);
+    setIsPhoneValid(isValid);
+  };
+
+  const handleConfirmPayment = () => {
+    setIsPaid(true);
+    setCurrentStep(2);
+
+    toast({
+      title: "Payment confirmed",
+      description: "Your order has been placed successfully",
+    });
+  };
+
+  const handleViewReceipt = () => {
+    toast({
+      title: "E-Receipt",
+      description: "Your e-receipt has been sent to your email",
+    });
+  };
+
+  const totals = calculateCartTotals();
+
+  return (
+    <div className="min-h-screen bg-gray-50 pb-6">
+      <div className="max-w-md mx-auto bg-white shadow-sm">
+        {/* Header */}
+        <div className="sticky top-0 z-10 bg-white border-b">
+          <div className="px-4 py-3 flex items-center">
+            <Button
+              variant="ghost"
+              size="icon"
+              className="mr-2"
+              onClick={handleGoBack}
+            >
+              <ArrowLeft className="h-5 w-5" />
+            </Button>
+            <h1 className="text-lg font-bold">Checkout</h1>
+          </div>
+
+          {/* Stepper */}
+          <div className="px-4 py-3 border-t overflow-hidden">
+            <Stepper
+              steps={steps}
+              currentStep={currentStep}
+              className="max-w-full"
+            />
+          </div>
+        </div>
+
+        {/* Step 1: Details */}
+        {currentStep === 0 && (
+          <>
+            {/* Order Summary */}
+            <div className="px-4 py-5">
+              <div className="flex justify-between items-center mb-4">
+                <h2 className="text-base font-semibold">Order Summary</h2>
+                <span className="text-sm text-muted-foreground">
+                  Order #{orderNumber}
+                </span>
+              </div>
+
+              <div className="space-y-4 mb-6">
+                {cart.map((item, index) => (
+                  <div key={`${item.id}-${index}`} className="flex gap-3">
+                    <div className="relative w-16 h-16 flex-shrink-0 rounded-lg overflow-hidden bg-muted">
+                      <Image
+                        src="/placeholder.svg?height=64&width=64"
+                        alt={item.name}
+                        fill
+                        className="object-cover"
+                      />
+                    </div>
+                    <div className="flex-1 min-w-0">
+                      <div className="flex justify-between">
+                        <div>
+                          <h3 className="font-medium">{item.name}</h3>
+                          <div className="text-xs text-muted-foreground mt-1 space-y-0.5">
+                            {item.selectedModifiers &&
+                              Object.entries(item.selectedModifiers).map(
+                                ([category, modifier]: [string, any]) => (
+                                  <div key={category}>
+                                    {modifier.name}
+                                    {modifier.price > 0 &&
+                                      ` (+${formatPrice(modifier.price)})`}
+                                  </div>
+                                )
+                              )}
+                            {item.extraToppings &&
+                              item.extraToppings.map((topping: any) => (
+                                <div key={topping.id}>
+                                  {topping.name} (+{formatPrice(topping.price)})
+                                </div>
+                              ))}
+                          </div>
+                        </div>
+                        <div className="text-right">
+                          <div className="text-sm font-medium">
+                            {formatPrice(calculateItemTotal(item))}
+                          </div>
+                          <div className="text-xs text-muted-foreground mt-1">
+                            Qty: {item.quantity}
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                ))}
+              </div>
+
+              <Separator className="my-4" />
+
+              {/* Payment Details */}
+              <div className="space-y-2 text-sm">
+                <div className="flex justify-between">
+                  <span className="text-muted-foreground">Subtotal</span>
+                  <span>{formatPrice(totals.subtotal)}</span>
+                </div>
+                <div className="flex justify-between">
+                  <span className="text-muted-foreground">Tax (11%)</span>
+                  <span>{formatPrice(totals.tax)}</span>
+                </div>
+                <div className="flex justify-between">
+                  <span className="text-muted-foreground">
+                    Service Fee (5%)
+                  </span>
+                  <span>{formatPrice(totals.serviceFee)}</span>
+                </div>
+                <Separator className="my-3" />
+                <div className="flex justify-between text-base font-medium">
+                  <span>Total</span>
+                  <span>{formatPrice(totals.total)}</span>
+                </div>
+              </div>
+            </div>
+
+            {/* Customer Details */}
+            <div className="px-4 py-4 bg-gray-50">
+              <h2 className="text-base font-semibold mb-4">Customer Details</h2>
+
+              <div className="space-y-4">
+                <div className="space-y-2">
+                  <Label htmlFor="name" className="flex items-center gap-2">
+                    <User className="h-4 w-4" />
+                    <span>Full Name</span>
+                  </Label>
+                  <Input
+                    id="name"
+                    placeholder="Enter your full name"
+                    value={name}
+                    onChange={(e) => setName(e.target.value)}
+                  />
+                </div>
+
+                <div className="space-y-2">
+                  <Label htmlFor="phone" className="flex items-center gap-2">
+                    <Phone className="h-4 w-4" />
+                    <span>Phone Number</span>
+                  </Label>
+                  <PhoneInput value={phone} onChange={handlePhoneChange} />
+                </div>
+              </div>
+            </div>
+
+            {/* Payment Method */}
+            <div className="px-4 py-4 bg-white border-t">
+              <h2 className="text-base font-semibold mb-3">Payment Method</h2>
+
+              <div
+                className="bg-white rounded-lg border p-4 flex items-center justify-between cursor-pointer"
+                onClick={() => {
+                  setIsMethodDrawerOpen(true);
+                }}
+              >
+                <div className="flex items-center gap-3">
+                  <div className="w-10 h-10 rounded-md bg-black flex items-center justify-center">
+                    <QrCode className="h-5 w-5 text-white" />
+                  </div>
+                  <div>
+                    <div className="font-medium">{selectedMethod}</div>
+                    <div className="text-xs text-muted-foreground">
+                      Scan QR code to pay
+                    </div>
+                  </div>
+                </div>
+                <Button
+                  variant="ghost"
+                  className="text-sm text-muted-foreground h-auto py-1 px-2"
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    setIsMethodDrawerOpen(true);
+                  }}
+                >
+                  Change
+                </Button>
+              </div>
+            </div>
+          </>
+        )}
+
+        {/* Step 2: Payment */}
+        {currentStep === 1 && (
+          <div className="px-4 py-5">
+            <div className="mb-4">
+              <h2 className="text-lg font-semibold text-center">
+                Pay with QRIS
+              </h2>
+              <p className="text-sm text-muted-foreground text-center mt-1">
+                Scan the QR code below to complete your payment
+              </p>
+            </div>
+
+            <QrisPayment amount={totals.total} />
+
+            <div className="mt-6 text-center">
+              <p className="text-sm text-muted-foreground mb-2">
+                After completing payment in your e-wallet app
+              </p>
+            </div>
+          </div>
+        )}
+
+        {/* Step 3: Confirmation */}
+        {currentStep === 2 && (
+          <div className="px-4 py-5">
+            <div className="text-center mb-6">
+              <div className="w-16 h-16 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-4">
+                <Check className="h-8 w-8 text-green-600" />
+              </div>
+              <h2 className="text-xl font-bold">Payment Successful!</h2>
+              <p className="text-sm text-muted-foreground mt-1">
+                Your order has been placed successfully
+              </p>
+            </div>
+
+            <div className="bg-gray-50 rounded-lg p-4 mb-6">
+              <div className="flex justify-between items-center mb-3">
+                <span className="text-sm font-medium">Order Number</span>
+                <span className="text-sm font-bold">{orderNumber}</span>
+              </div>
+              <div className="flex justify-between items-center mb-3">
+                <span className="text-sm font-medium">Total Amount</span>
+                <span className="text-sm font-bold">
+                  {formatPrice(totals.total)}
+                </span>
+              </div>
+              <div className="flex justify-between items-center">
+                <span className="text-sm font-medium">Estimated Delivery</span>
+                <span className="text-sm font-bold">15-20 minutes</span>
+              </div>
+            </div>
+
+            {/* E-Receipt Button (replacing Order Status) */}
+            <Button
+              variant="outline"
+              className="w-full py-6 flex items-center justify-center gap-2 border-dashed border-2"
+              onClick={handleViewReceipt}
+            >
+              <FileText className="h-5 w-5" />
+              <span className="font-medium">Click here for your e-receipt</span>
+            </Button>
+          </div>
+        )}
+
+        {/* Footer */}
+        <div className="px-4 py-5 bg-white border-t sticky bottom-0">
+          {currentStep === 0 && (
+            <Button
+              className="w-full h-12 bg-black hover:bg-black/90"
+              onClick={handleContinue}
+              disabled={!name || !isPhoneValid}
+            >
+              Continue to Payment
+            </Button>
+          )}
+
+          {currentStep === 1 && (
+            <Button
+              className="w-full h-12 bg-black hover:bg-black/90"
+              onClick={handleConfirmPayment}
+            >
+              I've Completed the Payment
+            </Button>
+          )}
+
+          {currentStep === 2 && (
+            <Button
+              variant="outline"
+              className="w-full h-12"
+              onClick={() => router.push("/")}
+            >
+              Back to Menu
+            </Button>
+          )}
+        </div>
+      </div>
+
+      {/* Payment Method Drawer */}
+      <PaymentMethodDrawer
+        isOpen={isMethodDrawerOpen}
+        onOpenChange={setIsMethodDrawerOpen}
+        onSelectMethod={handleSelectPaymentMethod}
+      />
+    </div>
   );
 }

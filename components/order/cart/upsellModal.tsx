@@ -44,6 +44,8 @@ export function UpsellModal({
     return null;
   }
 
+  console.log("UPSELL");
+
   const handleImageError = (itemId: string) => {
     setImageErrors((prev) => ({
       ...prev,

@@ -78,7 +78,8 @@ export function CartDrawer({
 
   const handleContinueToPayment = () => {
     onOpenChange(false);
-    // setIsUpsellOpen(true);
+    setIsUpsellOpen(true);
+
     window.location.href = "/payment";
   };
 
@@ -211,14 +212,14 @@ export function CartDrawer({
         </DrawerContent>
       </Drawer>
 
-      <UpsellModal
+      {/* <UpsellModal
         isOpen={isUpsellOpen}
         onOpenChange={setIsUpsellOpen}
         recommendations={recommendations}
         onAddItem={handleAddRecommendedItem}
         onContinue={handleUpsellContinue}
         addedItems={addedItems}
-      />
+      /> */}
 
       <StartOverDialog
         isOpen={isStartOverDialogOpen}
