@@ -454,16 +454,6 @@ export default function PaymentPage() {
               I've Completed the Payment
             </Button>
           )}
-
-          {currentStep === 2 && (
-            <Button
-              variant="outline"
-              className="w-full h-12"
-              onClick={() => router.push("/")}
-            >
-              Back to Menu
-            </Button>
-          )}
         </div>
       </div>
 
