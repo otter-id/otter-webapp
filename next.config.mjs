@@ -18,6 +18,7 @@ const nextConfig = {
       "franchise.sharetea.com.au",
       "www.texanerin.com",
       "aw.otternow.id",
+      "aw.otter.id",
       // Add other domains you're loading images from
     ],
     remotePatterns: [
