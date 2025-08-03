@@ -37,8 +37,8 @@ export interface CartTotals {
   total: number;
 }
 
-export function useCart(restaurant: Restaurant | null ) {
-  
+export function useCart(restaurant: Restaurant | null) {
+
   const [cart, setCart] = useState<CartItem[]>(() => {
     // Initialize cart from localStorage if available
     if (typeof window !== "undefined") {
@@ -49,46 +49,46 @@ export function useCart(restaurant: Restaurant | null ) {
   });
   const [itemToDelete, setItemToDelete] = useState<CartItem | null>(null);
   const [editingCartItem, setEditingCartItem] = useState<CartItem | null>(null);
-  
+
   // Save cart to localStorage whenever it changes
   useEffect(() => {
     if (typeof window !== "undefined") {
       localStorage.setItem(CART_STORAGE_KEY, JSON.stringify(cart));
     }
   }, [cart]);
-  
+
   const cartItemCount = cart.reduce((sum, item) => sum + item.quantity, 0);
-  
+
   const calculateCartTotals = useCallback((): CartTotals => {
     const subtotal = cart.reduce((sum, item) => {
-        // Calculate the total price of all selected options
-        const optionsPrice = item.selectedOptions
+      // Calculate the total price of all selected options
+      const optionsPrice = item.selectedOptions
         ? Object.values(item.selectedOptions).reduce((optionSum, options) => {
-              return (
-                optionSum +
-                options.reduce((total, option) => total + option.price, 0)
-              );
-            }, 0)
-            : 0;
-            
-        return sum + (item.price + optionsPrice) * item.quantity;
-      }, 0);
-  
-      const taxPercentage = restaurant?.tax ?? 0;
-      const servicePercentage = restaurant?.service ?? 0;
-      const tax = Math.round(subtotal * (taxPercentage / 100));
-      const serviceFee = Math.round(subtotal * (servicePercentage / 100));
-      const deliveryFee = 0;
-  
-      return {
-        subtotal,
-        taxPercentage,
-        tax,
-        serviceFee,
-        servicePercentage,
-        deliveryFee,
-        total: subtotal + tax + serviceFee + deliveryFee,
-      }
+          return (
+            optionSum +
+            options.reduce((total, option) => total + option.price, 0)
+          );
+        }, 0)
+        : 0;
+
+      return sum + (item.price + optionsPrice) * item.quantity;
+    }, 0);
+
+    const taxPercentage = restaurant?.tax ?? 0;
+    const servicePercentage = restaurant?.service ?? 0;
+    const tax = Math.round(subtotal * (taxPercentage / 100));
+    const serviceFee = Math.round(subtotal * (servicePercentage / 100));
+    const deliveryFee = 0;
+
+    return {
+      subtotal,
+      taxPercentage,
+      tax,
+      serviceFee,
+      servicePercentage,
+      deliveryFee,
+      total: subtotal + tax + serviceFee + deliveryFee,
+    }
   }, [cart, restaurant]);
 
   const addToCart = useCallback((item: CartItem) => {

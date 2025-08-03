@@ -35,11 +35,6 @@ export default function FoodOrderingPage({
   const [itemToDelete, setItemToDelete] = useState<any | null>(null);
   const [isSearchOpen, setIsSearchOpen] = useState(false);
 
-  const taxPercentage = restaurant?.tax ?? 0;
-  const servicePercentage = restaurant?.service ?? 0;
-
-  console.log({taxPercentage, servicePercentage})
-
   const {
     cart,
     cartItemCount,
