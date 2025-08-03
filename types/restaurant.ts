@@ -16,6 +16,8 @@ export interface Restaurant {
   pickupInstructions: string | null;
   googleMapsUrl: string | null;
   waitTime: number;
+  tax: number;
+  service: number;
   address: string;
   timezone: string;
   $id: string;

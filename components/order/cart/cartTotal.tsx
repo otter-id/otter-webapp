@@ -35,11 +35,11 @@ export function CartTotals({ totals, isFeesExpanded, onFeesExpandedChange }: Car
           </CollapsibleTrigger>
           <CollapsibleContent className="space-y-2">
             <div className="flex justify-between pl-4">
-              <span className="text-sm text-muted-foreground">Tax (11%)</span>
+              <span className="text-sm text-muted-foreground">Tax ({totals.taxPercentage}%)</span>
               <span className="text-sm">{formatPrice(totals.tax)}</span>
             </div>
             <div className="flex justify-between pl-4">
-              <span className="text-sm text-muted-foreground">Service Fee (5%)</span>
+              <span className="text-sm text-muted-foreground">Service Fee ({totals.servicePercentage}%)</span>
               <span className="text-sm">{formatPrice(totals.serviceFee)}</span>
             </div>
           </CollapsibleContent>

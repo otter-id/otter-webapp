@@ -35,6 +35,11 @@ export default function FoodOrderingPage({
   const [itemToDelete, setItemToDelete] = useState<any | null>(null);
   const [isSearchOpen, setIsSearchOpen] = useState(false);
 
+  const taxPercentage = restaurant?.tax ?? 0;
+  const servicePercentage = restaurant?.service ?? 0;
+
+  console.log({taxPercentage, servicePercentage})
+
   const {
     cart,
     cartItemCount,
@@ -47,7 +52,7 @@ export default function FoodOrderingPage({
     removeItem,
     clearCart,
     createCartItemFromMenuItem,
-  } = useCart();
+  } = useCart(restaurant);
 
   // Set the first category as selected once data is loaded
   useEffect(() => {
