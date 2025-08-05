@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useCallback, useEffect } from "react";
-import { MenuItem, MenuOption, MenuOptionCategory } from "@/types/restaurant";
+import { MenuItem, MenuOption, MenuOptionCategory, Restaurant } from "@/types/restaurant";
 
 // Extended MenuItem type to handle JSX elements
 interface ExtendedMenuItem extends Omit<MenuItem, "name" | "description"> {
@@ -29,13 +29,16 @@ export interface CartItem {
 
 export interface CartTotals {
   subtotal: number;
+  taxPercentage: number;
   tax: number;
   serviceFee: number;
+  servicePercentage: number;
   deliveryFee: number;
   total: number;
 }
 
-export function useCart() {
+export function useCart(restaurant: Restaurant | null) {
+
   const [cart, setCart] = useState<CartItem[]>(() => {
     // Initialize cart from localStorage if available
     if (typeof window !== "undefined") {
@@ -61,28 +64,32 @@ export function useCart() {
       // Calculate the total price of all selected options
       const optionsPrice = item.selectedOptions
         ? Object.values(item.selectedOptions).reduce((optionSum, options) => {
-            return (
-              optionSum +
-              options.reduce((total, option) => total + option.price, 0)
-            );
-          }, 0)
+          return (
+            optionSum +
+            options.reduce((total, option) => total + option.price, 0)
+          );
+        }, 0)
         : 0;
 
       return sum + (item.price + optionsPrice) * item.quantity;
     }, 0);
 
-    const tax = Math.round(subtotal * 0.11);
-    const serviceFee = Math.round(subtotal * 0.05);
+    const taxPercentage = restaurant?.tax ?? 0;
+    const servicePercentage = restaurant?.service ?? 0;
+    const tax = Math.round(subtotal * (taxPercentage / 100));
+    const serviceFee = Math.round(subtotal * (servicePercentage / 100));
     const deliveryFee = 0;
 
     return {
       subtotal,
+      taxPercentage,
       tax,
       serviceFee,
+      servicePercentage,
       deliveryFee,
       total: subtotal + tax + serviceFee + deliveryFee,
-    };
-  }, [cart]);
+    }
+  }, [cart, restaurant]);
 
   const addToCart = useCallback((item: CartItem) => {
     // Ensure selectedOptions is initialized
