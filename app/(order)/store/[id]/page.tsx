@@ -47,7 +47,7 @@ export default function FoodOrderingPage({
     removeItem,
     clearCart,
     createCartItemFromMenuItem,
-  } = useCart();
+  } = useCart(restaurant);
 
   // Set the first category as selected once data is loaded
   useEffect(() => {
@@ -180,6 +180,7 @@ export default function FoodOrderingPage({
         <RestaurantHeader
           name={restaurant?.name || ""}
           logo={restaurant?.logo || ""}
+          googleMapsUrl={restaurant?.googleMapsUrl || ""}
           waitTime={restaurant?.waitTime || 0}
           isOpen={restaurant?.isOpen || false}
           openingTimes={restaurant?.openingTimes}

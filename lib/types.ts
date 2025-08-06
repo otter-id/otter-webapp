@@ -35,8 +35,10 @@ export interface SearchResult extends MenuItem {
 
 export interface CartTotals {
   subtotal: number;
+  taxPercentage: number;
   tax: number;
   serviceFee: number;
+  servicePercentage: number;
   deliveryFee: number;
   total: number;
 }

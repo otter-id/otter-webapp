@@ -34,8 +34,10 @@ export interface CartItem {
 
 export interface CartTotals {
   subtotal: number;
+  taxPercentage: number;
   tax: number;
   serviceFee: number;
+  servicePercentage: number;
   deliveryFee: number;
   total: number;
 }
@@ -77,24 +79,28 @@ export function useCart(restaurant: Restaurant | null) {
     const subtotal = currentCartItems.reduce((sum, item) => {
       const optionsPrice = item.selectedOptions
         ? Object.values(item.selectedOptions).reduce((optionSum, options) => {
-            return (
-              optionSum +
-              options.reduce((total, option) => total + option.price, 0)
-            );
-          }, 0)
+          return (
+            optionSum +
+            options.reduce((total, option) => total + option.price, 0)
+          );
+        }, 0)
         : 0;
 
       return sum + (item.price + optionsPrice) * item.quantity;
     }, 0);
 
-    const tax = Math.round(subtotal * 0.11);
-    const serviceFee = Math.round(subtotal * 0.05);
+    const taxPercentage = restaurant?.tax ?? 0;
+    const servicePercentage = restaurant?.service ?? 0;
+    const tax = Math.round(subtotal * (taxPercentage / 100));
+    const serviceFee = Math.round(subtotal * (servicePercentage / 100));
     const deliveryFee = 0;
 
     return {
       subtotal,
+      taxPercentage,
       tax,
       serviceFee,
+      servicePercentage,
       deliveryFee,
       total: subtotal + tax + serviceFee + deliveryFee,
     };

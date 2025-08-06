@@ -17,6 +17,7 @@ import { Separator } from "@/components/ui/separator";
 interface RestaurantHeaderProps {
   name: string;
   logo: string;
+  googleMapsUrl: string;
   waitTime: number;
   isOpen: boolean;
   openingTimes?: {
@@ -30,6 +31,7 @@ interface RestaurantHeaderProps {
 export function RestaurantHeader({
   name,
   logo,
+  googleMapsUrl,
   waitTime,
   isOpen,
   openingTimes,
@@ -80,58 +82,58 @@ export function RestaurantHeader({
       day: "Monday",
       hours: openingTimes?.[dayMapping["Monday"]]?.length
         ? `${formatTime(
-            openingTimes[dayMapping["Monday"]][0].openTime
-          )} - ${formatTime(openingTimes[dayMapping["Monday"]][0].closeTime)}`
+          openingTimes[dayMapping["Monday"]][0].openTime
+        )} - ${formatTime(openingTimes[dayMapping["Monday"]][0].closeTime)}`
         : "Closed",
     },
     {
       day: "Tuesday",
       hours: openingTimes?.[dayMapping["Tuesday"]]?.length
         ? `${formatTime(
-            openingTimes[dayMapping["Tuesday"]][0].openTime
-          )} - ${formatTime(openingTimes[dayMapping["Tuesday"]][0].closeTime)}`
+          openingTimes[dayMapping["Tuesday"]][0].openTime
+        )} - ${formatTime(openingTimes[dayMapping["Tuesday"]][0].closeTime)}`
         : "Closed",
     },
     {
       day: "Wednesday",
       hours: openingTimes?.[dayMapping["Wednesday"]]?.length
         ? `${formatTime(
-            openingTimes[dayMapping["Wednesday"]][0].openTime
-          )} - ${formatTime(
-            openingTimes[dayMapping["Wednesday"]][0].closeTime
-          )}`
+          openingTimes[dayMapping["Wednesday"]][0].openTime
+        )} - ${formatTime(
+          openingTimes[dayMapping["Wednesday"]][0].closeTime
+        )}`
         : "Closed",
     },
     {
       day: "Thursday",
       hours: openingTimes?.[dayMapping["Thursday"]]?.length
         ? `${formatTime(
-            openingTimes[dayMapping["Thursday"]][0].openTime
-          )} - ${formatTime(openingTimes[dayMapping["Thursday"]][0].closeTime)}`
+          openingTimes[dayMapping["Thursday"]][0].openTime
+        )} - ${formatTime(openingTimes[dayMapping["Thursday"]][0].closeTime)}`
         : "Closed",
     },
     {
       day: "Friday",
       hours: openingTimes?.[dayMapping["Friday"]]?.length
         ? `${formatTime(
-            openingTimes[dayMapping["Friday"]][0].openTime
-          )} - ${formatTime(openingTimes[dayMapping["Friday"]][0].closeTime)}`
+          openingTimes[dayMapping["Friday"]][0].openTime
+        )} - ${formatTime(openingTimes[dayMapping["Friday"]][0].closeTime)}`
         : "Closed",
     },
     {
       day: "Saturday",
       hours: openingTimes?.[dayMapping["Saturday"]]?.length
         ? `${formatTime(
-            openingTimes[dayMapping["Saturday"]][0].openTime
-          )} - ${formatTime(openingTimes[dayMapping["Saturday"]][0].closeTime)}`
+          openingTimes[dayMapping["Saturday"]][0].openTime
+        )} - ${formatTime(openingTimes[dayMapping["Saturday"]][0].closeTime)}`
         : "Closed",
     },
     {
       day: "Sunday",
       hours: openingTimes?.[dayMapping["Sunday"]]?.length
         ? `${formatTime(
-            openingTimes[dayMapping["Sunday"]][0].openTime
-          )} - ${formatTime(openingTimes[dayMapping["Sunday"]][0].closeTime)}`
+          openingTimes[dayMapping["Sunday"]][0].openTime
+        )} - ${formatTime(openingTimes[dayMapping["Sunday"]][0].closeTime)}`
         : "Closed",
     },
   ];
@@ -172,7 +174,7 @@ export function RestaurantHeader({
                 <div className="flex items-start justify-between gap-2">
                   <div className="pt-2">
                     <h1 className="text-xl font-bold">{name}</h1>
-                    <div className="flex items-center gap-1 mt-1 text-sm">
+                    {/* <div className="flex items-center gap-1 mt-1 text-sm">
                       <div className="flex items-center">
                         <Star className="w-4 h-4 fill-yellow-400 text-yellow-400" />
                         <span className="ml-1 font-medium">4.8</span>
@@ -180,9 +182,9 @@ export function RestaurantHeader({
                       <span className="text-muted-foreground">
                         (2.3k reviews)
                       </span>
-                    </div>
+                    </div> */}
                     <Badge variant="secondary" className="font-normal mt-2">
-                      $$ • Bubble Tea
+                      Bubble Tea
                     </Badge>
                   </div>
                 </div>
@@ -194,9 +196,8 @@ export function RestaurantHeader({
               <div className="flex items-center justify-between">
                 <div className="flex items-center gap-2">
                   <div
-                    className={`w-2 h-2 rounded-full ${
-                      isOpen ? "bg-green-500 animate-pulse" : "bg-red-500"
-                    }`}
+                    className={`w-2 h-2 rounded-full ${isOpen ? "bg-green-500 animate-pulse" : "bg-red-500"
+                      }`}
                   />
                   <span className="font-medium">
                     {isOpen ? "Open Now" : "Closed"}
@@ -228,7 +229,10 @@ export function RestaurantHeader({
 
               {/* Quick Actions */}
               <div className="flex gap-2 pt-2">
-                <Button variant="outline" className="flex-1 h-9">
+                <Button
+                  variant="outline"
+                  className="flex-1 h-9"
+                  onClick={() => window.open(googleMapsUrl, "_blank")}>
                   Open in Google Maps
                 </Button>
                 <Button

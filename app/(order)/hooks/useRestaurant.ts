@@ -14,6 +14,7 @@ export function useRestaurant(restaurantId: string) {
   const [restaurant, setRestaurant] = useState<Restaurant | null>(null);
   const [menuCategories, setMenuCategories] = useState<MenuCategory[]>([]);
 
+
   useEffect(() => {
     const fetchRestaurant = async () => {
       try {
@@ -31,23 +32,23 @@ export function useRestaurant(restaurantId: string) {
 
         // Create a Popular category with recommended items
         const recommendedItems = [
-          ...restaurantData.menuCategoryId.flatMap((category) =>
-            category.menuId.filter((item) => item.isRecommended)
+          ...restaurantData.menuCategoryId.flatMap((category: any) =>
+            category.menuId.filter((item: any) => item.isRecommended)
           ),
-          ...restaurantData.menuUncategory.filter((item) => item.isRecommended),
+          ...restaurantData.menuUncategory.filter((item: any) => item.isRecommended),
         ];
 
-        const popularCategory = {
-          name: "Popular",
-          menuId: recommendedItems,
-          $id: "popular-category",
-        };
+        let allCategories = [...restaurantData.menuCategoryId];
 
-        // Combine all categories including Popular
-        const allCategories = [
-          popularCategory,
-          ...restaurantData.menuCategoryId,
-        ];
+        if (recommendedItems.length) {
+          const popularCategory = {
+            name: "Popular",
+            menuId: recommendedItems,
+            $id: "popular-category",
+          };
+          allCategories.unshift(popularCategory);
+        }
+
         setMenuCategories(allCategories);
       } catch (err) {
         setError(err instanceof Error ? err.message : "An error occurred");
