@@ -180,6 +180,7 @@ export default function FoodOrderingPage({
         <RestaurantHeader
           name={restaurant?.name || ""}
           logo={restaurant?.logo || ""}
+          image={restaurant?.image || ""}
           googleMapsUrl={restaurant?.googleMapsUrl || ""}
           waitTime={restaurant?.waitTime || 0}
           isOpen={restaurant?.isOpen || false}

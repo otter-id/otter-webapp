@@ -17,6 +17,7 @@ import { Separator } from "@/components/ui/separator";
 interface RestaurantHeaderProps {
   name: string;
   logo: string;
+  image: string;
   googleMapsUrl: string;
   waitTime: number;
   isOpen: boolean;
@@ -31,6 +32,7 @@ interface RestaurantHeaderProps {
 export function RestaurantHeader({
   name,
   logo,
+  image,
   googleMapsUrl,
   waitTime,
   isOpen,
@@ -144,7 +146,7 @@ export function RestaurantHeader({
         {/* Hero Image */}
         <div className="h-48 relative bg-muted">
           <Image
-            src="/placeholder/placeholder.svg?height=192&width=448"
+            src={image}
             alt="Restaurant banner"
             fill
             className="object-cover brightness-90"
