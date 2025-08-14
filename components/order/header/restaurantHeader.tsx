@@ -17,9 +17,11 @@ import { Separator } from "@/components/ui/separator";
 interface RestaurantHeaderProps {
   name: string;
   logo: string;
+  image: string;
   googleMapsUrl: string;
   waitTime: number;
   isOpen: boolean;
+  timeZone?: string;
   openingTimes?: {
     [key: string]: {
       openTime: string;
@@ -31,9 +33,11 @@ interface RestaurantHeaderProps {
 export function RestaurantHeader({
   name,
   logo,
+  image,
   googleMapsUrl,
   waitTime,
   isOpen,
+  timeZone,
   openingTimes,
 }: RestaurantHeaderProps) {
   const [showHours, setShowHours] = useState(false);
@@ -60,13 +64,13 @@ export function RestaurantHeader({
         hour: "2-digit",
         minute: "2-digit",
         hour12: true,
+        timeZone: timeZone
       });
     } catch (error) {
       return "Invalid time";
     }
   };
 
-  // Convert API openingTimes to a more readable format
   const dayMapping = {
     Monday: "MON",
     Tuesday: "TUE",
@@ -77,66 +81,34 @@ export function RestaurantHeader({
     Sunday: "SUN",
   };
 
-  const openingHours = [
-    {
-      day: "Monday",
-      hours: openingTimes?.[dayMapping["Monday"]]?.length
-        ? `${formatTime(
-          openingTimes[dayMapping["Monday"]][0].openTime
-        )} - ${formatTime(openingTimes[dayMapping["Monday"]][0].closeTime)}`
-        : "Closed",
-    },
-    {
-      day: "Tuesday",
-      hours: openingTimes?.[dayMapping["Tuesday"]]?.length
-        ? `${formatTime(
-          openingTimes[dayMapping["Tuesday"]][0].openTime
-        )} - ${formatTime(openingTimes[dayMapping["Tuesday"]][0].closeTime)}`
-        : "Closed",
-    },
-    {
-      day: "Wednesday",
-      hours: openingTimes?.[dayMapping["Wednesday"]]?.length
-        ? `${formatTime(
-          openingTimes[dayMapping["Wednesday"]][0].openTime
-        )} - ${formatTime(
-          openingTimes[dayMapping["Wednesday"]][0].closeTime
-        )}`
-        : "Closed",
-    },
-    {
-      day: "Thursday",
-      hours: openingTimes?.[dayMapping["Thursday"]]?.length
-        ? `${formatTime(
-          openingTimes[dayMapping["Thursday"]][0].openTime
-        )} - ${formatTime(openingTimes[dayMapping["Thursday"]][0].closeTime)}`
-        : "Closed",
-    },
-    {
-      day: "Friday",
-      hours: openingTimes?.[dayMapping["Friday"]]?.length
-        ? `${formatTime(
-          openingTimes[dayMapping["Friday"]][0].openTime
-        )} - ${formatTime(openingTimes[dayMapping["Friday"]][0].closeTime)}`
-        : "Closed",
-    },
-    {
-      day: "Saturday",
-      hours: openingTimes?.[dayMapping["Saturday"]]?.length
-        ? `${formatTime(
-          openingTimes[dayMapping["Saturday"]][0].openTime
-        )} - ${formatTime(openingTimes[dayMapping["Saturday"]][0].closeTime)}`
-        : "Closed",
-    },
-    {
-      day: "Sunday",
-      hours: openingTimes?.[dayMapping["Sunday"]]?.length
-        ? `${formatTime(
-          openingTimes[dayMapping["Sunday"]][0].openTime
-        )} - ${formatTime(openingTimes[dayMapping["Sunday"]][0].closeTime)}`
-        : "Closed",
-    },
+  const daysOfWeek = [
+    "Monday",
+    "Tuesday",
+    "Wednesday",
+    "Thursday",
+    "Friday",
+    "Saturday",
+    "Sunday",
   ];
+
+  const openingHours = daysOfWeek.map((day) => {
+    const dayKey = dayMapping[day as keyof typeof dayMapping];
+    const periods = openingTimes?.[dayKey];
+
+    if (periods && periods.length > 0) {
+      return {
+        day: day,
+        hours: periods.map(
+          (period) => `${formatTime(period.openTime)} - ${formatTime(period.closeTime)}`
+        ),
+      };
+    } else {
+      return {
+        day: day,
+        hours: ["Closed"],
+      };
+    }
+  });
 
   return (
     <>
@@ -144,7 +116,7 @@ export function RestaurantHeader({
         {/* Hero Image */}
         <div className="h-48 relative bg-muted">
           <Image
-            src="/placeholder/placeholder.svg?height=192&width=448"
+            src={image}
             alt="Restaurant banner"
             fill
             className="object-cover brightness-90"
@@ -260,7 +232,7 @@ export function RestaurantHeader({
           <div className="space-y-3 pt-4">
             {openingHours.map((schedule, index) => (
               <div key={schedule.day}>
-                <div className="flex justify-between items-center">
+                <div className="flex justify-between items-start">
                   <span
                     className={
                       schedule.day === currentDay
@@ -270,15 +242,19 @@ export function RestaurantHeader({
                   >
                     {schedule.day}
                   </span>
-                  <span
+                  {/* Ganti span menjadi div untuk menampung beberapa baris jadwal */}
+                  <div
                     className={
                       schedule.day === currentDay
-                        ? "font-black"
-                        : "text-muted-foreground"
+                        ? "font-black text-left"
+                        : "text-muted-foreground text-left"
                     }
                   >
-                    {schedule.hours}
-                  </span>
+                    {/* Lakukan map pada array `schedule.hours` */}
+                    {schedule.hours.map((timeSlot, i) => (
+                      <div key={i}>{timeSlot}</div>
+                    ))}
+                  </div>
                 </div>
                 {index < openingHours.length - 1 && (
                   <Separator className="mt-3" />

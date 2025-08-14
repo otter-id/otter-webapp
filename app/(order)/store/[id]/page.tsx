@@ -173,16 +173,18 @@ export default function FoodOrderingPage({
       </div>
     );
   }
-
+  
   return (
     <div className="min-h-screen bg-gray-50 pb-[72px]">
       <div className="max-w-md mx-auto bg-white shadow-sm">
         <RestaurantHeader
           name={restaurant?.name || ""}
           logo={restaurant?.logo || ""}
+          image={restaurant?.image || ""}
           googleMapsUrl={restaurant?.googleMapsUrl || ""}
           waitTime={restaurant?.waitTime || 0}
           isOpen={restaurant?.isOpen || false}
+          timeZone={restaurant?.timezone || undefined}
           openingTimes={restaurant?.openingTimes}
         />
 

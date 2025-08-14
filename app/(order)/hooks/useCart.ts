@@ -1,15 +1,20 @@
 "use client";
 
-import { useState, useCallback, useEffect } from "react";
-import { MenuItem, MenuOption, MenuOptionCategory, Restaurant } from "@/types/restaurant";
+import { useState, useCallback, useEffect, useMemo } from "react";
+import { MenuItem, MenuOption, Restaurant } from "@/types/restaurant";
 
-// Extended MenuItem type to handle JSX elements
+// Interface tidak perlu diubah
 interface ExtendedMenuItem extends Omit<MenuItem, "name" | "description"> {
   name: string | JSX.Element;
   description: string | JSX.Element;
 }
 
 const CART_STORAGE_KEY = "otter-cart";
+
+export interface CartRestourant {
+  $id: string; // ID Restoran
+  item: CartItem[];
+}
 
 export interface CartItem {
   $id: string;
@@ -38,30 +43,40 @@ export interface CartTotals {
 }
 
 export function useCart(restaurant: Restaurant | null) {
-
-  const [cart, setCart] = useState<CartItem[]>(() => {
-    // Initialize cart from localStorage if available
+  // 1. Ubah tipe state utama menjadi CartRestourant[]
+  const [cart, setCart] = useState<CartRestourant[]>(() => {
     if (typeof window !== "undefined") {
       const savedCart = localStorage.getItem(CART_STORAGE_KEY);
       return savedCart ? JSON.parse(savedCart) : [];
     }
     return [];
   });
+
   const [itemToDelete, setItemToDelete] = useState<CartItem | null>(null);
   const [editingCartItem, setEditingCartItem] = useState<CartItem | null>(null);
 
-  // Save cart to localStorage whenever it changes
+  // 2. Simpan ke localStorage setiap kali struktur cart utama berubah
   useEffect(() => {
     if (typeof window !== "undefined") {
       localStorage.setItem(CART_STORAGE_KEY, JSON.stringify(cart));
     }
   }, [cart]);
 
-  const cartItemCount = cart.reduce((sum, item) => sum + item.quantity, 0);
+  // 3. Ambil item keranjang hanya untuk restoran yang sedang aktif
+  const currentCartItems = useMemo(
+    () => cart.find((r) => r.$id === restaurant?.$id)?.item || [],
+    [cart, restaurant]
+  );
+
+  // 4. Hitung total item hanya untuk restoran yang sedang aktif
+  const cartItemCount = currentCartItems.reduce(
+    (sum, item) => sum + item.quantity,
+    0
+  );
 
   const calculateCartTotals = useCallback((): CartTotals => {
-    const subtotal = cart.reduce((sum, item) => {
-      // Calculate the total price of all selected options
+    // Kalkulasi subtotal hanya berdasarkan item di restoran saat ini
+    const subtotal = currentCartItems.reduce((sum, item) => {
       const optionsPrice = item.selectedOptions
         ? Object.values(item.selectedOptions).reduce((optionSum, options) => {
           return (
@@ -88,55 +103,117 @@ export function useCart(restaurant: Restaurant | null) {
       servicePercentage,
       deliveryFee,
       total: subtotal + tax + serviceFee + deliveryFee,
-    }
-  }, [cart, restaurant]);
-
-  const addToCart = useCallback((item: CartItem) => {
-    // Ensure selectedOptions is initialized
-    const safeItem = {
-      ...item,
-      selectedOptions: item.selectedOptions || {},
     };
-    setCart((prev) => [...prev, safeItem]);
-  }, []);
+  }, [currentCartItems, restaurant]);
+
+  const addToCart = useCallback(
+    (item: CartItem) => {
+      if (!restaurant) return; // Butuh ID restoran untuk menambahkan item
+
+      const safeItem = {
+        ...item,
+        selectedOptions: item.selectedOptions || {},
+      };
+
+      setCart((prevCart) => {
+        const restaurantIndex = prevCart.findIndex(
+          (r) => r.$id === restaurant.$id
+        );
+
+        if (restaurantIndex > -1) {
+          // Restoran sudah ada di keranjang, tambahkan item baru
+          const updatedCart = [...prevCart];
+          const updatedRestaurant = { ...updatedCart[restaurantIndex] };
+          updatedRestaurant.item = [...updatedRestaurant.item, safeItem];
+          updatedCart[restaurantIndex] = updatedRestaurant;
+          return updatedCart;
+        } else {
+          // Restoran belum ada, buat entri baru
+          const newRestaurantEntry: CartRestourant = {
+            $id: restaurant.$id,
+            item: [safeItem],
+          };
+          return [...prevCart, newRestaurantEntry];
+        }
+      });
+    },
+    [restaurant]
+  );
 
   const updateCartItem = useCallback(
     (updatedItem: CartItem) => {
-      // Ensure selectedOptions is initialized
+      if (!restaurant) return;
       const safeItem = {
         ...updatedItem,
         selectedOptions: updatedItem.selectedOptions || {},
       };
       setCart((prevCart) =>
-        prevCart.map((item) => (item === editingCartItem ? safeItem : item))
+        prevCart.map((r) => {
+          if (r.$id === restaurant.$id) {
+            return {
+              ...r,
+              item: r.item?.map((cartItem) =>
+                cartItem === editingCartItem ? safeItem : cartItem
+              ),
+            };
+          }
+          return r;
+        })
       );
       setEditingCartItem(null);
     },
-    [editingCartItem]
+    [editingCartItem, restaurant]
   );
 
-  const updateItemQuantity = useCallback((item: CartItem, quantity: number) => {
-    if (quantity < 1) return;
-    setCart((prevCart) =>
-      prevCart.map((cartItem) =>
-        cartItem === item ? { ...cartItem, quantity } : cartItem
-      )
-    );
-  }, []);
+  const updateItemQuantity = useCallback(
+    (item: CartItem, quantity: number) => {
+      if (quantity < 1 || !restaurant) return;
 
-  const removeItem = useCallback((item: CartItem) => {
-    setCart((prevCart) => prevCart.filter((cartItem) => cartItem !== item));
-  }, []);
+      setCart((prevCart) =>
+        prevCart.map((r) => {
+          if (r.$id === restaurant.$id) {
+            return {
+              ...r,
+              item: r.item?.map((cartItem) =>
+                cartItem === item ? { ...cartItem, quantity } : cartItem
+              ),
+            };
+          }
+          return r;
+        })
+      );
+    },
+    [restaurant]
+  );
 
-  // Helper function to create a cart item from a menu item
+  const removeItem = useCallback(
+    (itemToRemove: CartItem) => {
+      if (!restaurant) return;
+
+      setCart((prevCart) =>
+        prevCart.map((r) => {
+          if (r.$id === restaurant.$id) {
+            return {
+              ...r,
+              item: r.item?.filter((cartItem) => cartItem !== itemToRemove),
+            };
+          }
+          return r;
+        })
+          // Optional: Hapus entri restoran jika keranjangnya menjadi kosong
+          .filter(r => r.item?.length > 0)
+      );
+    },
+    [restaurant]
+  );
+
+  // Fungsi ini tidak perlu diubah
   const createCartItemFromMenuItem = (
     menuItem: MenuItem | ExtendedMenuItem,
     selectedOptions: { [categoryId: string]: MenuOption[] },
     note: string = ""
   ): CartItem => {
-    // Format the selected options for the cart
     const formattedOptions: CartItem["selectedOptions"] = {};
-
     Object.entries(selectedOptions).forEach(([categoryId, options]) => {
       formattedOptions[categoryId] = options.map((option) => ({
         $id: option.$id,
@@ -145,15 +222,14 @@ export function useCart(restaurant: Restaurant | null) {
       }));
     });
 
-    // Convert JSX.Element name to string if needed
     let itemName: string;
     if (typeof menuItem.name === "string") {
       itemName = menuItem.name;
     } else {
-      // Try to get a reasonable string representation
       try {
         const stringName = String(menuItem.name);
-        itemName = stringName === "[object Object]" ? "Menu Item" : stringName;
+        itemName =
+          stringName === "[object Object]" ? "Menu Item" : stringName;
       } catch (e) {
         itemName = "Menu Item";
       }
@@ -170,17 +246,18 @@ export function useCart(restaurant: Restaurant | null) {
     };
   };
 
-  // Clear the entire cart
+  // Mengosongkan keranjang hanya untuk restoran yang aktif
   const clearCart = useCallback(() => {
-    setCart([]);
+    if (!restaurant) return;
+    setCart((prevCart) =>
+      prevCart.filter((r) => r.$id !== restaurant.$id)
+    );
     setEditingCartItem(null);
-    if (typeof window !== "undefined") {
-      localStorage.removeItem(CART_STORAGE_KEY);
-    }
-  }, []);
+  }, [restaurant]);
 
   return {
-    cart,
+    // 5. Kembalikan item dari restoran saat ini agar mudah digunakan komponen
+    cart: currentCartItems,
     cartItemCount,
     itemToDelete,
     editingCartItem,
