@@ -20,6 +20,7 @@ export interface CartItem {
   $id: string;
   name: string;
   price: number;
+  discountPrice: number;
   quantity: number;
   image: string;
   note?: string;
@@ -28,6 +29,7 @@ export interface CartItem {
       $id: string;
       name: string;
       price: number;
+      discountPrice: number;
     }[];
   };
 }
@@ -81,12 +83,12 @@ export function useCart(restaurant: Restaurant | null) {
         ? Object.values(item.selectedOptions).reduce((optionSum, options) => {
           return (
             optionSum +
-            options.reduce((total, option) => total + option.price, 0)
+            options.reduce((total, option) => total + (option.discountPrice || option.price), 0)
           );
         }, 0)
         : 0;
 
-      return sum + (item.price + optionsPrice) * item.quantity;
+      return sum + ((item.discountPrice || item.price) + optionsPrice) * item.quantity;
     }, 0);
 
     const taxPercentage = restaurant?.tax ?? 0;
@@ -219,6 +221,7 @@ export function useCart(restaurant: Restaurant | null) {
         $id: option.$id,
         name: option.name,
         price: option.price,
+        discountPrice: option.discountPrice,
       }));
     });
 
@@ -239,6 +242,7 @@ export function useCart(restaurant: Restaurant | null) {
       $id: menuItem.$id,
       name: itemName,
       price: menuItem.price,
+      discountPrice: menuItem.discountPrice,
       quantity: 1,
       image: menuItem.image,
       note,

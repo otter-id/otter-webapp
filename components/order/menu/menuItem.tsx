@@ -50,11 +50,12 @@ export function MenuItem({
     }
   };
 
+
+
   return (
     <div
-      className={`flex gap-3 cursor-pointer transition-opacity duration-300 ${
-        mounted ? "opacity-100" : "opacity-0"
-      }`}
+      className={`flex gap-3 cursor-pointer transition-opacity duration-300 ${mounted ? "opacity-100" : "opacity-0"
+        }`}
       onClick={onItemClick}
     >
       <div className="relative w-32 h-32 flex-shrink-0">
@@ -96,7 +97,18 @@ export function MenuItem({
             <p className="text-sm text-muted-foreground line-clamp-2">
               {item.description}
             </p>
-            <p className="font-bold">{formatPrice(item.price)}</p>
+            <div className="flex flex-col items-start">
+              {!item.discountPrice ? (
+                <p className="font-bold">{formatPrice(item.price)}</p>
+              ) : (
+                <>
+                  <p className="text-sm text-muted-foreground line-through">
+                    {formatPrice(item.price)}
+                  </p>
+                  <p className="font-bold">{formatPrice(item.discountPrice)}</p>
+                </>
+              )}
+            </div>
           </div>
           <Button
             size="icon"
