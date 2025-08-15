@@ -107,6 +107,7 @@ export function ItemDrawer({
                     $id: cartOption.$id,
                     name: cartOption.name,
                     price: cartOption.price,
+                    discountPrice: cartOption.discountPrice,
                     description: null,
                     isInStock: true,
                     index: null,
@@ -294,9 +295,18 @@ export function ItemDrawer({
                   <p className="text-muted-foreground mt-1">
                     {selectedItem.description}
                   </p>
-                  <p className="font-bold mt-2">
-                    {formatPrice(selectedItem.price)}
-                  </p>
+                  <div className="flex flex-col items-start">
+                    {!selectedItem.discountPrice ? (
+                      <p className="font-bold">{formatPrice(selectedItem.price)}</p>
+                    ) : (
+                      <>
+                        <p className="text-sm text-muted-foreground line-through">
+                          {formatPrice(selectedItem.price)}
+                        </p>
+                        <p className="font-bold">{formatPrice(selectedItem.discountPrice)}</p>
+                      </>
+                    )}
+                  </div>
                 </div>
               </div>
 
@@ -428,11 +438,10 @@ export function ItemDrawer({
                         return (
                           <div
                             key={option.$id}
-                            className={`flex items-center justify-between py-2 px-3 border rounded-md ${
-                              !maxReached || isSelected
-                                ? "cursor-pointer"
-                                : "cursor-not-allowed opacity-60"
-                            }`}
+                            className={`flex items-center justify-between py-2 px-3 border rounded-md ${!maxReached || isSelected
+                              ? "cursor-pointer"
+                              : "cursor-not-allowed opacity-60"
+                              }`}
                             onClick={() => {
                               if (!maxReached || isSelected) {
                                 handleOptionChange(category.$id, option, false);
@@ -459,11 +468,10 @@ export function ItemDrawer({
                               />
                               <Label
                                 htmlFor={option.$id}
-                                className={`${
-                                  maxReached && !isSelected
-                                    ? "text-gray-400"
-                                    : "cursor-pointer"
-                                }`}
+                                className={`${maxReached && !isSelected
+                                  ? "text-gray-400"
+                                  : "cursor-pointer"
+                                  }`}
                               >
                                 {option.name}
                               </Label>
