@@ -198,20 +198,23 @@ export function ItemDrawer({
 
     return total;
   };
-
+  
+  // --- AWAL PERUBAHAN ---
+  // Menyesuaikan logika disabled button dengan minAmount
   const isRequiredOptionsMissing = (): boolean => {
     if (!selectedItem) return true;
 
+    // Memeriksa apakah ada kategori yang persyaratan minimumnya tidak terpenuhi
     return selectedItem.menuOptionCategory.some((category) => {
-      if (category.isRequired) {
-        return (
-          !selectedOptions[category.$id] ||
-          selectedOptions[category.$id].length === 0
-        );
-      }
-      return false;
+      const minAmount = category.minAmount || 0;
+      const selectedCount = selectedOptions[category.$id]?.length || 0;
+
+      // Jika jumlah minimum disyaratkan (minAmount > 0) tetapi pengguna memilih kurang dari itu,
+      // maka persyaratan dianggap tidak terpenuhi.
+      return minAmount > 0 && selectedCount < minAmount;
     });
   };
+  // --- AKHIR PERUBAHAN ---
 
   const getSelectedCount = (categoryId: string): number => {
     return selectedOptions[categoryId]?.length || 0;
@@ -329,157 +332,174 @@ export function ItemDrawer({
               </div>
 
               {/* Option Categories */}
-              {selectedItem.menuOptionCategory.map((category) => (
-                <div key={category.$id} className="space-y-3">
-                  <div className="flex items-center justify-between">
-                    <div>
-                      <h3 className="font-semibold">{category.name}</h3>
-                      {category.type === "checkbox" && (
-                        <p className="text-xs text-muted-foreground">
-                          Select up to {category.maxAmount}{" "}
-                          {category.maxAmount === 1 ? "option" : "options"}
-                          {category.isRequired && " (Required)"}
-                        </p>
-                      )}
-                    </div>
-                    <div className="flex items-center gap-2">
-                      {category.type === "checkbox" && (
-                        <Badge className="bg-blue-50 text-blue-700 hover:bg-blue-50">
-                          {getSelectedCount(category.$id)}/{category.maxAmount}
-                          {" Selected"}
-                        </Badge>
-                      )}
-                      {category.isRequired &&
-                        (selectedOptions[category.$id]?.length > 0 ? (
-                          <Badge className="bg-green-100 text-green-700 hover:bg-green-100 flex gap-1">
-                            <Check className="h-3 w-3" />
-                            <span>Selected</span>
-                          </Badge>
-                        ) : (
-                          <Badge className="bg-red-100 text-red-700 flex gap-1 hover:bg-red-100">
-                            <AlertTriangle className="h-3 w-3" />
-                            <span>Required</span>
-                          </Badge>
-                        ))}
-                    </div>
-                  </div>
+              {selectedItem.menuOptionCategory.map((category) => {
+                const minAmount = category.minAmount || 0;
+                const maxAmount = category.maxAmount;
+                const selectedCount = getSelectedCount(category.$id);
+                const isRequirementMet = selectedCount >= minAmount;
+                let requirementText = '';
 
-                  {category.type === "radio" ? (
-                    <RadioGroup
-                      value={selectedOptions[category.$id]?.[0]?.$id || ""}
-                      onValueChange={(value) => {
-                        const option = category.menuOptionId.find(
-                          (opt) => opt.$id === value
-                        );
-                        if (option) {
-                          handleOptionChange(category.$id, option, true);
-                        }
-                      }}
-                    >
-                      <div className="space-y-2">
-                        {category.menuOptionId.map((option) => (
-                          <div
-                            key={option.$id}
-                            className="flex items-center justify-between py-2 px-3 border rounded-md cursor-pointer"
-                            onClick={() => {
-                              const value = option.$id;
-                              const foundOption = category.menuOptionId.find(
-                                (opt) => opt.$id === value
-                              );
-                              if (foundOption) {
-                                handleOptionChange(
-                                  category.$id,
-                                  foundOption,
-                                  true
-                                );
-                              }
-                            }}
-                          >
-                            <div className="flex items-center gap-3">
-                              <RadioGroupItem
-                                value={option.$id}
-                                id={option.$id}
-                              />
-                              <Label
-                                htmlFor={option.$id}
-                                className="cursor-pointer"
-                              >
-                                {option.name}
-                              </Label>
-                            </div>
-                            {option.price > 0 && (
-                              <span className="text-sm font-medium">
-                                +{formatPrice(option.price)}
-                              </span>
-                            )}
-                          </div>
-                        ))}
+                // Jika min dan max sama, cukup tampilkan "Pilih X"
+                if (minAmount > 0) {
+                  requirementText = `(Pilih ${minAmount})`
+                }
+
+                // Membuat teks persyaratan (misal: "(Pilih 2, Maks. 3)")
+                if (maxAmount > 1 && maxAmount != category.menuOptionId.length ) {
+                  requirementText = `(Pilih ${minAmount}, Maks. ${maxAmount})`
+                }
+
+                return (
+                  <div key={category.$id} className="space-y-3">
+                    <div className="flex items-center justify-between">
+                      <div>
+                        <h3 className="font-semibold">
+                          {category.name}{' '}
+                          {requirementText && (
+                            <span className="text-sm font-normal text-muted-foreground">
+                              {requirementText}
+                            </span>
+                          )}
+                        </h3>
                       </div>
-                    </RadioGroup>
-                  ) : (
-                    <div className="space-y-2">
-                      {category.menuOptionId.map((option) => {
-                        const maxReached = isMaxReached(category.$id);
-                        const isSelected = isOptionSelected(
-                          category.$id,
-                          option.$id
-                        );
+                      <div className="flex items-center gap-2">
+                        {category.type === "checkbox" && (
+                          <Badge className="bg-blue-50 text-blue-700 hover:bg-blue-50">
+                            {selectedCount}/{maxAmount}
+                            {" Terpilih"}
+                          </Badge>
+                        )}
+                        {/* Menggunakan minAmount untuk validasi badge */}
+                        {minAmount > 0 &&
+                          (isRequirementMet ? (
+                            <Badge className="bg-green-100 text-green-700 hover:bg-green-100 flex gap-1">
+                              <Check className="h-3 w-3" />
+                              <span>Terpilih</span>
+                            </Badge>
+                          ) : (
+                            <Badge className="bg-red-100 text-red-700 flex gap-1 hover:bg-red-100">
+                              <AlertTriangle className="h-3 w-3" />
+                              <span>Wajib</span>
+                            </Badge>
+                          ))}
+                      </div>
+                    </div>
 
-                        return (
-                          <div
-                            key={option.$id}
-                            className={`flex items-center justify-between py-2 px-3 border rounded-md ${
-                              !maxReached || isSelected
+                    {category.type === "radio" ? (
+                      <RadioGroup
+                        value={selectedOptions[category.$id]?.[0]?.$id || ""}
+                        onValueChange={(value) => {
+                          const option = category.menuOptionId.find(
+                            (opt) => opt.$id === value
+                          );
+                          if (option) {
+                            handleOptionChange(category.$id, option, true);
+                          }
+                        }}
+                      >
+                        <div className="space-y-2">
+                          {category.menuOptionId.map((option) => (
+                            <div
+                              key={option.$id}
+                              className="flex items-center justify-between py-2 px-3 border rounded-md cursor-pointer"
+                              onClick={() => {
+                                const value = option.$id;
+                                const foundOption = category.menuOptionId.find(
+                                  (opt) => opt.$id === value
+                                );
+                                if (foundOption) {
+                                  handleOptionChange(
+                                    category.$id,
+                                    foundOption,
+                                    true
+                                  );
+                                }
+                              }}
+                            >
+                              <div className="flex items-center gap-3">
+                                <RadioGroupItem
+                                  value={option.$id}
+                                  id={option.$id}
+                                />
+                                <Label
+                                  htmlFor={option.$id}
+                                  className="cursor-pointer"
+                                >
+                                  {option.name}
+                                </Label>
+                              </div>
+                              {option.price > 0 && (
+                                <span className="text-sm font-medium">
+                                  +{formatPrice(option.price)}
+                                </span>
+                              )}
+                            </div>
+                          ))}
+                        </div>
+                      </RadioGroup>
+                    ) : (
+                      <div className="space-y-2">
+                        {category.menuOptionId.map((option) => {
+                          const maxReached = isMaxReached(category.$id);
+                          const isSelected = isOptionSelected(
+                            category.$id,
+                            option.$id
+                          );
+
+                          return (
+                            <div
+                              key={option.$id}
+                              className={`flex items-center justify-between py-2 px-3 border rounded-md ${!maxReached || isSelected
                                 ? "cursor-pointer"
                                 : "cursor-not-allowed opacity-60"
-                            }`}
-                            onClick={() => {
-                              if (!maxReached || isSelected) {
-                                handleOptionChange(category.$id, option, false);
-                              }
-                            }}
-                          >
-                            <div className="flex items-center gap-3">
-                              <Checkbox
-                                id={option.$id}
-                                checked={isOptionSelected(
-                                  category.$id,
-                                  option.$id
-                                )}
-                                onCheckedChange={() => {
-                                  if (!maxReached || isSelected) {
-                                    handleOptionChange(
-                                      category.$id,
-                                      option,
-                                      false
-                                    );
-                                  }
-                                }}
-                                disabled={maxReached && !isSelected}
-                              />
-                              <Label
-                                htmlFor={option.$id}
-                                className={`${
-                                  maxReached && !isSelected
+                                }`}
+                              onClick={() => {
+                                if (!maxReached || isSelected) {
+                                  handleOptionChange(category.$id, option, false);
+                                }
+                              }}
+                            >
+                              <div className="flex items-center gap-3">
+                                <Checkbox
+                                  id={option.$id}
+                                  checked={isOptionSelected(
+                                    category.$id,
+                                    option.$id
+                                  )}
+                                  onCheckedChange={() => {
+                                    if (!maxReached || isSelected) {
+                                      handleOptionChange(
+                                        category.$id,
+                                        option,
+                                        false
+                                      );
+                                    }
+                                  }}
+                                  disabled={maxReached && !isSelected}
+                                />
+                                <Label
+                                  htmlFor={option.$id}
+                                  className={`${maxReached && !isSelected
                                     ? "text-gray-400"
                                     : "cursor-pointer"
-                                }`}
-                              >
-                                {option.name}
-                              </Label>
+                                    }`}
+                                >
+                                  {option.name}
+                                </Label>
+                              </div>
+                              {option.price > 0 && (
+                                <span className="text-sm font-medium">
+                                  +{formatPrice(option.price)}
+                                </span>
+                              )}
                             </div>
-                            {option.price > 0 && (
-                              <span className="text-sm font-medium">
-                                +{formatPrice(option.price)}
-                              </span>
-                            )}
-                          </div>
-                        );
-                      })}
-                    </div>
-                  )}
-                </div>
-              ))}
+                          );
+                        })}
+                      </div>
+                    )}
+                  </div>
+                );
+              })}
               <div>
                 <h3 className="font-semibold mb-3">Order Notes</h3>
                 <Textarea
