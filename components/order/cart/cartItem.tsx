@@ -22,14 +22,14 @@ export function CartItem({
     // Calculate the total price of all selected options
     const optionsPrice = item.selectedOptions
       ? Object.values(item.selectedOptions).reduce((optionSum, options) => {
-          return (
-            optionSum +
-            options.reduce((total, option) => total + option.price, 0)
-          );
-        }, 0)
+        return (
+          optionSum +
+          options.reduce((total, option) => total + (option.discountPrice || option.price), 0)
+        );
+      }, 0)
       : 0;
 
-    return (item.price + optionsPrice) * item.quantity;
+    return ((item.discountPrice || item.price) + optionsPrice) * item.quantity;
   };
 
   return (
@@ -65,8 +65,17 @@ export function CartItem({
             </div>
           </div>
           <div className="text-sm space-y-1 text-right">
-            <div className="text-muted-foreground">
-              {formatPrice(item.price * item.quantity)}
+            <div className="flex flex-col items-end">
+              {!item.discountPrice ? (
+                <p className="font-bold">{formatPrice(item.price * item.quantity)}</p>
+              ) : (
+                <>
+                  <p className="text-sm text-muted-foreground line-through">
+                    {formatPrice(item.price * item.quantity)}
+                  </p>
+                  <p className="font-bold">{formatPrice(item.discountPrice * item.quantity)}</p>
+                </>
+              )}
             </div>
             <div className="font-medium">
               {formatPrice(calculateItemTotal(item))}

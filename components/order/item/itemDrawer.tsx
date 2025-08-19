@@ -107,6 +107,7 @@ export function ItemDrawer({
                     $id: cartOption.$id,
                     name: cartOption.name,
                     price: cartOption.price,
+                    discountPrice: cartOption.discountPrice,
                     description: null,
                     isInStock: true,
                     index: null,
@@ -297,9 +298,18 @@ export function ItemDrawer({
                   <p className="text-muted-foreground mt-1">
                     {selectedItem.description}
                   </p>
-                  <p className="font-bold mt-2">
-                    {formatPrice(selectedItem.price)}
-                  </p>
+                  <div className="flex flex-col items-start">
+                    {!selectedItem.discountPrice ? (
+                      <p className="font-bold">{formatPrice(selectedItem.price)}</p>
+                    ) : (
+                      <>
+                        <p className="text-sm text-muted-foreground line-through">
+                          {formatPrice(selectedItem.price)}
+                        </p>
+                        <p className="font-bold">{formatPrice(selectedItem.discountPrice)}</p>
+                      </>
+                    )}
+                  </div>
                 </div>
               </div>
 
