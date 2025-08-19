@@ -18,6 +18,12 @@ import { SearchOverlay } from "@/components/order/search/searchOverlay";
 import { Button } from "@/components/ui/button";
 
 import { use } from "react";
+import { RestaurantHeaderSkeleton } from "@/components/order/skeletons/RestaurantHeaderSkeleton";
+import { SearchOverlaySkeleton } from "@/components/order/skeletons/SearchOverlaySkeleton";
+import { CategoryNavSkeleton } from "@/components/order/skeletons/CategoryNavSkeleton";
+import { Skeleton } from "@/components/ui/skeleton";
+import { MenuItemSkeleton } from "@/components/order/skeletons/MenuItemSkeleton";
+import { StickyFooterSkeleton } from "@/components/order/skeletons/StickyFooterSkeleton";
 
 export default function FoodOrderingPage({
   params,
@@ -147,12 +153,30 @@ export default function FoodOrderingPage({
   };
 
   if (loading) {
-    return (
-      <div className="min-h-screen flex items-center justify-center bg-gray-50">
-        <div className="text-center">
-          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-gray-900 mx-auto"></div>
-          <p className="mt-4 text-gray-600">Loading restaurant data...</p>
+     return (
+      <div className="min-h-screen bg-gray-50 pb-[72px]">
+        <div className="max-w-md mx-auto bg-white shadow-sm">
+          <RestaurantHeaderSkeleton />
+          <div className="sticky top-0 z-20">
+            <SearchOverlaySkeleton className="border-b shadow-sm" />
+            <CategoryNavSkeleton className="border-b shadow-sm" />
+          </div>
+          <div className="px-3 py-4 space-y-6">
+            {/* Mensimulasikan 2 blok kategori */}
+            {[...Array(2)].map((_, categoryIndex) => (
+              <div key={categoryIndex}>
+                <Skeleton className="h-6 w-1/3 mb-3" />
+                <div className="space-y-4">
+                  {/* Mensimulasikan 3 item menu per kategori */}
+                  {[...Array(3)].map((_, itemIndex) => (
+                    <MenuItemSkeleton key={itemIndex} />
+                  ))}
+                </div>
+              </div>
+            ))}
+          </div>
         </div>
+        <StickyFooterSkeleton />
       </div>
     );
   }
