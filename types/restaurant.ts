@@ -40,6 +40,7 @@ export interface MenuItem {
   name: string;
   description: string;
   price: number;
+  discountPrice: number;
   image: string;
   isRecommended: boolean;
   isInStock: boolean;
@@ -64,6 +65,7 @@ export interface MenuOption {
   name: string;
   description: string | null;
   price: number;
+  discountPrice: number;
   isInStock: boolean;
   index: number | null;
   $id: string;
