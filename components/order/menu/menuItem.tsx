@@ -62,6 +62,7 @@ export function MenuItem({
         {item.image && !imageError ? (
           <div className="w-full h-full rounded-lg overflow-hidden bg-muted">
             <Image
+              onDragStart={(event)=> event.preventDefault()}
               src={item.image}
               alt={typeof item.name === "string" ? item.name : "Menu item"}
               fill

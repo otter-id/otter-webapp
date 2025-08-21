@@ -75,15 +75,15 @@ export default function PaymentPage() {
   const calculateItemTotal = (item: any) => {
     const modifierPrice = item.selectedModifiers
       ? Object.values(item.selectedModifiers).reduce(
-          (sum: number, mod: any) => sum + mod.price,
-          0
-        )
+        (sum: number, mod: any) => sum + mod.price,
+        0
+      )
       : 0;
     const toppingsPrice = item.extraToppings
       ? item.extraToppings.reduce(
-          (sum: number, topping: any) => sum + topping.price,
-          0
-        )
+        (sum: number, topping: any) => sum + topping.price,
+        0
+      )
       : 0;
     return (item.price + modifierPrice + toppingsPrice) * item.quantity;
   };
@@ -237,6 +237,7 @@ export default function PaymentPage() {
                   <div key={`${item.id}-${index}`} className="flex gap-3">
                     <div className="relative w-16 h-16 flex-shrink-0 rounded-lg overflow-hidden bg-muted">
                       <Image
+                        onDragStart={(event) => event.preventDefault()}
                         src="/placeholder.svg?height=64&width=64"
                         alt={item.name}
                         fill

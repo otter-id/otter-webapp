@@ -36,6 +36,7 @@ export function CartItem({
     <div className="flex items-start gap-3">
       <div className="relative w-20 h-20 flex-shrink-0 rounded-lg overflow-hidden bg-muted">
         <Image
+          onDragStart={(event) => event.preventDefault()}
           src={item.image || "/placeholder/placeholder.svg?height=80&width=80"}
           alt={item.name}
           fill

@@ -41,6 +41,7 @@ export function OrderDetails({ data }: OrderDetailsProps) {
             <div className="flex space-x-4">
               {!imageErrors[index] ? (
                 <Image
+                  onDragStart={(event) => event.preventDefault()}
                   src={item.image || "/placeholder/placeholder.svg"}
                   alt={item.name}
                   width={96}
