@@ -238,6 +238,7 @@ export default function PaymentPage() {
                     <div className="relative w-16 h-16 flex-shrink-0 rounded-lg overflow-hidden bg-muted">
                       <Image
                         onDragStart={(event) => event.preventDefault()}
+                        onContextMenu={(e) => e.preventDefault()}
                         src="/placeholder.svg?height=64&width=64"
                         alt={item.name}
                         fill

@@ -276,6 +276,7 @@ export function ItemDrawer({
                   {selectedItem.image && !imageError ? (
                     <Image
                       onDragStart={(event) => event.preventDefault()}
+                      onContextMenu={(e) => e.preventDefault()}
                       src={selectedItem.image}
                       alt={
                         typeof selectedItem.name === "string"

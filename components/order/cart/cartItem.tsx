@@ -37,6 +37,7 @@ export function CartItem({
       <div className="relative w-20 h-20 flex-shrink-0 rounded-lg overflow-hidden bg-muted">
         <Image
           onDragStart={(event) => event.preventDefault()}
+          onContextMenu={(e) => e.preventDefault()}
           src={item.image || "/placeholder/placeholder.svg?height=80&width=80"}
           alt={item.name}
           fill
