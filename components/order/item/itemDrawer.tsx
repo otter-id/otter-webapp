@@ -185,37 +185,35 @@ export function ItemDrawer({
     );
   };
 
+  // --- AWAL PERUBAHAN ---
+  // Menyesuaikan kalkulasi harga total dengan discountPrice
   const calculateTotalPrice = (): number => {
     if (!selectedItem) return 0;
 
-    let total = selectedItem.price * quantity;
+    // Gunakan discountPrice jika ada, jika tidak gunakan price biasa
+    const baseItemPrice = selectedItem.discountPrice ?? selectedItem.price;
+    let total = baseItemPrice * quantity;
 
-    // Add option prices
+    // Tambahkan harga opsi, dengan mempertimbangkan discountPrice juga
     Object.values(selectedOptions).forEach((options) => {
       options.forEach((option) => {
-        total += option.price * quantity;
+        const optionPrice = option.discountPrice ?? option.price;
+        total += optionPrice * quantity;
       });
     });
 
     return total;
   };
-  
-  // --- AWAL PERUBAHAN ---
-  // Menyesuaikan logika disabled button dengan minAmount
+  // --- AKHIR PERUBAHAN ---
+
   const isRequiredOptionsMissing = (): boolean => {
     if (!selectedItem) return true;
-
-    // Memeriksa apakah ada kategori yang persyaratan minimumnya tidak terpenuhi
     return selectedItem.menuOptionCategory.some((category) => {
       const minAmount = category.minAmount || 0;
       const selectedCount = selectedOptions[category.$id]?.length || 0;
-
-      // Jika jumlah minimum disyaratkan (minAmount > 0) tetapi pengguna memilih kurang dari itu,
-      // maka persyaratan dianggap tidak terpenuhi.
       return minAmount > 0 && selectedCount < minAmount;
     });
   };
-  // --- AKHIR PERUBAHAN ---
 
   const getSelectedCount = (categoryId: string): number => {
     return selectedOptions[categoryId]?.length || 0;
@@ -223,27 +221,22 @@ export function ItemDrawer({
 
   const isMaxReached = (categoryId: string): boolean => {
     if (!selectedItem) return false;
-
     const category = selectedItem.menuOptionCategory.find(
       (cat) => cat.$id === categoryId
     );
-
     if (!category) return false;
-
     const selectedCount = getSelectedCount(categoryId);
     return selectedCount >= category.maxAmount;
   };
 
   const handleSubmit = () => {
     if (!selectedItem) return;
-
     const cartItem = createCartItemFromMenuItem(
       selectedItem,
       selectedOptions,
       note
     );
     cartItem.quantity = quantity;
-
     if (editingCartItem) {
       onUpdateCartItem(cartItem);
     } else {
@@ -298,15 +291,19 @@ export function ItemDrawer({
                   <p className="text-muted-foreground mt-1">
                     {selectedItem.description}
                   </p>
-                  <div className="flex flex-col items-start">
+                  <div className="flex flex-col items-start mt-2">
                     {!selectedItem.discountPrice ? (
-                      <p className="font-bold">{formatPrice(selectedItem.price)}</p>
+                      <p className="font-bold">
+                        {formatPrice(selectedItem.price)}
+                      </p>
                     ) : (
                       <>
                         <p className="text-sm text-muted-foreground line-through">
                           {formatPrice(selectedItem.price)}
                         </p>
-                        <p className="font-bold">{formatPrice(selectedItem.discountPrice)}</p>
+                        <p className="font-bold">
+                          {formatPrice(selectedItem.discountPrice)}
+                        </p>
                       </>
                     )}
                   </div>
@@ -347,24 +344,52 @@ export function ItemDrawer({
                 const maxAmount = category.maxAmount;
                 const selectedCount = getSelectedCount(category.$id);
                 const isRequirementMet = selectedCount >= minAmount;
-                let requirementText = '';
+                let requirementText = "";
 
-                // Jika min dan max sama, cukup tampilkan "Pilih X"
                 if (minAmount > 0) {
-                  requirementText = `(Pilih ${minAmount})`
+                  requirementText = `(Pilih ${minAmount})`;
+                }
+                if (
+                  maxAmount > 1 &&
+                  maxAmount != category.menuOptionId.length
+                ) {
+                  requirementText = `(Pilih ${minAmount}, Maks. ${maxAmount})`;
                 }
 
-                // Membuat teks persyaratan (misal: "(Pilih 2, Maks. 3)")
-                if (maxAmount > 1 && maxAmount != category.menuOptionId.length ) {
-                  requirementText = `(Pilih ${minAmount}, Maks. ${maxAmount})`
-                }
+                // --- AWAL PERUBAHAN ---
+                // Komponen kecil untuk menampilkan harga opsi (termasuk diskon)
+                const OptionPrice = ({ option }: { option: MenuOption }) => {
+                  const hasPrice = option.price > 0 || (option.discountPrice && option.discountPrice > 0);
+                  if (!hasPrice) return null;
+
+                  return (
+                    <div className="flex flex-col items-end text-sm text-right">
+                      {!option.discountPrice ? (
+                        <span className="font-medium">
+                          +{formatPrice(option.price)}
+                        </span>
+                      ) : (
+                        <>
+                          <span className="text-muted-foreground line-through">
+                            +{formatPrice(option.price)}
+                          </span>
+                          <span className="font-medium">
+                            +{formatPrice(option.discountPrice)}
+                          </span>
+                        </>
+                      )}
+                    </div>
+                  );
+                };
+                // --- AKHIR PERUBAHAN ---
+
 
                 return (
                   <div key={category.$id} className="space-y-3">
                     <div className="flex items-center justify-between">
                       <div>
                         <h3 className="font-semibold">
-                          {category.name}{' '}
+                          {category.name}{" "}
                           {requirementText && (
                             <span className="text-sm font-normal text-muted-foreground">
                               {requirementText}
@@ -379,7 +404,6 @@ export function ItemDrawer({
                             {" Terpilih"}
                           </Badge>
                         )}
-                        {/* Menggunakan minAmount untuk validasi badge */}
                         {minAmount > 0 &&
                           (isRequirementMet ? (
                             <Badge className="bg-green-100 text-green-700 hover:bg-green-100 flex gap-1">
@@ -414,9 +438,10 @@ export function ItemDrawer({
                               className="flex items-center justify-between py-2 px-3 border rounded-md cursor-pointer"
                               onClick={() => {
                                 const value = option.$id;
-                                const foundOption = category.menuOptionId.find(
-                                  (opt) => opt.$id === value
-                                );
+                                const foundOption =
+                                  category.menuOptionId.find(
+                                    (opt) => opt.$id === value
+                                  );
                                 if (foundOption) {
                                   handleOptionChange(
                                     category.$id,
@@ -438,11 +463,7 @@ export function ItemDrawer({
                                   {option.name}
                                 </Label>
                               </div>
-                              {option.price > 0 && (
-                                <span className="text-sm font-medium">
-                                  +{formatPrice(option.price)}
-                                </span>
-                              )}
+                              <OptionPrice option={option} />
                             </div>
                           ))}
                         </div>
@@ -455,17 +476,21 @@ export function ItemDrawer({
                             category.$id,
                             option.$id
                           );
-
                           return (
                             <div
                               key={option.$id}
-                              className={`flex items-center justify-between py-2 px-3 border rounded-md ${!maxReached || isSelected
-                                ? "cursor-pointer"
-                                : "cursor-not-allowed opacity-60"
-                                }`}
+                              className={`flex items-center justify-between py-2 px-3 border rounded-md ${
+                                !maxReached || isSelected
+                                  ? "cursor-pointer"
+                                  : "cursor-not-allowed opacity-60"
+                              }`}
                               onClick={() => {
                                 if (!maxReached || isSelected) {
-                                  handleOptionChange(category.$id, option, false);
+                                  handleOptionChange(
+                                    category.$id,
+                                    option,
+                                    false
+                                  );
                                 }
                               }}
                             >
@@ -489,19 +514,16 @@ export function ItemDrawer({
                                 />
                                 <Label
                                   htmlFor={option.$id}
-                                  className={`${maxReached && !isSelected
-                                    ? "text-gray-400"
-                                    : "cursor-pointer"
-                                    }`}
+                                  className={`${
+                                    maxReached && !isSelected
+                                      ? "text-gray-400"
+                                      : "cursor-pointer"
+                                  }`}
                                 >
                                   {option.name}
                                 </Label>
                               </div>
-                              {option.price > 0 && (
-                                <span className="text-sm font-medium">
-                                  +{formatPrice(option.price)}
-                                </span>
-                              )}
+                              <OptionPrice option={option} />
                             </div>
                           );
                         })}
