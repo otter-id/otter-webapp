@@ -1,3 +1,4 @@
+// useCart
 "use client";
 
 import { useState, useCallback, useEffect, useMemo } from "react";
@@ -45,7 +46,6 @@ export interface CartTotals {
 }
 
 export function useCart(restaurant: Restaurant | null) {
-  // 1. Ubah tipe state utama menjadi CartRestourant[]
   const [cart, setCart] = useState<CartRestourant[]>(() => {
     if (typeof window !== "undefined") {
       const savedCart = localStorage.getItem(CART_STORAGE_KEY);
@@ -57,38 +57,37 @@ export function useCart(restaurant: Restaurant | null) {
   const [itemToDelete, setItemToDelete] = useState<CartItem | null>(null);
   const [editingCartItem, setEditingCartItem] = useState<CartItem | null>(null);
 
-  // 2. Simpan ke localStorage setiap kali struktur cart utama berubah
   useEffect(() => {
     if (typeof window !== "undefined") {
       localStorage.setItem(CART_STORAGE_KEY, JSON.stringify(cart));
     }
   }, [cart]);
 
-  // 3. Ambil item keranjang hanya untuk restoran yang sedang aktif
   const currentCartItems = useMemo(
     () => cart.find((r) => r.$id === restaurant?.$id)?.item || [],
     [cart, restaurant]
   );
 
-  // 4. Hitung total item hanya untuk restoran yang sedang aktif
   const cartItemCount = currentCartItems.reduce(
     (sum, item) => sum + item.quantity,
     0
   );
 
   const calculateCartTotals = useCallback((): CartTotals => {
-    // Kalkulasi subtotal hanya berdasarkan item di restoran saat ini
     const subtotal = currentCartItems.reduce((sum, item) => {
       const optionsPrice = item.selectedOptions
         ? Object.values(item.selectedOptions).reduce((optionSum, options) => {
           return (
             optionSum +
-            options.reduce((total, option) => total + (option.discountPrice || option.price), 0)
+            options.reduce(
+              (total, option) => total + (option.discountPrice ?? option.price),
+              0
+            )
           );
         }, 0)
         : 0;
 
-      return sum + ((item.discountPrice || item.price) + optionsPrice) * item.quantity;
+      return sum + ((item.discountPrice ?? item.price) + optionsPrice) * item.quantity;
     }, 0);
 
     const taxPercentage = restaurant?.tax ?? 0;
@@ -108,35 +107,65 @@ export function useCart(restaurant: Restaurant | null) {
     };
   }, [currentCartItems, restaurant]);
 
-  const addToCart = useCallback(
-    (item: CartItem) => {
-      if (!restaurant) return; // Butuh ID restoran untuk menambahkan item
+  // Fungsi helper untuk membuat "tanda tangan" unik dari sebuah item
+  const generateItemSignature = (item: CartItem): string => {
+    const optionIds = Object.values(item.selectedOptions || {})
+      .flat()
+      .map((opt) => opt.$id)
+      .sort()
+      .join(',');
+    return `${item.$id}|${optionIds}|note:${item.note || ''}`;
+  };
 
-      const safeItem = {
-        ...item,
-        selectedOptions: item.selectedOptions || {},
+  const addToCart = useCallback(
+    (newItem: CartItem) => {
+      if (!restaurant) return;
+
+      const safeNewItem = {
+        ...newItem,
+        selectedOptions: newItem.selectedOptions || {},
+        note: newItem.note || "",
       };
+
+      const newItemSignature = generateItemSignature(safeNewItem);
 
       setCart((prevCart) => {
         const restaurantIndex = prevCart.findIndex(
           (r) => r.$id === restaurant.$id
         );
 
-        if (restaurantIndex > -1) {
-          // Restoran sudah ada di keranjang, tambahkan item baru
-          const updatedCart = [...prevCart];
-          const updatedRestaurant = { ...updatedCart[restaurantIndex] };
-          updatedRestaurant.item = [...updatedRestaurant.item, safeItem];
-          updatedCart[restaurantIndex] = updatedRestaurant;
-          return updatedCart;
-        } else {
-          // Restoran belum ada, buat entri baru
+        // Kasus 1: Restoran belum ada di keranjang, buat entri baru.
+        if (restaurantIndex === -1) {
           const newRestaurantEntry: CartRestourant = {
             $id: restaurant.$id,
-            item: [safeItem],
+            item: [safeNewItem],
           };
           return [...prevCart, newRestaurantEntry];
         }
+
+        // Kasus 2: Restoran sudah ada di keranjang.
+        const updatedCart = [...prevCart];
+        const targetRestaurant = { ...updatedCart[restaurantIndex] };
+        const existingItems = [...(targetRestaurant.item || [])];
+
+        const existingItemIndex = existingItems.findIndex(
+          (item) => generateItemSignature(item) === newItemSignature
+        );
+
+        // Kasus 2a: Ditemukan item yang identik, update kuantitasnya.
+        if (existingItemIndex > -1) {
+          const itemToUpdate = { ...existingItems[existingItemIndex] };
+          itemToUpdate.quantity += safeNewItem.quantity; // Jumlahkan kuantitas
+          existingItems[existingItemIndex] = itemToUpdate;
+          targetRestaurant.item = existingItems;
+        }
+        // Kasus 2b: Tidak ada item yang identik, tambahkan sebagai item baru.
+        else {
+          targetRestaurant.item = [...existingItems, safeNewItem];
+        }
+
+        updatedCart[restaurantIndex] = targetRestaurant;
+        return updatedCart;
       });
     },
     [restaurant]
@@ -193,23 +222,22 @@ export function useCart(restaurant: Restaurant | null) {
       if (!restaurant) return;
 
       setCart((prevCart) =>
-        prevCart.map((r) => {
-          if (r.$id === restaurant.$id) {
-            return {
-              ...r,
-              item: r.item?.filter((cartItem) => cartItem !== itemToRemove),
-            };
-          }
-          return r;
-        })
-          // Optional: Hapus entri restoran jika keranjangnya menjadi kosong
-          .filter(r => r.item?.length > 0)
+        prevCart
+          .map((r) => {
+            if (r.$id === restaurant.$id) {
+              return {
+                ...r,
+                item: r.item?.filter((cartItem) => cartItem !== itemToRemove),
+              };
+            }
+            return r;
+          })
+          .filter((r) => r.item && r.item.length > 0)
       );
     },
     [restaurant]
   );
 
-  // Fungsi ini tidak perlu diubah
   const createCartItemFromMenuItem = (
     menuItem: MenuItem | ExtendedMenuItem,
     selectedOptions: { [categoryId: string]: MenuOption[] },
@@ -250,7 +278,6 @@ export function useCart(restaurant: Restaurant | null) {
     };
   };
 
-  // Mengosongkan keranjang hanya untuk restoran yang aktif
   const clearCart = useCallback(() => {
     if (!restaurant) return;
     setCart((prevCart) =>
@@ -260,7 +287,6 @@ export function useCart(restaurant: Restaurant | null) {
   }, [restaurant]);
 
   return {
-    // 5. Kembalikan item dari restoran saat ini agar mudah digunakan komponen
     cart: currentCartItems,
     cartItemCount,
     itemToDelete,
