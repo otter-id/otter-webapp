@@ -19,6 +19,7 @@ interface RestaurantHeaderProps {
   logo: string;
   image: string;
   googleMapsUrl: string;
+  location: string;
   waitTime: number;
   isOpen: boolean;
   timeZone?: string;
@@ -35,6 +36,7 @@ export function RestaurantHeader({
   logo,
   image,
   googleMapsUrl,
+  location,
   waitTime,
   isOpen,
   timeZone,
@@ -146,6 +148,7 @@ export function RestaurantHeader({
                 <div className="flex items-start justify-between gap-2">
                   <div className="pt-2">
                     <h1 className="text-xl font-bold">{name}</h1>
+                    <h1 className="text-muted-foreground">{location}</h1>
                     {/* <div className="flex items-center gap-1 mt-1 text-sm">
                       <div className="flex items-center">
                         <Star className="w-4 h-4 fill-yellow-400 text-yellow-400" />
