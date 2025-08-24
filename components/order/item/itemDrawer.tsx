@@ -200,7 +200,6 @@ export function ItemDrawer({
     return total;
   };
   
-  // --- AWAL PERUBAHAN ---
   // Menyesuaikan logika disabled button dengan minAmount
   const isRequiredOptionsMissing = (): boolean => {
     if (!selectedItem) return true;
@@ -215,7 +214,6 @@ export function ItemDrawer({
       return minAmount > 0 && selectedCount < minAmount;
     });
   };
-  // --- AKHIR PERUBAHAN ---
 
   const getSelectedCount = (categoryId: string): number => {
     return selectedOptions[categoryId]?.length || 0;
