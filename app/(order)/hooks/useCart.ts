@@ -173,24 +173,48 @@ export function useCart(restaurant: Restaurant | null) {
 
   const updateCartItem = useCallback(
     (updatedItem: CartItem) => {
-      if (!restaurant) return;
-      const safeItem = {
+      if (!restaurant || !editingCartItem) return;
+
+      const safeUpdatedItem = {
         ...updatedItem,
         selectedOptions: updatedItem.selectedOptions || {},
+        note: updatedItem.note || "",
       };
-      setCart((prevCart) =>
-        prevCart.map((r) => {
+      const updatedSignature = generateItemSignature(safeUpdatedItem);
+
+      setCart((prevCart) => {
+        return prevCart.map((r) => {
           if (r.$id === restaurant.$id) {
-            return {
-              ...r,
-              item: r.item?.map((cartItem) =>
-                cartItem === editingCartItem ? safeItem : cartItem
-              ),
-            };
+            const originalItems = r.item || [];
+
+            const mergeTarget = originalItems.find(
+              (item) =>
+                item !== editingCartItem &&
+                generateItemSignature(item) === updatedSignature
+            );
+
+            let newItems;
+            if (mergeTarget) {
+              const newQuantity = mergeTarget.quantity + safeUpdatedItem.quantity;
+
+              newItems = originalItems
+                .filter((item) => item !== editingCartItem)
+                .map((item) =>
+                  item === mergeTarget
+                    ? { ...item, quantity: newQuantity }
+                    : item
+                );
+            } else {
+              newItems = originalItems.map((item) =>
+                item === editingCartItem ? safeUpdatedItem : item
+              );
+            }
+            return { ...r, item: newItems };
           }
           return r;
-        })
-      );
+        });
+      });
+
       setEditingCartItem(null);
     },
     [editingCartItem, restaurant]
