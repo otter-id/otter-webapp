@@ -73,6 +73,7 @@ export function UpsellModal({
               <div className="relative w-20 h-20 flex-shrink-0 rounded-lg overflow-hidden bg-muted">
                 {item.image && !imageErrors[item.$id] ? (
                   <Image
+                    onDragStart={(event)=> event.preventDefault()}
                     src={item.image}
                     alt={
                       typeof item.name === "string" ? item.name : "Menu item"

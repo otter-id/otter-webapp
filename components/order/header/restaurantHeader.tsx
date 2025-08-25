@@ -116,6 +116,8 @@ export function RestaurantHeader({
         {/* Hero Image */}
         <div className="h-48 relative bg-muted">
           <Image
+            onDragStart={(event) => event.preventDefault()}
+            onContextMenu={(e) => e.preventDefault()}
             src={image}
             alt="Restaurant banner"
             fill
@@ -136,6 +138,8 @@ export function RestaurantHeader({
             <div className="flex items-start gap-4">
               <div className="w-20 h-20 rounded-full overflow-hidden bg-muted relative flex-shrink-0">
                 <Image
+                  onDragStart={(event) => event.preventDefault()}
+                  onContextMenu={(e) => e.preventDefault()}
                   src={logo || "/placeholder/placeholder.svg"}
                   alt={`${name} logo`}
                   fill
