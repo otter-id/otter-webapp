@@ -278,6 +278,8 @@ export function ItemDrawer({
                 <div className="aspect-square relative rounded-lg overflow-hidden bg-muted">
                   {selectedItem.image && !imageError ? (
                     <Image
+                      onDragStart={(event) => event.preventDefault()}
+                      onContextMenu={(e) => e.preventDefault()}
                       src={selectedItem.image}
                       alt={
                         typeof selectedItem.name === "string"
@@ -358,7 +360,7 @@ export function ItemDrawer({
                 }
 
                 // Membuat teks persyaratan (misal: "(Pilih 2, Maks. 3)")
-                if (maxAmount > 1 && maxAmount != category.menuOptionId.length ) {
+                if (maxAmount > 1 && maxAmount != category.menuOptionId.length) {
                   requirementText = `(Pilih ${minAmount}, Maks. ${maxAmount})`
                 }
 

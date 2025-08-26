@@ -12,6 +12,9 @@ export default function PaymentLayout({
 }) {
   return (
     <html lang="en">
+      <head>
+        <link rel="icon" href="/icon/favicon.ico" />
+      </head>
       <body className="bg-gray-50 min-h-screen">
         <main>{children}</main>
       </body>
