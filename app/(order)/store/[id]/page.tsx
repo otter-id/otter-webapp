@@ -206,6 +206,7 @@ export default function FoodOrderingPage({
           logo={restaurant?.logo || ""}
           image={restaurant?.image || ""}
           googleMapsUrl={restaurant?.googleMapsUrl || ""}
+          location={restaurant?.location || ""}
           waitTime={restaurant?.waitTime || 0}
           isOpen={restaurant?.isOpen || false}
           timeZone={restaurant?.timezone || undefined}

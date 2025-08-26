@@ -11,7 +11,11 @@ export default function RootLayout({
   children: React.ReactNode;
 }) {
   return (
-    <html lang="en">
+    <html lang="en" >
+      <head>
+        <link rel="icon" href="/icon/favicon.ico" />
+      </head>
+
       <body className="bg-gray-50 min-h-screen">
         <main>{children}</main>
       </body>
