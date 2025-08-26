@@ -272,6 +272,8 @@ export function ItemDrawer({
                 <div className="aspect-square relative rounded-lg overflow-hidden bg-muted">
                   {selectedItem.image && !imageError ? (
                     <Image
+                      onDragStart={(event) => event.preventDefault()}
+                      onContextMenu={(e) => e.preventDefault()}
                       src={selectedItem.image}
                       alt={
                         typeof selectedItem.name === "string"
@@ -356,11 +358,8 @@ export function ItemDrawer({
                 }
 
                 // Membuat teks persyaratan (misal: "(Pilih 2, Maks. 3)")
-                if (
-                  maxAmount > 1 &&
-                  maxAmount != category.menuOptionId.length
-                ) {
-                  requirementText = `(Pilih ${minAmount}, Maks. ${maxAmount})`;
+                if (maxAmount > 1 && maxAmount != category.menuOptionId.length) {
+                  requirementText = `(Pilih ${minAmount}, Maks. ${maxAmount})`
                 }
 
                 return (
@@ -464,19 +463,17 @@ export function ItemDrawer({
                           return (
                             <div
                               key={option.$id}
-                              className={`flex items-center justify-between py-2 px-3 border rounded-md transition-colors ${
-                                !maxReached || isSelected
+                              className={`flex items-center justify-between py-2 px-3 border rounded-md transition-colors ${!maxReached || isSelected
                                   ? "cursor-pointer hover:bg-accent"
                                   : "cursor-not-allowed opacity-60"
-                              }`}
+                                }`}
                             >
                               <Label
                                 htmlFor={option.$id}
-                                className={`flex items-center gap-3 flex-1 ${
-                                  !maxReached || isSelected
+                                className={`flex items-center gap-3 flex-1 ${!maxReached || isSelected
                                     ? "cursor-pointer"
                                     : "cursor-not-allowed"
-                                }`}
+                                  }`}
                               >
                                 <Checkbox
                                   id={option.$id}
@@ -492,10 +489,9 @@ export function ItemDrawer({
                                   }}
                                   disabled={maxReached && !isSelected}
                                 />
-                                <span className={`${
-                                    maxReached && !isSelected
-                                      ? "text-gray-400"
-                                      : ""
+                                <span className={`${maxReached && !isSelected
+                                    ? "text-gray-400"
+                                    : ""
                                   }`}>
                                   {option.name}
                                 </span>
