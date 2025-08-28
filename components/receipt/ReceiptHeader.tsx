@@ -21,6 +21,8 @@ export function ReceiptHeader({ data }: ReceiptHeaderProps) {
     <MotionCard variants={cardVariants} className="rounded-xl">
       <CardHeader className="flex flex-row items-center space-x-4 pb-2">
         <Image
+          onDragStart={(event) => event.preventDefault()}
+          onContextMenu={(e) => e.preventDefault()}
           src={data.restaurantLogo || "/placeholder/placeholder.svg"}
           alt={data.restaurantName}
           width={60}
@@ -42,11 +44,10 @@ export function ReceiptHeader({ data }: ReceiptHeaderProps) {
           </p>
           <Badge
             variant={data.status === "PAID" ? "default" : "secondary"}
-            className={`mb-2 ${
-              data.status === "PAID"
+            className={`mb-2 ${data.status === "PAID"
                 ? "bg-green-500 hover:bg-green-600 text-white"
                 : ""
-            }`}
+              }`}
           >
             {data.status}
           </Badge>

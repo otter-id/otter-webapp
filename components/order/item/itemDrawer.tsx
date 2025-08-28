@@ -185,22 +185,25 @@ export function ItemDrawer({
     );
   };
 
+  // Menyesuaikan kalkulasi harga total dengan discountPrice
   const calculateTotalPrice = (): number => {
     if (!selectedItem) return 0;
 
-    let total = selectedItem.price * quantity;
+    // Gunakan discountPrice jika ada, jika tidak gunakan price biasa
+    const baseItemPrice = selectedItem.discountPrice ?? selectedItem.price;
+    let total = baseItemPrice * quantity;
 
-    // Add option prices
+    // Tambahkan harga opsi, dengan mempertimbangkan discountPrice juga
     Object.values(selectedOptions).forEach((options) => {
       options.forEach((option) => {
-        total += option.price * quantity;
+        const optionPrice = option.discountPrice ?? option.price;
+        total += optionPrice * quantity;
       });
     });
 
     return total;
   };
   
-  // --- AWAL PERUBAHAN ---
   // Menyesuaikan logika disabled button dengan minAmount
   const isRequiredOptionsMissing = (): boolean => {
     if (!selectedItem) return true;
@@ -215,7 +218,6 @@ export function ItemDrawer({
       return minAmount > 0 && selectedCount < minAmount;
     });
   };
-  // --- AKHIR PERUBAHAN ---
 
   const getSelectedCount = (categoryId: string): number => {
     return selectedOptions[categoryId]?.length || 0;
@@ -275,6 +277,8 @@ export function ItemDrawer({
                 <div className="aspect-square relative rounded-lg overflow-hidden bg-muted">
                   {selectedItem.image && !imageError ? (
                     <Image
+                      onDragStart={(event) => event.preventDefault()}
+                      onContextMenu={(e) => e.preventDefault()}
                       src={selectedItem.image}
                       alt={
                         typeof selectedItem.name === "string"
@@ -355,7 +359,7 @@ export function ItemDrawer({
                 }
 
                 // Membuat teks persyaratan (misal: "(Pilih 2, Maks. 3)")
-                if (maxAmount > 1 && maxAmount != category.menuOptionId.length ) {
+                if (maxAmount > 1 && maxAmount != category.menuOptionId.length) {
                   requirementText = `(Pilih ${minAmount}, Maks. ${maxAmount})`
                 }
 
