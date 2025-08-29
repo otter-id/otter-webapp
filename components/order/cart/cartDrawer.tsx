@@ -80,9 +80,17 @@ export function CartDrawer({
 
   const handleContinueToPayment = () => {
     onOpenChange(false);
-    setIsUpsellOpen(true);
 
-    router.push("/payment");
+    const dataToPass = {
+      cart: cart,
+      totals: cartTotals,
+    };
+
+    // Ubah objek menjadi string JSON yang aman untuk URL
+    const queryString = encodeURIComponent(JSON.stringify(dataToPass));
+
+    // Arahkan ke halaman payment dengan data di URL
+    router.push(`/payment?data=${queryString}`);
   };
 
   const handleContinueShopping = () => {
@@ -91,8 +99,17 @@ export function CartDrawer({
 
   const handleUpsellContinue = () => {
     setIsUpsellOpen(false);
-    // Navigate to payment page
-    router.push("/payment");
+
+    const dataToPass = {
+      cart: cart,
+      totals: cartTotals,
+    };
+
+    // Ubah objek menjadi string JSON yang aman untuk URL
+    const queryString = encodeURIComponent(JSON.stringify(dataToPass));
+
+    // Arahkan ke halaman payment dengan data di URL
+    router.push(`/payment?data=${queryString}`);
   };
 
   const handleAddRecommendedItem = (item: MenuItem | ExtendedMenuItem) => {
