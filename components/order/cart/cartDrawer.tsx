@@ -30,6 +30,7 @@ import {
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
 import { StartOverDialog } from "./startOverDialog";
+import { useRouter } from "next/navigation";
 
 // Extended MenuItem type to handle JSX elements
 interface ExtendedMenuItem extends Omit<MenuItem, "name" | "description"> {
@@ -68,6 +69,7 @@ export function CartDrawer({
   addedItems,
   onClearCart,
 }: CartDrawerProps) {
+  const router = useRouter();
   const [isUpsellOpen, setIsUpsellOpen] = useState(false);
   const [isStartOverDialogOpen, setIsStartOverDialogOpen] = useState(false);
   const recommendations = getRecommendations(cart);
@@ -80,7 +82,7 @@ export function CartDrawer({
     onOpenChange(false);
     setIsUpsellOpen(true);
 
-    window.location.href = "/payment";
+    router.push("/payment");
   };
 
   const handleContinueShopping = () => {
@@ -90,7 +92,7 @@ export function CartDrawer({
   const handleUpsellContinue = () => {
     setIsUpsellOpen(false);
     // Navigate to payment page
-    window.location.href = "/payment";
+    router.push("/payment");
   };
 
   const handleAddRecommendedItem = (item: MenuItem | ExtendedMenuItem) => {
