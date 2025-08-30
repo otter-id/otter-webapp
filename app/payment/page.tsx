@@ -35,7 +35,10 @@ export default function PaymentPage() {
   const [name, setName] = useState("");
   const [phone, setPhone] = useState("");
   const [isPhoneValid, setIsPhoneValid] = useState(false);
-  const [isSubmitting, setIsSubmitting] = useState(false); // State untuk loading API
+  const [isSubmitting, setIsSubmitting] = useState(false);
+
+  // State baru untuk melacak apakah order sudah pernah disubmit
+  const [orderSubmitted, setOrderSubmitted] = useState(false);
 
   const steps = ["Details", "Payment", "Confirmation"];
 
@@ -71,21 +74,24 @@ export default function PaymentPage() {
   };
 
   const handleGoBack = () => {
-    if (currentStep > 0) {
-      setCurrentStep(currentStep - 1);
-    } else {
+    // Hanya bisa kembali ke halaman sebelumnya jika di langkah pertama
+    if (currentStep === 0) {
       router.back();
     }
+    // Tidak melakukan apa-apa jika di langkah lain
   };
 
   const handleContinue = async () => {
-    if (currentStep === 0) {
+    // Tambahkan pengecekan !orderSubmitted untuk memastikan fungsi hanya berjalan sekali
+    if (currentStep === 0 && !orderSubmitted) {
       if (!name || !isPhoneValid) {
         toast({ title: "Please complete your details", variant: "destructive" });
         return;
       }
 
       setIsSubmitting(true);
+      // Langsung set state submitted menjadi true untuk menonaktifkan tombol permanen
+      setOrderSubmitted(true);
 
       const orderBody = {
         restaurantId: restaurantId,
@@ -107,22 +113,18 @@ export default function PaymentPage() {
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify(orderBody),
         });
-
         const result = await response.json();
-
         if (!response.ok) {
           throw new Error(result.message || 'Failed to place order.');
         }
-
-        // Jika berhasil, lanjutkan ke langkah pembayaran
         setCurrentStep(1);
-
       } catch (error) {
         toast({
           title: "Order Failed",
           description: (error as Error).message,
           variant: "destructive",
         });
+        // Tombol akan tetap nonaktif meskipun gagal
       } finally {
         setIsSubmitting(false);
       }
@@ -154,9 +156,12 @@ export default function PaymentPage() {
         {/* Header */}
         <div className="sticky top-0 z-10 bg-white border-b">
           <div className="px-4 py-3 flex items-center">
-            <Button variant="ghost" size="icon" className="mr-2" onClick={handleGoBack}>
+            {/* --- AWAL PERUBAHAN --- */}
+            {/* Tambahkan properti `disabled` pada tombol kembali */}
+            <Button variant="ghost" size="icon" className="mr-2" onClick={handleGoBack} disabled={currentStep > 0}>
               <ArrowLeft className="h-5 w-5" />
             </Button>
+            {/* --- AKHIR PERUBAHAN --- */}
             <h1 className="text-lg font-bold">Checkout</h1>
           </div>
           <div className="px-4 py-3 border-t overflow-hidden">
@@ -233,7 +238,8 @@ export default function PaymentPage() {
         {currentStep === 2 && (<div className="px-4 py-5"><div className="text-center mb-6"><div className="w-16 h-16 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-4"><Check className="h-8 w-8 text-green-600" /></div><h2 className="text-xl font-bold">Payment Successful!</h2><p className="text-sm text-muted-foreground mt-1">Your order has been placed successfully</p></div><div className="bg-gray-50 rounded-lg p-4 mb-6"><div className="flex justify-between items-center mb-3"><span className="text-sm font-medium">Order Number</span><span className="text-sm font-bold">{orderNumber}</span></div><div className="flex justify-between items-center mb-3"><span className="text-sm font-medium">Total Amount</span><span className="text-sm font-bold">{formatPrice(totals.total)}</span></div><div className="flex justify-between items-center"><span className="text-sm font-medium">Estimated Delivery</span><span className="text-sm font-bold">15-20 minutes</span></div></div><Button variant="outline" className="w-full py-6 flex items-center justify-center gap-2 border-dashed border-2" onClick={() => toast({ title: "E-Receipt sent!" })}><FileText className="h-5 w-5" /><span className="font-medium">Click here for your e-receipt</span></Button></div>)}
         <div className="px-4 py-5 bg-white border-t sticky bottom-0">
           {currentStep === 0 && (
-            <Button className="w-full h-12 bg-black hover:bg-black/90" onClick={handleContinue} disabled={!name || !isPhoneValid || isSubmitting}>
+            // Tambahkan `orderSubmitted` ke dalam kondisi `disabled`
+            <Button className="w-full h-12 bg-black hover:bg-black/90" onClick={handleContinue} disabled={!name || !isPhoneValid || isSubmitting || orderSubmitted}>
               {isSubmitting ? (<><Loader2 className="mr-2 h-4 w-4 animate-spin" /> Please wait...</>) : `Continue to Payment • ${formatPrice(totals.total)}`}
             </Button>
           )}
