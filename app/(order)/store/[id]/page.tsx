@@ -306,6 +306,7 @@ export default function FoodOrderingPage({
       <CartDrawer
         isOpen={isCartOpen}
         onOpenChange={setIsCartOpen}
+        restaurant={restaurant}
         cart={cart}
         cartItemCount={cartItemCount}
         cartTotals={calculateCartTotals()}

@@ -18,7 +18,7 @@ import { useState } from "react";
 import { getRecommendations } from "@/lib/recommendations";
 import { toast } from "sonner";
 import { Check } from "lucide-react";
-import type { MenuItem } from "@/types/restaurant";
+import type { MenuItem, Restaurant } from "@/types/restaurant";
 import {
   AlertDialog,
   AlertDialogAction,
@@ -30,6 +30,7 @@ import {
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
 import { StartOverDialog } from "./startOverDialog";
+import { useRouter } from "next/navigation";
 
 // Extended MenuItem type to handle JSX elements
 interface ExtendedMenuItem extends Omit<MenuItem, "name" | "description"> {
@@ -40,6 +41,7 @@ interface ExtendedMenuItem extends Omit<MenuItem, "name" | "description"> {
 interface CartDrawerProps {
   isOpen: boolean;
   onOpenChange: (open: boolean) => void;
+  restaurant: Restaurant | null;
   cart: CartItemType[];
   cartItemCount: number;
   cartTotals: any;
@@ -56,6 +58,7 @@ interface CartDrawerProps {
 export function CartDrawer({
   isOpen,
   onOpenChange,
+  restaurant,
   cart,
   cartItemCount,
   cartTotals,
@@ -68,6 +71,7 @@ export function CartDrawer({
   addedItems,
   onClearCart,
 }: CartDrawerProps) {
+  const router = useRouter();
   const [isUpsellOpen, setIsUpsellOpen] = useState(false);
   const [isStartOverDialogOpen, setIsStartOverDialogOpen] = useState(false);
   const recommendations = getRecommendations(cart);
@@ -78,9 +82,18 @@ export function CartDrawer({
 
   const handleContinueToPayment = () => {
     onOpenChange(false);
-    setIsUpsellOpen(true);
 
-    window.location.href = "/payment";
+    const dataToPass = {
+      restaurantId: restaurant?.$id,
+      cart: cart,
+      totals: cartTotals,
+    };
+
+    // Ubah objek menjadi string JSON yang aman untuk URL
+    const queryString = encodeURIComponent(JSON.stringify(dataToPass));
+
+    // Arahkan ke halaman payment dengan data di URL
+    router.push(`/payment?data=${queryString}`);
   };
 
   const handleContinueShopping = () => {
@@ -89,8 +102,18 @@ export function CartDrawer({
 
   const handleUpsellContinue = () => {
     setIsUpsellOpen(false);
-    // Navigate to payment page
-    window.location.href = "/payment";
+
+    const dataToPass = {
+      restaurantId: restaurant?.$id,
+      cart: cart,
+      totals: cartTotals,
+    };
+
+    // Ubah objek menjadi string JSON yang aman untuk URL
+    const queryString = encodeURIComponent(JSON.stringify(dataToPass));
+
+    // Arahkan ke halaman payment dengan data di URL
+    router.push(`/payment?data=${queryString}`);
   };
 
   const handleAddRecommendedItem = (item: MenuItem | ExtendedMenuItem) => {
