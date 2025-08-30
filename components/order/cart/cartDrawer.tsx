@@ -18,7 +18,7 @@ import { useState } from "react";
 import { getRecommendations } from "@/lib/recommendations";
 import { toast } from "sonner";
 import { Check } from "lucide-react";
-import type { MenuItem } from "@/types/restaurant";
+import type { MenuItem, Restaurant } from "@/types/restaurant";
 import {
   AlertDialog,
   AlertDialogAction,
@@ -41,6 +41,7 @@ interface ExtendedMenuItem extends Omit<MenuItem, "name" | "description"> {
 interface CartDrawerProps {
   isOpen: boolean;
   onOpenChange: (open: boolean) => void;
+  restaurant: Restaurant | null;
   cart: CartItemType[];
   cartItemCount: number;
   cartTotals: any;
@@ -57,6 +58,7 @@ interface CartDrawerProps {
 export function CartDrawer({
   isOpen,
   onOpenChange,
+  restaurant,
   cart,
   cartItemCount,
   cartTotals,
@@ -82,6 +84,7 @@ export function CartDrawer({
     onOpenChange(false);
 
     const dataToPass = {
+      restaurantId: restaurant?.$id,
       cart: cart,
       totals: cartTotals,
     };
@@ -101,6 +104,7 @@ export function CartDrawer({
     setIsUpsellOpen(false);
 
     const dataToPass = {
+      restaurantId: restaurant?.$id,
       cart: cart,
       totals: cartTotals,
     };
