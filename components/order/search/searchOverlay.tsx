@@ -74,19 +74,20 @@ export function SearchOverlay({
     const query = searchQuery.toLowerCase();
     const results: GroupedResults = {};
 
-    // Group items by category name
+    // Hilangkan duplikasi item berdasarkan $id sebelum melakukan pencarian
+    const uniqueMenuItems = Array.from(
+      new Map(menuItems.map((item) => [item.$id, item])).values()
+    );
+    // --- AKHIR PERBAIKAN ---
+
     const itemsByCategory: Record<string, MenuItem[]> = {};
 
-    menuItems.forEach((item) => {
-      // Create a category name for each item
-      // Since we don't have direct category info in the new structure,
-      // we'll use a placeholder or derive it from another property
-      const categoryName = "Menu Items"; // Default category name
-
+    // Gunakan uniqueMenuItems untuk proses selanjutnya
+    uniqueMenuItems.forEach((item) => {
+      const categoryName = "Menu Items";
       if (!itemsByCategory[categoryName]) {
         itemsByCategory[categoryName] = [];
       }
-
       itemsByCategory[categoryName].push(item);
     });
 
