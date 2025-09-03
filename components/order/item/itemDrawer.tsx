@@ -304,13 +304,17 @@ export function ItemDrawer({
                   </p>
                   <div className="flex flex-col items-start">
                     {!selectedItem.discountPrice ? (
-                      <p className="font-bold">{formatPrice(selectedItem.price)}</p>
+                      <p className="font-bold">
+                        {formatPrice(selectedItem.price)}
+                      </p>
                     ) : (
                       <>
                         <p className="text-sm text-muted-foreground line-through">
                           {formatPrice(selectedItem.price)}
                         </p>
-                        <p className="font-bold">{formatPrice(selectedItem.discountPrice)}</p>
+                        <p className="font-bold">
+                          {formatPrice(selectedItem.discountPrice)}
+                        </p>
                       </>
                     )}
                   </div>
@@ -351,11 +355,11 @@ export function ItemDrawer({
                 const maxAmount = category.maxAmount;
                 const selectedCount = getSelectedCount(category.$id);
                 const isRequirementMet = selectedCount >= minAmount;
-                let requirementText = '';
+                let requirementText = "";
 
                 // Jika min dan max sama, cukup tampilkan "Pilih X"
                 if (minAmount > 0) {
-                  requirementText = `(Pilih ${minAmount})`
+                  requirementText = `(Pilih ${minAmount})`;
                 }
 
                 // Membuat teks persyaratan (misal: "(Pilih 2, Maks. 3)")
@@ -368,7 +372,7 @@ export function ItemDrawer({
                     <div className="flex items-center justify-between">
                       <div>
                         <h3 className="font-semibold">
-                          {category.name}{' '}
+                          {category.name}{" "}
                           {requirementText && (
                             <span className="text-sm font-normal text-muted-foreground">
                               {requirementText}
@@ -418,9 +422,10 @@ export function ItemDrawer({
                               className="flex items-center justify-between py-2 px-3 border rounded-md cursor-pointer"
                               onClick={() => {
                                 const value = option.$id;
-                                const foundOption = category.menuOptionId.find(
-                                  (opt) => opt.$id === value
-                                );
+                                const foundOption =
+                                  category.menuOptionId.find(
+                                    (opt) => opt.$id === value
+                                  );
                                 if (foundOption) {
                                   handleOptionChange(
                                     category.$id,
@@ -463,23 +468,21 @@ export function ItemDrawer({
                           return (
                             <div
                               key={option.$id}
-                              className={`flex items-center justify-between py-2 px-3 border rounded-md ${!maxReached || isSelected
-                                ? "cursor-pointer"
-                                : "cursor-not-allowed opacity-60"
+                              className={`flex items-center justify-between py-2 px-3 border rounded-md transition-colors ${!maxReached || isSelected
+                                  ? "cursor-pointer hover:bg-accent"
+                                  : "cursor-not-allowed opacity-60"
                                 }`}
-                              onClick={() => {
-                                if (!maxReached || isSelected) {
-                                  handleOptionChange(category.$id, option, false);
-                                }
-                              }}
                             >
-                              <div className="flex items-center gap-3">
+                              <Label
+                                htmlFor={option.$id}
+                                className={`flex items-center gap-3 flex-1 ${!maxReached || isSelected
+                                    ? "cursor-pointer"
+                                    : "cursor-not-allowed"
+                                  }`}
+                              >
                                 <Checkbox
                                   id={option.$id}
-                                  checked={isOptionSelected(
-                                    category.$id,
-                                    option.$id
-                                  )}
+                                  checked={isSelected}
                                   onCheckedChange={() => {
                                     if (!maxReached || isSelected) {
                                       handleOptionChange(
@@ -491,18 +494,15 @@ export function ItemDrawer({
                                   }}
                                   disabled={maxReached && !isSelected}
                                 />
-                                <Label
-                                  htmlFor={option.$id}
-                                  className={`${maxReached && !isSelected
+                                <span className={`${maxReached && !isSelected
                                     ? "text-gray-400"
-                                    : "cursor-pointer"
-                                    }`}
-                                >
+                                    : ""
+                                  }`}>
                                   {option.name}
-                                </Label>
-                              </div>
+                                </span>
+                              </Label>
                               {option.price > 0 && (
-                                <span className="text-sm font-medium">
+                                <span className="text-sm font-medium pl-2">
                                   +{formatPrice(option.price)}
                                 </span>
                               )}

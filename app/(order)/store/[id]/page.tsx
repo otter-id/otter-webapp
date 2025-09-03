@@ -197,7 +197,7 @@ export default function FoodOrderingPage({
       </div>
     );
   }
-  
+
   return (
     <div className="min-h-screen bg-gray-50 pb-[72px]">
       <div className="max-w-md mx-auto bg-white shadow-sm">
@@ -306,6 +306,7 @@ export default function FoodOrderingPage({
       <CartDrawer
         isOpen={isCartOpen}
         onOpenChange={setIsCartOpen}
+        restaurant={restaurant}
         cart={cart}
         cartItemCount={cartItemCount}
         cartTotals={calculateCartTotals()}
