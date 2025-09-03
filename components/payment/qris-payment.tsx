@@ -1,7 +1,7 @@
-// components/payment/qris-payment.tsx
 "use client";
 
 import { useState, useEffect } from "react";
+import { Button } from "@/components/ui/button";
 import { Separator } from "@/components/ui/separator";
 import { RefreshCw } from "lucide-react";
 import { formatPrice } from "@/lib/utils";
@@ -11,14 +11,14 @@ interface QrisPaymentProps {
   amount: number;
   qrString: string | null;
   isLoading: boolean;
-  onTimerExpire: () => void;
+  generateQris: () => void;
 }
 
 export function QrisPayment({
   amount,
   qrString,
   isLoading,
-  onTimerExpire,
+  generateQris,
 }: QrisPaymentProps) {
   const [timeLeft, setTimeLeft] = useState(120); // 2 menit dalam detik
 
@@ -30,26 +30,27 @@ export function QrisPayment({
   // Timer hitung mundur
   useEffect(() => {
     if (timeLeft <= 0) {
-      onTimerExpire(); // Panggil fungsi untuk meminta QR baru
+      generateQris(); // Panggil fungsi untuk meminta QR baru
       return;
     }
     const timer = setInterval(() => {
       setTimeLeft((prev) => prev - 1);
     }, 1000);
     return () => clearInterval(timer);
-  }, [timeLeft, onTimerExpire]);
-  
+  }, [timeLeft, generateQris]);
+
   const formatTime = (seconds: number) => {
     const mins = Math.floor(seconds / 60);
     const secs = seconds % 60;
     return `${mins.toString().padStart(2, "0")}:${secs.toString().padStart(2, "0")}`;
   };
 
+
   return (
     <div className="space-y-5">
       {/* QR Code */}
       <div className="bg-white border rounded-lg p-5 space-y-4">
-        <div className="relative aspect-square max-w-[240px] mx-auto bg-white p-4 rounded-lg">
+        <div className="relative aspect-square max-w-[240px] mx-auto">
           {isLoading || !qrString ? (
             <div className="absolute inset-0 flex items-center justify-center bg-gray-100 rounded-lg">
               <RefreshCw className="h-8 w-8 text-gray-400 animate-spin" />
@@ -69,12 +70,14 @@ export function QrisPayment({
           <div className="text-sm text-muted-foreground">Amount to pay</div>
           <div className="text-xl font-bold">{formatPrice(amount)}</div>
         </div>
+
         <Separator />
+
         {/* Expiry Timer */}
         <div className="flex items-center justify-center text-center">
           <div>
             <div className="text-sm text-muted-foreground">Expires in</div>
-            <div className="font-medium text-red-600">{formatTime(timeLeft)}</div>
+            <div className="font-medium">{formatTime(timeLeft)}</div>
           </div>
         </div>
       </div>

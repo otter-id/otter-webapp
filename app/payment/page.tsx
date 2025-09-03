@@ -267,7 +267,7 @@ function PaymentPageContent() {
               amount={totals.total}
               qrString={qrString}
               isLoading={isQrLoading}
-              onTimerExpire={() => {
+              generateQris={() => {
                 if (activeOrderId && restaurantId) {
                   generateQris(activeOrderId, restaurantId);
                 }
