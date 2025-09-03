@@ -16,21 +16,7 @@ import { PhoneInput } from "@/components/payment/phone-input";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { CartItem, CartTotals } from "@/app/(order)/hooks/useCart";
-import { Skeleton } from "@/components/ui/skeleton";
-
-function PaymentPageSkeleton() {
-  return (
-    <div className="max-w-md mx-auto bg-white shadow-sm min-h-screen">
-      <Skeleton className="h-28 w-full" />
-      <div className="p-4 space-y-4">
-        <Skeleton className="h-8 w-1/2" />
-        <Skeleton className="h-20 w-full" />
-        <Skeleton className="h-20 w-full" />
-        <Skeleton className="h-40 w-full" />
-      </div>
-    </div>
-  );
-}
+import { PaymentSkeleton } from "@/components/payment/skeletons/PaymentSkeleton";
 
 function PaymentPageContent() {
   const router = useRouter();
@@ -137,7 +123,7 @@ function PaymentPageContent() {
   
   // Hapus blok `if (!totals)` karena fallback sudah ditangani oleh Suspense
   if (!totals) {
-    return <PaymentPageSkeleton />;
+    return <PaymentSkeleton />;
   }
 
   return (
@@ -239,7 +225,7 @@ function PaymentPageContent() {
 
 export default function PaymentPage() {
   return (
-    <Suspense fallback={<PaymentPageSkeleton />}>
+    <Suspense fallback={<PaymentSkeleton />}>
       <PaymentPageContent />
     </Suspense>
   );
