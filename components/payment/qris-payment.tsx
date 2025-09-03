@@ -1,3 +1,4 @@
+// components/payment/qris-payment.tsx
 "use client";
 
 import { useState, useEffect } from "react";
@@ -22,10 +23,12 @@ export function QrisPayment({
 }: QrisPaymentProps) {
   const [timeLeft, setTimeLeft] = useState(120); // 2 menit dalam detik
 
-  // Atur ulang timer setiap kali qrString baru diterima
+  // Atur ulang timer setiap kali qrString baru diterima (dan tidak sedang loading)
   useEffect(() => {
-    setTimeLeft(120);
-  }, [qrString]);
+    if (qrString && !isLoading) {
+      setTimeLeft(120);
+    }
+  }, [qrString, isLoading]);
 
   // Timer hitung mundur
   useEffect(() => {
@@ -45,23 +48,33 @@ export function QrisPayment({
     return `${mins.toString().padStart(2, "0")}:${secs.toString().padStart(2, "0")}`;
   };
 
-
   return (
     <div className="space-y-5">
       {/* QR Code */}
       <div className="bg-white border rounded-lg p-5 space-y-4">
-        <div className="relative aspect-square max-w-[240px] mx-auto">
-          {isLoading || !qrString ? (
-            <div className="absolute inset-0 flex items-center justify-center bg-gray-100 rounded-lg">
-              <RefreshCw className="h-8 w-8 text-gray-400 animate-spin" />
-            </div>
-          ) : (
+        <div className="relative aspect-square max-w-[240px] mx-auto bg-white p-4 rounded-lg">
+          {/* Selalu render QR code jika qrString ada, bahkan saat loading */}
+          {qrString && (
             <QRCode
               value={qrString}
               size={256}
               style={{ height: "auto", maxWidth: "100%", width: "100%" }}
               viewBox={`0 0 256 256`}
             />
+          )}
+
+          {/* Tampilkan placeholder jika QR tidak ada & tidak sedang loading (kasus error) */}
+          {!qrString && !isLoading && (
+            <div className="absolute inset-0 flex items-center justify-center bg-white/80 backdrop-blur-sm rounded-lg">
+              <RefreshCw className="h-8 w-8 text-gray-500 animate-spin" />
+            </div>
+          )}
+
+          {/* Tampilkan overlay loading di atas QR code yang ada */}
+          {isLoading && (
+            <div className="absolute inset-0 flex items-center justify-center bg-white/80 backdrop-blur-sm rounded-lg">
+              <RefreshCw className="h-8 w-8 text-gray-500 animate-spin" />
+            </div>
           )}
         </div>
 
@@ -77,7 +90,9 @@ export function QrisPayment({
         <div className="flex items-center justify-center text-center">
           <div>
             <div className="text-sm text-muted-foreground">Expires in</div>
-            <div className="font-medium">{formatTime(timeLeft)}</div>
+            <div className={`font-medium ${timeLeft <= 10 ? 'text-red-600 animate-pulse' : ''}`}>
+              {formatTime(timeLeft)}
+            </div>
           </div>
         </div>
       </div>
