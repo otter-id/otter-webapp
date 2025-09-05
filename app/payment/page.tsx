@@ -1,27 +1,26 @@
 // app/payment/page.tsx
 "use client";
 
-import { useState, useEffect, Suspense } from "react"; // Tambahkan Suspense
+import { useState, useEffect, Suspense } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import Image from "next/image";
-import { ArrowLeft, QrCode, User, Phone, Check, FileText, Loader2 } from "lucide-react";
+import { ArrowLeft, QrCode, User, Phone, Check, FileText, Loader2, AlertTriangle, X } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Separator } from "@/components/ui/separator";
 import { formatPrice } from "@/lib/utils";
 import { PaymentMethodDrawer } from "@/components/payment/payment-method-drawer";
 import { QrisPayment } from "@/components/payment/qris-payment";
-import { useToast } from "@/components/ui/use-toast";
 import { Stepper } from "@/components/ui/stepper";
 import { PhoneInput } from "@/components/payment/phone-input";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { CartItem, CartTotals } from "@/app/(order)/hooks/useCart";
 import { PaymentSkeleton } from "@/components/payment/skeletons/PaymentSkeleton";
+import { toast } from "sonner";
 
 function PaymentPageContent() {
   const router = useRouter();
   const searchParams = useSearchParams();
-  const { toast } = useToast();
 
   const [cart, setCart] = useState<CartItem[]>([]);
   const [totals, setTotals] = useState<CartTotals | null>(null);
@@ -36,10 +35,10 @@ function PaymentPageContent() {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [orderSubmitted, setOrderSubmitted] = useState(false);
 
-  // State untuk menyimpan data QRIS
   const [activeOrderId, setActiveOrderId] = useState<string | null>(null);
   const [qrString, setQrString] = useState<string | null>(null);
   const [isQrLoading, setIsQrLoading] = useState(true);
+  const [isCheckingStatus, setIsCheckingStatus] = useState(false);
 
   const steps = ["Details", "Payment", "Confirmation"];
 
@@ -79,7 +78,6 @@ function PaymentPageContent() {
     }
   };
 
-  // Fungsi baru untuk generate QRIS
   const generateQris = async (orderId: string, restId: string) => {
     setIsQrLoading(true);
     try {
@@ -93,14 +91,13 @@ function PaymentPageContent() {
         throw new Error(result.message || 'Failed to generate QR code.');
       }
       setQrString(result.data.qr_string);
-      return true; // Sukses
+      return true;
     } catch (error) {
-      toast({
-        title: "QR Generation Failed",
+      toast("QR Generation Failed", {
         description: (error as Error).message,
-        variant: "destructive",
+        icon: <AlertTriangle className="h-4 w-4 text-red-500" />,
       });
-      return false; // Gagal
+      return false;
     } finally {
       setIsQrLoading(false);
     }
@@ -109,7 +106,9 @@ function PaymentPageContent() {
   const handleContinue = async () => {
     if (currentStep === 0 && !orderSubmitted) {
       if (!name || !isPhoneValid) {
-        toast({ title: "Please complete your details", variant: "destructive" });
+        toast("Please complete your details", {
+            icon: <AlertTriangle className="h-4 w-4 text-yellow-500" />,
+        });
         return;
       }
       setIsSubmitting(true);
@@ -126,7 +125,6 @@ function PaymentPageContent() {
         })),
       };
       try {
-        // 1. Buat pesanan
         const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/order/pwa`, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
@@ -136,27 +134,21 @@ function PaymentPageContent() {
         if (!response.ok) {
           throw new Error(result.message || 'Failed to place order.');
         }
-
         const { orderId, restaurantId: restId } = result.data;
-        setActiveOrderId(orderId); // Simpan orderId untuk refresh
-
-        // 2. Jika pesanan berhasil, generate QRIS
+        setActiveOrderId(orderId);
         const qrisSuccess = await generateQris(orderId, restId);
-
-        // 3. Hanya lanjutkan jika QRIS berhasil dibuat
         if (qrisSuccess) {
           setCurrentStep(1);
         } else {
-          // Jika generate QRIS gagal, jangan lanjutkan dan biarkan tombol nonaktif
-          // Pengguna harus memuat ulang halaman untuk mencoba lagi
-          toast({ title: "Could not proceed to payment", description: "Please refresh and try again.", variant: "destructive" });
+          toast("Could not proceed to payment", { 
+            description: "Please refresh and try again.",
+            icon: <X className="h-4 w-4 text-red-500" />,
+         });
         }
-
       } catch (error) {
-        toast({
-          title: "Order Failed",
+        toast("Order Failed", {
           description: (error as Error).message,
-          variant: "destructive",
+          icon: <AlertTriangle className="h-4 w-4 text-red-500" />,
         });
       } finally {
         setIsSubmitting(false);
@@ -164,10 +156,40 @@ function PaymentPageContent() {
     }
   };
 
-
-  const handleConfirmPayment = () => {
-    setCurrentStep(2);
-    toast({ title: "Payment confirmed" });
+  const handleCheckPaymentStatus = async () => {
+    if (!activeOrderId) {
+      toast("Error", {
+        description: "Order ID not found. Please try again.",
+        icon: <AlertTriangle className="h-4 w-4 text-red-500" />,
+      });
+      return;
+    }
+    setIsCheckingStatus(true);
+    try {
+      const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/order/check?orderId=${activeOrderId}`);
+      const result = await response.json();
+      if (!response.ok) {
+        throw new Error(result.message || 'Failed to check payment status.');
+      }
+      if (result.data === true) {
+        setCurrentStep(2);
+        toast("Payment confirmed", {
+            icon: <Check className="h-4 w-4 text-green-500" />,
+        });
+      } else {
+        toast("Payment is unpaid", {
+          description: "Your payment has not been confirmed yet. Please try again in a moment.",
+          icon: <AlertTriangle className="h-4 w-4 text-yellow-500" />,
+        });
+      }
+    } catch (error) {
+      toast("Error Checking Status", {
+        description: (error as Error).message,
+        icon: <AlertTriangle className="h-4 w-4 text-red-500" />,
+      });
+    } finally {
+      setIsCheckingStatus(false);
+    }
   };
 
   if (!totals) {
@@ -274,14 +296,47 @@ function PaymentPageContent() {
               }}
             />
           </div>
-        )}{currentStep === 2 && (<div className="px-4 py-5"><div className="text-center mb-6"><div className="w-16 h-16 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-4"><Check className="h-8 w-8 text-green-600" /></div><h2 className="text-xl font-bold">Payment Successful!</h2><p className="text-sm text-muted-foreground mt-1">Your order has been placed successfully</p></div><div className="bg-gray-50 rounded-lg p-4 mb-6"><div className="flex justify-between items-center mb-3"><span className="text-sm font-medium">Order Number</span><span className="text-sm font-bold">{orderNumber}</span></div><div className="flex justify-between items-center mb-3"><span className="text-sm font-medium">Total Amount</span><span className="text-sm font-bold">{formatPrice(totals.total)}</span></div><div className="flex justify-between items-center"><span className="text-sm font-medium">Estimated Delivery</span><span className="text-sm font-bold">15-20 minutes</span></div></div><Button variant="outline" className="w-full py-6 flex items-center justify-center gap-2 border-dashed border-2" onClick={() => toast({ title: "E-Receipt sent!" })}><FileText className="h-5 w-5" /><span className="font-medium">Click here for your e-receipt</span></Button></div>)}
+        )}
+        {currentStep === 2 && (
+          <div className="px-4 py-5">
+            <div className="text-center mb-6">
+              <div className="w-16 h-16 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-4">
+                <Check className="h-8 w-8 text-green-600" />
+              </div>
+              <h2 className="text-xl font-bold">Payment Successful!</h2>
+              <p className="text-sm text-muted-foreground mt-1">Your order has been placed successfully</p>
+            </div>
+            <div className="bg-gray-50 rounded-lg p-4 mb-6">
+              <div className="flex justify-between items-center mb-3"><span className="text-sm font-medium">Order Number</span><span className="text-sm font-bold">{orderNumber}</span></div>
+              <div className="flex justify-between items-center mb-3"><span className="text-sm font-medium">Total Amount</span><span className="text-sm font-bold">{formatPrice(totals.total)}</span></div>
+              <div className="flex justify-between items-center"><span className="text-sm font-medium">Estimated Delivery</span><span className="text-sm font-bold">15-20 minutes</span></div>
+            </div>
+            <Button variant="outline" className="w-full py-6 flex items-center justify-center gap-2 border-dashed border-2" 
+                onClick={() => toast("E-Receipt sent!", { icon: <Check className="h-4 w-4 text-green-500" /> })}>
+              <FileText className="h-5 w-5" />
+              <span className="font-medium">Click here for your e-receipt</span>
+            </Button>
+          </div>
+        )}
         <div className="px-4 py-5 bg-white border-t sticky bottom-0">
           {currentStep === 0 && (
             <Button className="w-full h-12 bg-black hover:bg-black/90" onClick={handleContinue} disabled={!name || !isPhoneValid || isSubmitting || orderSubmitted}>
               {isSubmitting ? (<><Loader2 className="mr-2 h-4 w-4 animate-spin" /> Please wait...</>) : `Continue to Payment • ${formatPrice(totals.total)}`}
             </Button>
           )}
-          {currentStep === 1 && (<Button className="w-full h-12 bg-black hover:bg-black/90" onClick={handleConfirmPayment}>I've Completed the Payment</Button>)}
+          {currentStep === 1 && (
+            <Button
+              className="w-full h-12 bg-black hover:bg-black/90"
+              onClick={handleCheckPaymentStatus}
+              disabled={isCheckingStatus}
+            >
+              {isCheckingStatus ? (
+                <><Loader2 className="mr-2 h-4 w-4 animate-spin" /> Checking Status...</>
+              ) : (
+                "Check Payment Status"
+              )}
+            </Button>
+          )}
         </div>
       </div>
       <PaymentMethodDrawer isOpen={isMethodDrawerOpen} onOpenChange={setIsMethodDrawerOpen} onSelectMethod={(method) => setSelectedMethod(method)} />

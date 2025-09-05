@@ -106,7 +106,7 @@ export function QrisPayment({
             <li>Scan the QR code above</li>
             <li>Confirm the payment amount</li>
             <li>Complete the payment in your app</li>
-            <li>Click "I've Completed the Payment" below</li>
+            <li>Click “Check Payment Status” below</li>
           </ol>
         </div>
       </div>
