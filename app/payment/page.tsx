@@ -16,21 +16,7 @@ import { PhoneInput } from "@/components/payment/phone-input";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { CartItem, CartTotals } from "@/app/(order)/hooks/useCart";
-import { Skeleton } from "@/components/ui/skeleton";
-
-function PaymentPageSkeleton() {
-  return (
-    <div className="max-w-md mx-auto bg-white shadow-sm min-h-screen">
-      <Skeleton className="h-28 w-full" />
-      <div className="p-4 space-y-4">
-        <Skeleton className="h-8 w-1/2" />
-        <Skeleton className="h-20 w-full" />
-        <Skeleton className="h-20 w-full" />
-        <Skeleton className="h-40 w-full" />
-      </div>
-    </div>
-  );
-}
+import { PaymentSkeleton } from "@/components/payment/skeletons/PaymentSkeleton";
 
 function PaymentPageContent() {
   const router = useRouter();
@@ -49,6 +35,11 @@ function PaymentPageContent() {
   const [isPhoneValid, setIsPhoneValid] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [orderSubmitted, setOrderSubmitted] = useState(false);
+
+  // State untuk menyimpan data QRIS
+  const [activeOrderId, setActiveOrderId] = useState<string | null>(null);
+  const [qrString, setQrString] = useState<string | null>(null);
+  const [isQrLoading, setIsQrLoading] = useState(true);
 
   const steps = ["Details", "Payment", "Confirmation"];
 
@@ -88,6 +79,33 @@ function PaymentPageContent() {
     }
   };
 
+  // Fungsi baru untuk generate QRIS
+  const generateQris = async (orderId: string, restId: string) => {
+    setIsQrLoading(true);
+    try {
+      const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/checkout/pwa/qris`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ orderId: orderId, restaurantId: restId }),
+      });
+      const result = await response.json();
+      if (!response.ok) {
+        throw new Error(result.message || 'Failed to generate QR code.');
+      }
+      setQrString(result.data.qr_string);
+      return true; // Sukses
+    } catch (error) {
+      toast({
+        title: "QR Generation Failed",
+        description: (error as Error).message,
+        variant: "destructive",
+      });
+      return false; // Gagal
+    } finally {
+      setIsQrLoading(false);
+    }
+  };
+
   const handleContinue = async () => {
     if (currentStep === 0 && !orderSubmitted) {
       if (!name || !isPhoneValid) {
@@ -108,6 +126,7 @@ function PaymentPageContent() {
         })),
       };
       try {
+        // 1. Buat pesanan
         const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/order/pwa`, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
@@ -117,7 +136,22 @@ function PaymentPageContent() {
         if (!response.ok) {
           throw new Error(result.message || 'Failed to place order.');
         }
-        setCurrentStep(1);
+
+        const { orderId, restaurantId: restId } = result.data;
+        setActiveOrderId(orderId); // Simpan orderId untuk refresh
+
+        // 2. Jika pesanan berhasil, generate QRIS
+        const qrisSuccess = await generateQris(orderId, restId);
+
+        // 3. Hanya lanjutkan jika QRIS berhasil dibuat
+        if (qrisSuccess) {
+          setCurrentStep(1);
+        } else {
+          // Jika generate QRIS gagal, jangan lanjutkan dan biarkan tombol nonaktif
+          // Pengguna harus memuat ulang halaman untuk mencoba lagi
+          toast({ title: "Could not proceed to payment", description: "Please refresh and try again.", variant: "destructive" });
+        }
+
       } catch (error) {
         toast({
           title: "Order Failed",
@@ -130,14 +164,14 @@ function PaymentPageContent() {
     }
   };
 
+
   const handleConfirmPayment = () => {
     setCurrentStep(2);
     toast({ title: "Payment confirmed" });
   };
-  
-  // Hapus blok `if (!totals)` karena fallback sudah ditangani oleh Suspense
+
   if (!totals) {
-    return <PaymentPageSkeleton />;
+    return <PaymentSkeleton />;
   }
 
   return (
@@ -221,8 +255,26 @@ function PaymentPageContent() {
             </div>
           </>
         )}
-        {currentStep === 1 && (<div className="px-4 py-5"><div className="mb-4"><h2 className="text-lg font-semibold text-center">Pay with QRIS</h2><p className="text-sm text-muted-foreground text-center mt-1">Scan the QR code below to complete your payment</p></div><QrisPayment amount={totals.total} /></div>)}
-        {currentStep === 2 && (<div className="px-4 py-5"><div className="text-center mb-6"><div className="w-16 h-16 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-4"><Check className="h-8 w-8 text-green-600" /></div><h2 className="text-xl font-bold">Payment Successful!</h2><p className="text-sm text-muted-foreground mt-1">Your order has been placed successfully</p></div><div className="bg-gray-50 rounded-lg p-4 mb-6"><div className="flex justify-between items-center mb-3"><span className="text-sm font-medium">Order Number</span><span className="text-sm font-bold">{orderNumber}</span></div><div className="flex justify-between items-center mb-3"><span className="text-sm font-medium">Total Amount</span><span className="text-sm font-bold">{formatPrice(totals.total)}</span></div><div className="flex justify-between items-center"><span className="text-sm font-medium">Estimated Delivery</span><span className="text-sm font-bold">15-20 minutes</span></div></div><Button variant="outline" className="w-full py-6 flex items-center justify-center gap-2 border-dashed border-2" onClick={() => toast({ title: "E-Receipt sent!" })}><FileText className="h-5 w-5" /><span className="font-medium">Click here for your e-receipt</span></Button></div>)}
+        {currentStep === 1 && (
+          <div className="px-4 py-5">
+            <div className="mb-4">
+              <h2 className="text-lg font-semibold text-center">Pay with QRIS</h2>
+              <p className="text-sm text-muted-foreground text-center mt-1">
+                Scan the QR code below to complete your payment
+              </p>
+            </div>
+            <QrisPayment
+              amount={totals.total}
+              qrString={qrString}
+              isLoading={isQrLoading}
+              generateQris={() => {
+                if (activeOrderId && restaurantId) {
+                  generateQris(activeOrderId, restaurantId);
+                }
+              }}
+            />
+          </div>
+        )}{currentStep === 2 && (<div className="px-4 py-5"><div className="text-center mb-6"><div className="w-16 h-16 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-4"><Check className="h-8 w-8 text-green-600" /></div><h2 className="text-xl font-bold">Payment Successful!</h2><p className="text-sm text-muted-foreground mt-1">Your order has been placed successfully</p></div><div className="bg-gray-50 rounded-lg p-4 mb-6"><div className="flex justify-between items-center mb-3"><span className="text-sm font-medium">Order Number</span><span className="text-sm font-bold">{orderNumber}</span></div><div className="flex justify-between items-center mb-3"><span className="text-sm font-medium">Total Amount</span><span className="text-sm font-bold">{formatPrice(totals.total)}</span></div><div className="flex justify-between items-center"><span className="text-sm font-medium">Estimated Delivery</span><span className="text-sm font-bold">15-20 minutes</span></div></div><Button variant="outline" className="w-full py-6 flex items-center justify-center gap-2 border-dashed border-2" onClick={() => toast({ title: "E-Receipt sent!" })}><FileText className="h-5 w-5" /><span className="font-medium">Click here for your e-receipt</span></Button></div>)}
         <div className="px-4 py-5 bg-white border-t sticky bottom-0">
           {currentStep === 0 && (
             <Button className="w-full h-12 bg-black hover:bg-black/90" onClick={handleContinue} disabled={!name || !isPhoneValid || isSubmitting || orderSubmitted}>
@@ -239,7 +291,7 @@ function PaymentPageContent() {
 
 export default function PaymentPage() {
   return (
-    <Suspense fallback={<PaymentPageSkeleton />}>
+    <Suspense fallback={<PaymentSkeleton />}>
       <PaymentPageContent />
     </Suspense>
   );
