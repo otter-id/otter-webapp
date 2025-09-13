@@ -1,7 +1,6 @@
-// app/payment/page.tsx
 "use client";
 
-import { useState, useEffect, Suspense } from "react";
+import { useState, useEffect, Suspense, MouseEvent } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import Image from "next/image";
 import { ArrowLeft, QrCode, User, Phone, Check, FileText, Loader2, AlertTriangle, X } from "lucide-react";
@@ -34,13 +33,58 @@ function PaymentPageContent() {
   const [isPhoneValid, setIsPhoneValid] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [orderSubmitted, setOrderSubmitted] = useState(false);
-
   const [activeOrderId, setActiveOrderId] = useState<string | null>(null);
   const [qrString, setQrString] = useState<string | null>(null);
   const [isQrLoading, setIsQrLoading] = useState(true);
   const [isCheckingStatus, setIsCheckingStatus] = useState(false);
+  const [isReloading, setIsReloading] = useState(false);
 
   const steps = ["Details", "Payment", "Confirmation"];
+
+  useEffect(() => {
+    if (isReloading) {
+      window.location.reload();
+    }
+  }, [isReloading]);
+
+  useEffect(() => {
+    const handleKeyDown = (event: KeyboardEvent) => {
+      if (event.key === 'F5' || ((event.ctrlKey || event.metaKey) && event.key === 'r')) {
+        if (!isReloading) {
+          event.preventDefault();
+          toast("Refreshing will clear your progress. Do you want to continue?", {
+            icon: <AlertTriangle className="h-4 w-4 text-yellow-500" />,
+            action: {
+              label: 'Yes',
+              actionButtonStyle: {
+                paddingLeft: 20,
+                paddingRight: 20,
+              },
+              onClick: () => setIsReloading(true),
+            },
+            cancel: {
+              label: 'Cancel',
+              onClick: () => {},
+            },
+          });
+        }
+      }
+    };
+
+    const handleBeforeUnload = (event: BeforeUnloadEvent) => {
+      if (!isReloading) {
+        event.preventDefault();
+        event.returnValue = '';
+      }
+    };
+
+    window.addEventListener('keydown', handleKeyDown);
+    window.addEventListener('beforeunload', handleBeforeUnload);
+    return () => {
+      window.removeEventListener('keydown', handleKeyDown);
+      window.removeEventListener('beforeunload', handleBeforeUnload);
+    };
+  }, [isReloading]);
 
   useEffect(() => {
     const dataString = searchParams.get('data');
@@ -107,7 +151,7 @@ function PaymentPageContent() {
     if (currentStep === 0 && !orderSubmitted) {
       if (!name || !isPhoneValid) {
         toast("Please complete your details", {
-            icon: <AlertTriangle className="h-4 w-4 text-yellow-500" />,
+          icon: <AlertTriangle className="h-4 w-4 text-yellow-500" />,
         });
         return;
       }
@@ -140,10 +184,10 @@ function PaymentPageContent() {
         if (qrisSuccess) {
           setCurrentStep(1);
         } else {
-          toast("Could not proceed to payment", { 
+          toast("Could not proceed to payment", {
             description: "Please refresh and try again.",
             icon: <X className="h-4 w-4 text-red-500" />,
-         });
+          });
         }
       } catch (error) {
         toast("Order Failed", {
@@ -174,7 +218,7 @@ function PaymentPageContent() {
       if (result.data === true) {
         setCurrentStep(2);
         toast("Payment confirmed", {
-            icon: <Check className="h-4 w-4 text-green-500" />,
+          icon: <Check className="h-4 w-4 text-green-500" />,
         });
       } else {
         toast("Payment is unpaid", {
@@ -199,7 +243,6 @@ function PaymentPageContent() {
   return (
     <div className="min-h-screen bg-gray-50 pb-6">
       <div className="max-w-md mx-auto bg-white shadow-sm">
-        {/* Header */}
         <div className="sticky top-0 z-10 bg-white border-b">
           <div className="px-4 py-3 flex items-center">
             <Button variant="ghost" size="icon" className="mr-2" onClick={handleGoBack} disabled={currentStep > 0}>
@@ -212,7 +255,6 @@ function PaymentPageContent() {
           </div>
         </div>
 
-        {/* Step 1: Details */}
         {currentStep === 0 && (
           <>
             <div className="px-4 py-5">
@@ -311,8 +353,8 @@ function PaymentPageContent() {
               <div className="flex justify-between items-center mb-3"><span className="text-sm font-medium">Total Amount</span><span className="text-sm font-bold">{formatPrice(totals.total)}</span></div>
               <div className="flex justify-between items-center"><span className="text-sm font-medium">Estimated Delivery</span><span className="text-sm font-bold">15-20 minutes</span></div>
             </div>
-            <Button variant="outline" className="w-full py-6 flex items-center justify-center gap-2 border-dashed border-2" 
-                onClick={() => toast("E-Receipt sent!", { icon: <Check className="h-4 w-4 text-green-500" /> })}>
+            <Button variant="outline" className="w-full py-6 flex items-center justify-center gap-2 border-dashed border-2"
+              onClick={() => toast("E-Receipt sent!", { icon: <Check className="h-4 w-4 text-green-500" /> })}>
               <FileText className="h-5 w-5" />
               <span className="font-medium">Click here for your e-receipt</span>
             </Button>
