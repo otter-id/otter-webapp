@@ -260,7 +260,6 @@ function PaymentPageContent() {
             <div className="px-4 py-5">
               <div className="flex justify-between items-center mb-4">
                 <h2 className="text-base font-semibold">Order Summary</h2>
-                <span className="text-sm text-muted-foreground">Order #{orderNumber}</span>
               </div>
               <div className="space-y-4 mb-6">
                 {cart.map((item, index) => (
