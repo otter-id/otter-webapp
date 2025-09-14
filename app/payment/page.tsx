@@ -78,7 +78,11 @@ function PaymentPageContent() {
       const savedSessionString = localStorage.getItem(sessionKey);
 
       if (savedSessionString) {
-        setState(JSON.parse(savedSessionString));
+        const savedState = JSON.parse(savedSessionString);
+        setState(savedState);
+        if (savedState.qrString) {
+          setIsQrLoading(false);
+        }
       } else {
         router.replace('/');
       }
