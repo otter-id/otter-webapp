@@ -89,7 +89,7 @@ export function CartDrawer({
     };
     
     localStorage.setItem(`payment-${restaurant.$id}`, JSON.stringify(initialPaymentState));
-    router.push('/payment');
+    router.push(`/payment?id=${restaurant?.$id}`);
   }
 
   const handleContinueToPayment = () => {

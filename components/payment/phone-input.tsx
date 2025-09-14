@@ -21,7 +21,6 @@ interface Country {
   flag: string;
 }
 
-// Sample list of countries - in a real app, you'd have a more complete list
 const countries: Country[] = [
   { name: "Indonesia", code: "ID", dialCode: "+62", flag: "🇮🇩" },
   { name: "United States", code: "US", dialCode: "+1", flag: "🇺🇸" },
@@ -39,48 +38,53 @@ interface PhoneInputProps {
   value: string;
   onChange: (value: string, isValid: boolean) => void;
   className?: string;
+  disabled?: boolean;
 }
 
-export function PhoneInput({ value, onChange, className }: PhoneInputProps) {
+export function PhoneInput({
+  value,
+  onChange,
+  className,
+  disabled = false,
+}: PhoneInputProps) {
   const [selectedCountry, setSelectedCountry] = useState<Country>(countries[0]);
   const [phoneNumber, setPhoneNumber] = useState("");
   const [isValid, setIsValid] = useState(false);
 
-  // Update the combined value when either country or number changes
   useEffect(() => {
-    const combinedValue = selectedCountry.dialCode + phoneNumber;
-    const isValidNumber = validatePhoneNumber(phoneNumber);
-    setIsValid(isValidNumber);
-    onChange(combinedValue, isValidNumber);
-  }, [selectedCountry, phoneNumber, onChange]);
-
-  // Initialize phone number from value if provided
-  useEffect(() => {
-    if (value) {
-      // Find the country code in the value
-      const country = countries.find((c) => value.startsWith(c.dialCode));
-      if (country) {
-        setSelectedCountry(country);
-        setPhoneNumber(value.substring(country.dialCode.length));
-      } else {
-        setPhoneNumber(value);
-      }
+    const country = countries.find((c) => value.startsWith(c.dialCode));
+    if (country) {
+      setSelectedCountry(country);
+      setPhoneNumber(value.substring(country.dialCode.length));
+    } else if (value.startsWith(selectedCountry.dialCode)) {
+      setPhoneNumber(value.substring(selectedCountry.dialCode.length));
+    } else {
+      setPhoneNumber(value || "");
     }
-  }, []);
+  }, [value, selectedCountry.dialCode]);
 
   const validatePhoneNumber = (number: string) => {
-    // Basic validation - should be at least 6 digits, numbers only
     return /^\d{6,}$/.test(number);
   };
 
+  const triggerChange = (country: Country, number: string) => {
+    const combinedValue = country.dialCode + number;
+    const isValidNumber = validatePhoneNumber(number);
+    setIsValid(isValidNumber);
+    if (combinedValue !== value) {
+      onChange(combinedValue, isValidNumber);
+    }
+  };
+
   const handlePhoneChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    // Only allow digits
     const value = e.target.value.replace(/\D/g, "");
     setPhoneNumber(value);
+    triggerChange(selectedCountry, value);
   };
 
   const handleCountrySelect = (country: Country) => {
     setSelectedCountry(country);
+    triggerChange(country, phoneNumber);
   };
 
   return (
@@ -91,6 +95,7 @@ export function PhoneInput({ value, onChange, className }: PhoneInputProps) {
             <Button
               variant="outline"
               className="flex items-center gap-1 px-3 rounded-r-none border-r-0 focus:ring-0"
+              disabled={disabled}
             >
               <span className="text-base">{selectedCountry.flag}</span>
               <span className="text-xs font-medium">
@@ -127,9 +132,10 @@ export function PhoneInput({ value, onChange, className }: PhoneInputProps) {
           onChange={handlePhoneChange}
           className="rounded-l-none"
           placeholder="Phone number"
+          disabled={disabled}
         />
       </div>
-      {phoneNumber && !isValid && (
+      {phoneNumber && !isValid && !disabled && (
         <p className="text-xs text-red-500 mt-1">
           Please enter a valid phone number
         </p>

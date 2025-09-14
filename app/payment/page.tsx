@@ -1,8 +1,7 @@
-// app/payment/page.tsx
 "use client";
 
 import { useState, useEffect, Suspense } from "react";
-import { useRouter } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
 import Image from "next/image";
 import { ArrowLeft, QrCode, User, Phone, Check, FileText, Loader2, AlertTriangle, X } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -48,6 +47,8 @@ const initialPaymentState: PaymentState = {
 
 function PaymentPageContent() {
   const router = useRouter();
+  const searchParams = useSearchParams();
+  const restaurantId = searchParams.get('id');
 
   const [state, setState] = useState<PaymentState>(initialPaymentState);
   const [isLoaded, setIsLoaded] = useState(false);
@@ -57,23 +58,10 @@ function PaymentPageContent() {
   const [isCheckingStatus, setIsCheckingStatus] = useState(false);
   const [isQrLoading, setIsQrLoading] = useState(true);
 
-  const steps = ["Details", "Payment", "Confirmation"];
+  const steps = ["Details", "Payment"];
 
   useEffect(() => {
-    const cartString = localStorage.getItem("otter-cart");
-    if (!cartString) {
-      router.replace('/');
-      return;
-    }
-
     try {
-      const cartData: CartRestourant[] = JSON.parse(cartString);
-      if (cartData.length === 0 || !cartData[0].$id) {
-        router.replace('/');
-        return;
-      }
-      
-      const restaurantId = cartData[0].$id;
       const sessionKey = `payment-${restaurantId}`;
       const savedSessionString = localStorage.getItem(sessionKey);
 
@@ -84,16 +72,16 @@ function PaymentPageContent() {
           setIsQrLoading(false);
         }
       } else {
-        router.replace('/');
+        router.replace(`/store/${restaurantId}`);
       }
     } catch (error) {
       console.error("Failed to initialize payment page from localStorage", error);
-      router.replace('/');
+      router.replace(`/store/${restaurantId}`);
     } finally {
       setIsLoaded(true);
     }
-  }, [router]);
-  
+  }, [restaurantId]);
+
   const updateState = (updates: Partial<PaymentState>) => {
     setState(prevState => {
       const newState = { ...prevState, ...updates };
@@ -141,12 +129,12 @@ function PaymentPageContent() {
     if (state.currentStep !== 0 || state.orderSubmitted) {
       return;
     }
-    
+
     if (!state.name || !state.isPhoneValid) {
       toast("Please complete your details", { icon: <AlertTriangle className="h-4 w-4 text-yellow-500" /> });
       return;
     }
-    
+
     setIsSubmitting(true);
     const orderBody = {
       restaurantId: state.restaurantId,
@@ -167,12 +155,12 @@ function PaymentPageContent() {
       });
       const result = await response.json();
       if (!response.ok) throw new Error(result.message || 'Failed to place order.');
-      
+
       const { orderId, restaurantId: restId, subtotal, tax, service, total } = result.data;
-      updateState({ 
-          activeOrderId: orderId,
-          totals: { ...state.totals, subtotal, tax, service, total } as CartTotals,
-          orderSubmitted: true,
+      updateState({
+        activeOrderId: orderId,
+        totals: { ...state.totals, subtotal, tax, service, total } as CartTotals,
+        orderSubmitted: true,
       });
 
       const qrisSuccess = await generateQris(orderId, restId);
@@ -199,13 +187,20 @@ function PaymentPageContent() {
       const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/order/check?orderId=${state.activeOrderId}`);
       const result = await response.json();
       if (!response.ok) throw new Error(result.message || 'Failed to check status.');
+
       if (result.data === true) {
-        updateState({ currentStep: 2 });
-        if (state.restaurantId) {
-            localStorage.removeItem(`payment-${state.restaurantId}`);
-            localStorage.removeItem("otter-cart");
-        }
         toast("Payment confirmed", { icon: <Check className="h-4 w-4 text-green-500" /> });
+
+        if (state.restaurantId) {
+          localStorage.removeItem(`payment-${state.restaurantId}`);
+          const cartString = localStorage.getItem("otter-cart");
+          if (cartString) {
+            const allCarts: CartRestourant[] = JSON.parse(cartString);
+            const updatedCarts = allCarts.filter(cart => cart.$id !== state.restaurantId);
+            localStorage.setItem("otter-cart", JSON.stringify(updatedCarts));
+          }
+        }
+        router.replace(`/store/${restaurantId}`);
       } else {
         toast("Payment is unpaid", { description: "Your payment has not been confirmed yet.", icon: <AlertTriangle className="h-4 w-4 text-yellow-500" /> });
       }
@@ -283,7 +278,7 @@ function PaymentPageContent() {
                 </div>
                 <div className="space-y-2">
                   <Label htmlFor="phone" className="flex items-center gap-2"><Phone className="h-4 w-4" /><span>Phone Number</span></Label>
-                  <PhoneInput value={state.phone} onChange={(val, isValid) => updateState({ phone: val, isPhoneValid: isValid })} />
+                  <PhoneInput value={state.phone} onChange={(val, isValid) => updateState({ phone: val, isPhoneValid: isValid })} disabled={state.orderSubmitted} />
                 </div>
               </div>
             </div>
@@ -317,23 +312,6 @@ function PaymentPageContent() {
             />
           </div>
         )}
-        {state.currentStep === 2 && (
-          <div className="px-4 py-5">
-            <div className="text-center mb-6">
-              <div className="w-16 h-16 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-4"><Check className="h-8 w-8 text-green-600" /></div>
-              <h2 className="text-xl font-bold">Payment Successful!</h2>
-              <p className="text-sm text-muted-foreground mt-1">Your order has been placed successfully</p>
-            </div>
-            <div className="bg-gray-50 rounded-lg p-4 mb-6">
-              <div className="flex justify-between items-center mb-3"><span className="text-sm font-medium">Order Number</span><span className="text-sm font-bold">{state.orderNumber}</span></div>
-              <div className="flex justify-between items-center mb-3"><span className="text-sm font-medium">Total Amount</span><span className="text-sm font-bold">{formatPrice(state.totals.total)}</span></div>
-              <div className="flex justify-between items-center"><span className="text-sm font-medium">Estimated Delivery</span><span className="text-sm font-bold">15-20 minutes</span></div>
-            </div>
-            <Button variant="outline" className="w-full py-6 flex items-center justify-center gap-2 border-dashed border-2" onClick={() => toast("E-Receipt sent!", { icon: <Check className="h-4 w-4 text-green-500" /> })}>
-              <FileText className="h-5 w-5" /><span className="font-medium">Click here for your e-receipt</span>
-            </Button>
-          </div>
-        )}
         <div className="px-4 py-5 bg-white border-t sticky bottom-0">
           {state.currentStep === 0 && (
             <Button className="w-full h-12 bg-black hover:bg-black/90" onClick={handleContinue} disabled={!state.name || !state.isPhoneValid || isSubmitting || state.orderSubmitted}>
@@ -343,11 +321,6 @@ function PaymentPageContent() {
           {state.currentStep === 1 && (
             <Button className="w-full h-12 bg-black hover:bg-black/90" onClick={handleCheckPaymentStatus} disabled={isCheckingStatus}>
               {isCheckingStatus ? (<><Loader2 className="mr-2 h-4 w-4 animate-spin" /> Checking Status...</>) : "Check Payment Status"}
-            </Button>
-          )}
-           {state.currentStep === 2 && (
-             <Button className="w-full h-12 bg-black hover:bg-black/90" onClick={() => router.push('/')}>
-               Back to Home
             </Button>
           )}
         </div>
