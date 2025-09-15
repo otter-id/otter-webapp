@@ -28,29 +28,41 @@ interface PaymentState {
   orderSubmitted: boolean;
   activeOrderId: string | null;
   orderNumber: string;
-  qrString: string | null;
+  qrisData: {
+    reference_id: string;
+    type: string;
+    currency: string;
+    channel_code: string;
+    amount: number;
+    expires_at: string;
+    metadata: null;
+    business_id: string;
+    id: string;
+    created: string;
+    updated: string;
+    qr_string: string;
+    status: string;
+  } | null;
 }
-
-const initialPaymentState: PaymentState = {
-  restaurantId: null,
-  cart: [],
-  totals: null,
-  currentStep: 0,
-  name: "",
-  phone: "",
-  isPhoneValid: false,
-  orderSubmitted: false,
-  activeOrderId: null,
-  orderNumber: "",
-  qrString: null,
-};
 
 function PaymentPageContent() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const restaurantId = searchParams.get('id');
 
-  const [state, setState] = useState<PaymentState>(initialPaymentState);
+  const [state, setState] = useState<PaymentState>({
+    restaurantId: null,
+    cart: [],
+    totals: null,
+    currentStep: 0,
+    name: "",
+    phone: "",
+    isPhoneValid: false,
+    orderSubmitted: false,
+    activeOrderId: null,
+    orderNumber: "",
+    qrisData: null,
+  });
   const [isLoaded, setIsLoaded] = useState(false);
   const [isMethodDrawerOpen, setIsMethodDrawerOpen] = useState(false);
   const [selectedMethod, setSelectedMethod] = useState<string>("QRIS");
@@ -115,7 +127,7 @@ function PaymentPageContent() {
       });
       const result = await response.json();
       if (!response.ok) throw new Error(result.message || 'Failed to generate QR.');
-      updateState({ qrString: result.data.qr_string });
+      updateState({ qrisData: result.data });
       return true;
     } catch (error) {
       toast("QR Generation Failed", { description: (error as Error).message, icon: <AlertTriangle className="h-4 w-4 text-red-500" /> });
@@ -200,7 +212,7 @@ function PaymentPageContent() {
             localStorage.setItem("otter-cart", JSON.stringify(updatedCarts));
           }
         }
-        router.replace(`/store/${restaurantId}`);
+        window.location.replace(`https://app.otter.id/receipt?id=${state.qrisData?.reference_id}`);
       } else {
         toast("Payment is unpaid", { description: "Your payment has not been confirmed yet.", icon: <AlertTriangle className="h-4 w-4 text-yellow-500" /> });
       }
@@ -302,7 +314,7 @@ function PaymentPageContent() {
             </div>
             <QrisPayment
               amount={state.totals.total}
-              qrString={state.qrString}
+              qrString={state.qrisData?.qr_string || ""}
               isLoading={isQrLoading}
               generateQris={() => {
                 if (state.activeOrderId && state.restaurantId) {
