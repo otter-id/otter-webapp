@@ -32,7 +32,7 @@ export function RestoClosedDialog({
             Restaurant is Closed
           </AlertDialogTitle>
           <AlertDialogDescription className="text-center">
-            You can still browse the menu?
+            You can still browse the menu
           </AlertDialogDescription>
         </AlertDialogHeader>
         <AlertDialogFooter className="flex-col space-y-2 sm:space-y-0">
