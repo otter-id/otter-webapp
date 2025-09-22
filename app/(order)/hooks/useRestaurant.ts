@@ -29,8 +29,8 @@ export function useRestaurant(restaurantId: string) {
         const restaurantData = data.data;
 
         if (!restaurantData.isPublished) {
-          window.location.replace("https://app.otter.id/");
-          return;
+          // window.location.replace("https://app.otter.id/");
+          // return;
         }
 
         setRestaurant(restaurantData);
