@@ -14,7 +14,6 @@ export function useRestaurant(restaurantId: string) {
   const [restaurant, setRestaurant] = useState<Restaurant | null>(null);
   const [menuCategories, setMenuCategories] = useState<MenuCategory[]>([]);
 
-
   useEffect(() => {
     const fetchRestaurant = async () => {
       try {
@@ -28,14 +27,21 @@ export function useRestaurant(restaurantId: string) {
         }
 
         const restaurantData = data.data;
+
+        if (!restaurantData.isPublished) {
+          window.location.replace("https://app.otter.id/");
+          return;
+        }
+
         setRestaurant(restaurantData);
 
-        // Create a Popular category with recommended items
         const recommendedItems = [
           ...restaurantData.menuCategoryId.flatMap((category: any) =>
             category.menuId.filter((item: any) => item.isRecommended)
           ),
-          ...restaurantData.menuUncategory.filter((item: any) => item.isRecommended),
+          ...restaurantData.menuUncategory.filter(
+            (item: any) => item.isRecommended
+          ),
         ];
 
         let allCategories = [...restaurantData.menuCategoryId];
@@ -62,35 +68,29 @@ export function useRestaurant(restaurantId: string) {
     }
   }, [restaurantId]);
 
-  // Helper function to get all menu items flattened
   const getAllMenuItems = (): MenuItem[] => {
     if (!restaurant) return [];
 
     return menuCategories.flatMap((category) => category.menuId);
   };
 
-  // Helper function to get category names
   const getCategoryNames = (): string[] => {
     if (!restaurant) return [];
 
     return menuCategories.map((category) => category.name);
   };
 
-  // Helper function to check if restaurant is open
   const isRestaurantOpen = (): boolean => {
     if (!restaurant) return false;
 
-    // First check the isOpen flag
     if (!restaurant.isOpen) return false;
 
-    // Then check opening hours
     const now = new Date();
     const day = now.toLocaleString("en-US", { weekday: "short" }).toUpperCase();
 
     const openingTimes = restaurant.openingTimes[day];
     if (!openingTimes || openingTimes.length === 0) return false;
 
-    // Check if current time is within any opening period
     return openingTimes.some((period) => {
       const openTime = new Date(period.openTime);
       const closeTime = new Date(period.closeTime);
