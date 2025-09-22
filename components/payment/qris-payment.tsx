@@ -1,72 +1,80 @@
+// components/payment/qris-payment.tsx
 "use client";
 
 import { useState, useEffect } from "react";
-import Image from "next/image";
 import { Button } from "@/components/ui/button";
 import { Separator } from "@/components/ui/separator";
 import { RefreshCw } from "lucide-react";
 import { formatPrice } from "@/lib/utils";
-import { useToast } from "@/components/ui/use-toast";
+import QRCode from "react-qr-code";
 
 interface QrisPaymentProps {
   amount: number;
+  qrString: string | null;
+  isLoading: boolean;
+  generateQris: () => void;
 }
 
-export function QrisPayment({ amount }: QrisPaymentProps) {
-  const { toast } = useToast();
-  const [timeLeft, setTimeLeft] = useState(900); // 15 minutes in seconds
-  const [isRefreshing, setIsRefreshing] = useState(false);
+export function QrisPayment({
+  amount,
+  qrString,
+  isLoading,
+  generateQris,
+}: QrisPaymentProps) {
+  const [timeLeft, setTimeLeft] = useState(120); // 2 menit dalam detik
 
-  // Format time as MM:SS
-  const formatTime = (seconds: number) => {
-    const mins = Math.floor(seconds / 60);
-    const secs = seconds % 60;
-    return `${mins.toString().padStart(2, "0")}:${secs
-      .toString()
-      .padStart(2, "0")}`;
-  };
-
-  // Countdown timer
+  // Atur ulang timer setiap kali qrString baru diterima (dan tidak sedang loading)
   useEffect(() => {
-    if (timeLeft <= 0) return;
+    if (qrString && !isLoading) {
+      setTimeLeft(120);
+    }
+  }, [qrString, isLoading]);
 
+  // Timer hitung mundur
+  useEffect(() => {
+    if (timeLeft <= 0) {
+      generateQris(); // Panggil fungsi untuk meminta QR baru
+      return;
+    }
     const timer = setInterval(() => {
       setTimeLeft((prev) => prev - 1);
     }, 1000);
-
     return () => clearInterval(timer);
-  }, [timeLeft]);
+  }, [timeLeft, generateQris]);
 
-  const handleRefreshQR = () => {
-    setIsRefreshing(true);
-    // Simulate refreshing QR code
-    setTimeout(() => {
-      setIsRefreshing(false);
-      setTimeLeft(900); // Reset timer to 15 minutes
-      toast({
-        title: "QR Code refreshed",
-        description: "New QR code has been generated",
-      });
-    }, 1500);
+  const formatTime = (seconds: number) => {
+    const mins = Math.floor(seconds / 60);
+    const secs = seconds % 60;
+    return `${mins.toString().padStart(2, "0")}:${secs.toString().padStart(2, "0")}`;
   };
 
   return (
     <div className="space-y-5">
       {/* QR Code */}
       <div className="bg-white border rounded-lg p-5 space-y-4">
-        <div className="relative aspect-square max-w-[240px] mx-auto">
-          {isRefreshing ? (
-            <div className="absolute inset-0 flex items-center justify-center bg-gray-100 rounded-lg">
-              <RefreshCw className="h-8 w-8 text-gray-400 animate-spin" />
-            </div>
-          ) : (
-            <Image
-              src="/qr-code.png"
-              alt="QRIS Payment QR Code"
-              width={240}
-              height={240}
-              className="rounded-lg border mx-auto"
+        <div className="relative aspect-square max-w-[240px] mx-auto bg-white p-4 rounded-lg">
+          {/* Selalu render QR code jika qrString ada, bahkan saat loading */}
+          {qrString && (
+            <QRCode
+              value={qrString}
+              size={256}
+              style={{ height: "auto", maxWidth: "100%", width: "100%" }}
+              viewBox={`0 0 256 256`}
             />
+          )}
+
+          {/* Tampilkan placeholder jika QR tidak ada & tidak sedang loading (kasus error) */}
+          {!qrString && !isLoading && (
+            <div className="absolute inset-0 flex items-center justify-center bg-white/80 backdrop-blur-sm rounded-lg">
+              <RefreshCw className="h-8 w-8 text-gray-500 animate-spin" />
+            </div>
+          )}
+
+          {/* Tampilkan overlay loading di atas QR code yang ada */}
+          {isLoading && (
+            <div className="absolute inset-0 flex items-center justify-center bg-white/80 backdrop-blur-sm rounded-lg">
+              <RefreshCw className="h-8 w-8 text-gray-500 animate-spin" />
+            </div>
           )}
         </div>
 
@@ -79,23 +87,13 @@ export function QrisPayment({ amount }: QrisPaymentProps) {
         <Separator />
 
         {/* Expiry Timer */}
-        <div className="flex items-center justify-between">
+        <div className="flex items-center justify-center text-center">
           <div>
             <div className="text-sm text-muted-foreground">Expires in</div>
-            <div className="font-medium">{formatTime(timeLeft)}</div>
+            <div className={`font-medium ${timeLeft <= 10 ? 'text-red-600 animate-pulse' : ''}`}>
+              {formatTime(timeLeft)}
+            </div>
           </div>
-          <Button
-            variant="outline"
-            size="sm"
-            className="h-8 gap-1"
-            onClick={handleRefreshQR}
-            disabled={isRefreshing}
-          >
-            <RefreshCw
-              className={`h-3.5 w-3.5 ${isRefreshing ? "animate-spin" : ""}`}
-            />
-            Refresh
-          </Button>
         </div>
       </div>
 
@@ -108,7 +106,7 @@ export function QrisPayment({ amount }: QrisPaymentProps) {
             <li>Scan the QR code above</li>
             <li>Confirm the payment amount</li>
             <li>Complete the payment in your app</li>
-            <li>Click "I've Completed the Payment" below</li>
+            <li>Click “Check Payment Status” below</li>
           </ol>
         </div>
       </div>

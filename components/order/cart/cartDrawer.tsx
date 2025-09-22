@@ -1,3 +1,4 @@
+// components/order/cart/cartDrawer.tsx
 "use client";
 
 import type { CartItem as CartItemType } from "@/app/(order)/hooks/useCart";
@@ -10,7 +11,7 @@ import {
 } from "@/components/ui/drawer";
 import { Button } from "@/components/ui/button";
 import { Separator } from "@/components/ui/separator";
-import { X, RefreshCw, AlertTriangle } from "lucide-react";
+import { X, RefreshCw } from "lucide-react";
 import { CartItem } from "./cartItem";
 import { CartTotals } from "./cartTotal";
 import { UpsellModal } from "./upsellModal";
@@ -19,20 +20,9 @@ import { getRecommendations } from "@/lib/recommendations";
 import { toast } from "sonner";
 import { Check } from "lucide-react";
 import type { MenuItem, Restaurant } from "@/types/restaurant";
-import {
-  AlertDialog,
-  AlertDialogAction,
-  AlertDialogCancel,
-  AlertDialogContent,
-  AlertDialogDescription,
-  AlertDialogFooter,
-  AlertDialogHeader,
-  AlertDialogTitle,
-} from "@/components/ui/alert-dialog";
 import { StartOverDialog } from "./startOverDialog";
 import { useRouter } from "next/navigation";
 
-// Extended MenuItem type to handle JSX elements
 interface ExtendedMenuItem extends Omit<MenuItem, "name" | "description"> {
   name: string | JSX.Element;
   description: string | JSX.Element;
@@ -80,20 +70,30 @@ export function CartDrawer({
     onDeleteItem(item);
   };
 
-  const handleContinueToPayment = () => {
+  const proceedToPayment = () => {
+    if (!restaurant?.$id) return;
     onOpenChange(false);
 
-    const dataToPass = {
+    const initialPaymentState = {
       restaurantId: restaurant?.$id,
       cart: cart,
       totals: cartTotals,
+      currentStep: 0,
+      name: "",
+      phone: "",
+      isPhoneValid: false,
+      orderSubmitted: false,
+      activeOrderId: null,
+      orderNumber: `ORD-${Math.floor(100000 + Math.random() * 900000)}`,
+      qrString: null,
     };
+    
+    localStorage.setItem(`payment-${restaurant.$id}`, JSON.stringify(initialPaymentState));
+    router.push(`/payment?id=${restaurant?.$id}`);
+  }
 
-    // Ubah objek menjadi string JSON yang aman untuk URL
-    const queryString = encodeURIComponent(JSON.stringify(dataToPass));
-
-    // Arahkan ke halaman payment dengan data di URL
-    router.push(`/payment?data=${queryString}`);
+  const handleContinueToPayment = () => {
+    proceedToPayment();
   };
 
   const handleContinueShopping = () => {
@@ -102,27 +102,13 @@ export function CartDrawer({
 
   const handleUpsellContinue = () => {
     setIsUpsellOpen(false);
-
-    const dataToPass = {
-      restaurantId: restaurant?.$id,
-      cart: cart,
-      totals: cartTotals,
-    };
-
-    // Ubah objek menjadi string JSON yang aman untuk URL
-    const queryString = encodeURIComponent(JSON.stringify(dataToPass));
-
-    // Arahkan ke halaman payment dengan data di URL
-    router.push(`/payment?data=${queryString}`);
+    proceedToPayment();
   };
 
   const handleAddRecommendedItem = (item: MenuItem | ExtendedMenuItem) => {
     if (onAddItem) {
       onAddItem(item);
-
-      // Get a string representation of the name for the toast
       const itemName = typeof item.name === "string" ? item.name : "Item";
-
       toast("Item added to cart", {
         icon: <Check className="h-4 w-4 text-green-500" />,
         description: `${itemName} has been added to your cart`,
@@ -138,14 +124,10 @@ export function CartDrawer({
     onClearCart();
     setIsStartOverDialogOpen(false);
     onOpenChange(false);
-
-    // Show toast
     toast("Cart cleared", {
       icon: <RefreshCw className="h-4 w-4 text-blue-500" />,
       description: "Your cart has been cleared. Starting over...",
     });
-
-    // Refresh the page after a short delay
     setTimeout(() => {
       window.location.reload();
     }, 500);

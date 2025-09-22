@@ -1,4 +1,5 @@
 import "@/app/(order)/store/[id]/globals.css";
+import { Toaster } from "@/components/ui/toaster";
 
 export const metadata = {
   title: "Payment - Otter Order",
@@ -17,6 +18,7 @@ export default function PaymentLayout({
       </head>
       <body className="bg-gray-50 min-h-screen">
         <main>{children}</main>
+        <Toaster />
       </body>
     </html>
   );
