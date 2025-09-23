@@ -15,12 +15,13 @@ import { X, RefreshCw } from "lucide-react";
 import { CartItem } from "./cartItem";
 import { CartTotals } from "./cartTotal";
 import { UpsellModal } from "./upsellModal";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { getRecommendations } from "@/lib/recommendations";
 import { toast } from "sonner";
 import { Check } from "lucide-react";
 import type { MenuItem, Restaurant } from "@/types/restaurant";
 import { StartOverDialog } from "./startOverDialog";
+import { RestoClosedDialog } from "./restoClosedDialog";
 import { useRouter } from "next/navigation";
 
 interface ExtendedMenuItem extends Omit<MenuItem, "name" | "description"> {
@@ -64,7 +65,15 @@ export function CartDrawer({
   const router = useRouter();
   const [isUpsellOpen, setIsUpsellOpen] = useState(false);
   const [isStartOverDialogOpen, setIsStartOverDialogOpen] = useState(false);
+  const [isRestoClosedDialogOpen, setIsRestoClosedDialogOpen] =
+    useState(false);
   const recommendations = getRecommendations(cart);
+
+  useEffect(() => {
+    if (isOpen && restaurant && !restaurant.isOpen) {
+      setIsRestoClosedDialogOpen(true);
+    }
+  }, [isOpen, restaurant]);
 
   const handleDeleteItem = (item: CartItemType) => {
     onDeleteItem(item);
@@ -85,12 +94,15 @@ export function CartDrawer({
       orderSubmitted: false,
       activeOrderId: null,
       orderNumber: `ORD-${Math.floor(100000 + Math.random() * 900000)}`,
-      qrString: null,
+      qrisData: null,
     };
-    
-    localStorage.setItem(`payment-${restaurant.$id}`, JSON.stringify(initialPaymentState));
+
+    localStorage.setItem(
+      `payment-${restaurant.$id}`,
+      JSON.stringify(initialPaymentState)
+    );
     router.push(`/payment?id=${restaurant?.$id}`);
-  }
+  };
 
   const handleContinueToPayment = () => {
     proceedToPayment();
@@ -193,6 +205,7 @@ export function CartDrawer({
                 <Button
                   className="w-full h-12 bg-black hover:bg-black/90"
                   onClick={handleContinueToPayment}
+                  disabled={!restaurant?.isOpen}
                 >
                   Continue to Payment
                 </Button>
@@ -217,14 +230,11 @@ export function CartDrawer({
         </DrawerContent>
       </Drawer>
 
-      {/* <UpsellModal
-        isOpen={isUpsellOpen}
-        onOpenChange={setIsUpsellOpen}
-        recommendations={recommendations}
-        onAddItem={handleAddRecommendedItem}
-        onContinue={handleUpsellContinue}
-        addedItems={addedItems}
-      /> */}
+      <RestoClosedDialog
+        isOpen={isRestoClosedDialogOpen}
+        onOpenChange={setIsRestoClosedDialogOpen}
+        onConfirm={() => {}}
+      />
 
       <StartOverDialog
         isOpen={isStartOverDialogOpen}
