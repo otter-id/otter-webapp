@@ -133,14 +133,15 @@ export function SplitBill({ data, onClose, splitBillState }: SplitBillProps) {
                   <div key={uniqueKey} className="space-y-2">
                     <span className="text-black font-medium">
                       {item.name}
-                      <span className="text-sm text-muted-foreground ml-2">
-                        (
+                      {item.modifiers.length > 0 && (
+                        <span className="text-sm text-muted-foreground ml-2">
+                          (
                         {item.modifiers
-                          .filter((mod) => mod.price > 0)
                           .map((mod) => mod.name)
                           .join(", ")}
-                        )
-                      </span>
+                          )
+                        </span>
+                      )}
                     </span>
                     <div className="space-y-2">
                       <div className="flex flex-wrap gap-2">

@@ -87,7 +87,7 @@ const ReceiptContent = () => {
           <>
             <ReceiptHeaderSkeleton />
             <ReceiptActionsSkeleton />
-            <PickupInfoSkeleton />
+            {/* <PickupInfoSkeleton /> */}
             <OrderDetailsSkeleton />
             <OrderSummarySkeleton />
             <PointsCardSkeleton />
@@ -98,8 +98,8 @@ const ReceiptContent = () => {
             {data.status === "UNPAID" && <UnpaidWarning />}
             <ReceiptHeader data={data} />
             <ReceiptActions data={data} orderId={orderId} />
-            <RestaurantFeedback data={data} />
-            <PickupInfo data={data} />
+            {/* <RestaurantFeedback data={data} /> */}
+            {/* <PickupInfo data={data} /> */}
             <OrderDetails data={data} />
             <OrderSummary
               data={data}

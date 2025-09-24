@@ -14,6 +14,7 @@ export interface ReceiptData {
       quantity: number;
       price: number;
       image: string;
+      notes: string;
       modifiers: Array<{
         name: string;
         price: number;
@@ -21,6 +22,7 @@ export interface ReceiptData {
     }>;
     subtotal: number;
     taxesAndFees: number;
+    service: number;
     total: number;
     pointsEarned: number;
     paymentMethod: string;

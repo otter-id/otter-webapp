@@ -15,7 +15,8 @@ export function ReceiptHeaderSkeleton() {
         <div className="text-center py-4 space-y-2">
           <div className={`${skeletonClass} h-12 w-1/3 mx-auto rounded-md`} />
           <div className={`${skeletonClass} h-8 w-1/2 mx-auto rounded-md`} />
-          <div className={`${skeletonClass} h-4 w-1/4 mx-auto rounded-md`} />
+          <div className={`${skeletonClass} h-8 w-1/4 mx-auto rounded-md`} />
+          <div className={`${skeletonClass} h-20 w-1/1 mx-auto rounded-md`} />
         </div>
       </CardContent>
     </Card>
