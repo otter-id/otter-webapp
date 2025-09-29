@@ -93,7 +93,7 @@ export function CartDrawer({
       isPhoneValid: false,
       orderSubmitted: false,
       activeOrderId: null,
-      orderNumber: `ORD-${Math.floor(100000 + Math.random() * 900000)}`,
+      orderNumber: `ORD-${Date.now().toString().slice(-6)}`,
       qrisData: null,
     };
 
