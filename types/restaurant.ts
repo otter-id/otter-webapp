@@ -69,6 +69,7 @@ export interface MenuOption {
   discountPrice: number;
   isInStock: boolean;
   index: number | null;
+  outstock: string | null; // datetime string
   $id: string;
 }
 

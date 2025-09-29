@@ -103,7 +103,7 @@ export function ItemDrawer({
                   (opt) => opt.$id === cartOption.$id
                 );
                 return (
-                  originalOption || {
+                  originalOption || ({
                     $id: cartOption.$id,
                     name: cartOption.name,
                     price: cartOption.price,
@@ -111,7 +111,8 @@ export function ItemDrawer({
                     description: null,
                     isInStock: true,
                     index: null,
-                  }
+                    outstock: null,
+                  } as MenuOption)
                 );
               });
             }
@@ -411,16 +412,46 @@ export function ItemDrawer({
                             (opt) => opt.$id === value
                           );
                           if (option) {
-                            handleOptionChange(category.$id, option, true);
+                            // Cek apakah option out of stock
+                            const isOutOfStock = (() => {
+                              if (!option.outstock) return false;
+                              const outStockDate = new Date(option.outstock);
+                              const currentDate = new Date();
+                              return outStockDate > currentDate;
+                            })();
+
+                            // Jika tidak out of stock, handle option change
+                            if (!isOutOfStock) {
+                              handleOptionChange(category.$id, option, true);
+                            }
                           }
                         }}
                       >
                         <div className="space-y-2">
-                          {category.menuOptionId.map((option) => (
+                          {category.menuOptionId.map((option) => {
+                            // Mengecek status stock berdasarkan atribut outstock
+                            const isOutOfStock = (() => {
+                              // Jika outstock null, berarti stock ada
+                              if (!option.outstock) return false;
+                              
+                              // Jika outstock ada value, cek apakah tanggal di masa depan
+                              const outStockDate = new Date(option.outstock);
+                              const currentDate = new Date();
+                              
+                              // Jika tanggal outstock di masa depan, berarti stock tidak ada
+                              // Jika tanggal outstock di masa lalu atau sekarang, berarti stock ada
+                              return outStockDate > currentDate;
+                            })();
+
+                            return (
                             <div
                               key={option.$id}
-                              className="flex items-center justify-between py-2 px-3 border rounded-md cursor-pointer"
+                              className={`flex items-center justify-between py-2 px-3 border rounded-md transition-colors ${
+                                !isOutOfStock ? "cursor-pointer hover:bg-accent" : "cursor-not-allowed opacity-60"
+                              }`}
                               onClick={() => {
+                                if (isOutOfStock) return;
+                                
                                 const value = option.$id;
                                 const foundOption =
                                   category.menuOptionId.find(
@@ -439,12 +470,14 @@ export function ItemDrawer({
                                 <RadioGroupItem
                                   value={option.$id}
                                   id={option.$id}
+                                  disabled={isOutOfStock}
                                 />
                                 <Label
                                   htmlFor={option.$id}
-                                  className="cursor-pointer"
+                                  className={`${!isOutOfStock ? "cursor-pointer" : "cursor-not-allowed text-gray-400"}`}
                                 >
                                   {option.name}
+                                  {isOutOfStock && <span className="ml-2 text-xs text-red-500">(Out of Stock)</span>}
                                 </Label>
                               </div>
                               {option.price > 0 && (
@@ -453,7 +486,8 @@ export function ItemDrawer({
                                 </span>
                               )}
                             </div>
-                          ))}
+                            );
+                          })}
                         </div>
                       </RadioGroup>
                     ) : (
@@ -464,18 +498,31 @@ export function ItemDrawer({
                             category.$id,
                             option.$id
                           );
+                          // Mengecek status stock berdasarkan atribut outstock
+                          const isOutOfStock = (() => {
+                            // Jika outstock null, berarti stock ada
+                            if (!option.outstock) return false;
+                            
+                            // Jika outstock ada value, cek apakah tanggal di masa depan
+                            const outStockDate = new Date(option.outstock);
+                            const currentDate = new Date();
+                            
+                            // Jika tanggal outstock di masa depan, berarti stock tidak ada
+                            // Jika tanggal outstock di masa lalu atau sekarang, berarti stock ada
+                            return outStockDate > currentDate;
+                          })();
 
                           return (
                             <div
                               key={option.$id}
-                              className={`flex items-center justify-between py-2 px-3 border rounded-md transition-colors ${!maxReached || isSelected
+                              className={`flex items-center justify-between py-2 px-3 border rounded-md transition-colors ${!maxReached || isSelected && !isOutOfStock
                                   ? "cursor-pointer hover:bg-accent"
                                   : "cursor-not-allowed opacity-60"
                                 }`}
                             >
                               <Label
                                 htmlFor={option.$id}
-                                className={`flex items-center gap-3 flex-1 ${!maxReached || isSelected
+                                className={`flex items-center gap-3 flex-1 ${(!maxReached || isSelected) && !isOutOfStock
                                     ? "cursor-pointer"
                                     : "cursor-not-allowed"
                                   }`}
@@ -484,7 +531,7 @@ export function ItemDrawer({
                                   id={option.$id}
                                   checked={isSelected}
                                   onCheckedChange={() => {
-                                    if (!maxReached || isSelected) {
+                                    if ((!maxReached || isSelected) && !isOutOfStock) {
                                       handleOptionChange(
                                         category.$id,
                                         option,
@@ -492,13 +539,14 @@ export function ItemDrawer({
                                       );
                                     }
                                   }}
-                                  disabled={maxReached && !isSelected}
+                                  disabled={(maxReached && !isSelected) || isOutOfStock}
                                 />
-                                <span className={`${maxReached && !isSelected
+                                <span className={`${(maxReached && !isSelected) || isOutOfStock
                                     ? "text-gray-400"
                                     : ""
                                   }`}>
                                   {option.name}
+                                  {isOutOfStock && <span className="ml-2 text-xs text-red-500">(Out of Stock)</span>}
                                 </span>
                               </Label>
                               {option.price > 0 && (
