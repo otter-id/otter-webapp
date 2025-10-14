@@ -204,7 +204,7 @@ export function ItemDrawer({
 
     return total;
   };
-  
+
   // Menyesuaikan logika disabled button dengan minAmount
   const isRequiredOptionsMissing = (): boolean => {
     if (!selectedItem) return true;
@@ -433,59 +433,58 @@ export function ItemDrawer({
                             const isOutOfStock = (() => {
                               // Jika outstock null, berarti stock ada
                               if (!option.outstock) return false;
-                              
+
                               // Jika outstock ada value, cek apakah tanggal di masa depan
                               const outStockDate = new Date(option.outstock);
                               const currentDate = new Date();
-                              
+
                               // Jika tanggal outstock di masa depan, berarti stock tidak ada
                               // Jika tanggal outstock di masa lalu atau sekarang, berarti stock ada
                               return outStockDate > currentDate;
                             })();
 
                             return (
-                            <div
-                              key={option.$id}
-                              className={`flex items-center justify-between py-2 px-3 border rounded-md transition-colors ${
-                                !isOutOfStock ? "cursor-pointer hover:bg-accent" : "cursor-not-allowed opacity-60"
-                              }`}
-                              onClick={() => {
-                                if (isOutOfStock) return;
-                                
-                                const value = option.$id;
-                                const foundOption =
-                                  category.menuOptionId.find(
-                                    (opt) => opt.$id === value
-                                  );
-                                if (foundOption) {
-                                  handleOptionChange(
-                                    category.$id,
-                                    foundOption,
-                                    true
-                                  );
-                                }
-                              }}
-                            >
-                              <div className="flex items-center gap-3">
-                                <RadioGroupItem
-                                  value={option.$id}
-                                  id={option.$id}
-                                  disabled={isOutOfStock}
-                                />
-                                <Label
-                                  htmlFor={option.$id}
-                                  className={`${!isOutOfStock ? "cursor-pointer" : "cursor-not-allowed text-gray-400"}`}
-                                >
-                                  {option.name}
-                                  {isOutOfStock && <span className="ml-2 text-xs text-red-500">(Out of Stock)</span>}
-                                </Label>
+                              <div
+                                key={option.$id}
+                                className={`flex items-center justify-between py-2 px-3 border rounded-md transition-colors ${!isOutOfStock ? "cursor-pointer hover:bg-accent" : "cursor-not-allowed opacity-60"
+                                  }`}
+                                onClick={() => {
+                                  if (isOutOfStock) return;
+
+                                  const value = option.$id;
+                                  const foundOption =
+                                    category.menuOptionId.find(
+                                      (opt) => opt.$id === value
+                                    );
+                                  if (foundOption) {
+                                    handleOptionChange(
+                                      category.$id,
+                                      foundOption,
+                                      true
+                                    );
+                                  }
+                                }}
+                              >
+                                <div className="flex items-center gap-3">
+                                  <RadioGroupItem
+                                    value={option.$id}
+                                    id={option.$id}
+                                    disabled={isOutOfStock}
+                                  />
+                                  <Label
+                                    htmlFor={option.$id}
+                                    className={`${!isOutOfStock ? "cursor-pointer" : "cursor-not-allowed text-gray-400"}`}
+                                  >
+                                    {option.name}
+                                    {isOutOfStock && <span className="ml-2 text-xs text-red-500">(Out of Stock)</span>}
+                                  </Label>
+                                </div>
+                                {option.price > 0 && (
+                                  <span className="text-sm font-medium">
+                                    +{formatPrice(option.price)}
+                                  </span>
+                                )}
                               </div>
-                              {option.price > 0 && (
-                                <span className="text-sm font-medium">
-                                  +{formatPrice(option.price)}
-                                </span>
-                              )}
-                            </div>
                             );
                           })}
                         </div>
@@ -502,11 +501,11 @@ export function ItemDrawer({
                           const isOutOfStock = (() => {
                             // Jika outstock null, berarti stock ada
                             if (!option.outstock) return false;
-                            
+
                             // Jika outstock ada value, cek apakah tanggal di masa depan
                             const outStockDate = new Date(option.outstock);
                             const currentDate = new Date();
-                            
+
                             // Jika tanggal outstock di masa depan, berarti stock tidak ada
                             // Jika tanggal outstock di masa lalu atau sekarang, berarti stock ada
                             return outStockDate > currentDate;
@@ -515,35 +514,37 @@ export function ItemDrawer({
                           return (
                             <div
                               key={option.$id}
-                              className={`flex items-center justify-between py-2 px-3 border rounded-md transition-colors ${!maxReached || isSelected && !isOutOfStock
-                                  ? "cursor-pointer hover:bg-accent"
-                                  : "cursor-not-allowed opacity-60"
+                              className={`flex items-center justify-between py-2 px-3 border rounded-md transition-colors ${(!maxReached || isSelected) && !isOutOfStock
+                                ? "cursor-pointer hover:bg-accent"
+                                : "cursor-not-allowed opacity-60"
                                 }`}
+                              onClick={() => {
+                                if ((!maxReached || isSelected) && !isOutOfStock) {
+                                  handleOptionChange(category.$id, option, false);
+                                }
+                              }}
                             >
                               <Label
                                 htmlFor={option.$id}
                                 className={`flex items-center gap-3 flex-1 ${(!maxReached || isSelected) && !isOutOfStock
-                                    ? "cursor-pointer"
-                                    : "cursor-not-allowed"
+                                  ? "cursor-pointer"
+                                  : "cursor-not-allowed"
                                   }`}
+                                onClick={e => e.stopPropagation()}
                               >
                                 <Checkbox
                                   id={option.$id}
                                   checked={isSelected}
                                   onCheckedChange={() => {
                                     if ((!maxReached || isSelected) && !isOutOfStock) {
-                                      handleOptionChange(
-                                        category.$id,
-                                        option,
-                                        false
-                                      );
+                                      handleOptionChange(category.$id, option, false);
                                     }
                                   }}
                                   disabled={(maxReached && !isSelected) || isOutOfStock}
                                 />
                                 <span className={`${(maxReached && !isSelected) || isOutOfStock
-                                    ? "text-gray-400"
-                                    : ""
+                                  ? "text-gray-400"
+                                  : ""
                                   }`}>
                                   {option.name}
                                   {isOutOfStock && <span className="ml-2 text-xs text-red-500">(Out of Stock)</span>}
