@@ -15,6 +15,7 @@ import { X, RefreshCw } from "lucide-react";
 import { CartItem } from "./cartItem";
 import { CartTotals } from "./cartTotal";
 import { UpsellModal } from "./upsellModal";
+import { LocationConfirmationDialog } from "./locationConfirmationDialog";
 import { useState, useEffect } from "react";
 import { getRecommendations } from "@/lib/recommendations";
 import { toast } from "sonner";
@@ -64,6 +65,7 @@ export function CartDrawer({
 }: CartDrawerProps) {
   const router = useRouter();
   const [isUpsellOpen, setIsUpsellOpen] = useState(false);
+  const [isLocationConfirmOpen, setIsLocationConfirmOpen] = useState(false);
   const [isStartOverDialogOpen, setIsStartOverDialogOpen] = useState(false);
   const [isRestoClosedDialogOpen, setIsRestoClosedDialogOpen] =
     useState(false);
@@ -105,6 +107,10 @@ export function CartDrawer({
   };
 
   const handleContinueToPayment = () => {
+    setIsLocationConfirmOpen(true);
+  };
+
+  const handleLocationConfirm = () => {
     proceedToPayment();
   };
 
@@ -233,7 +239,14 @@ export function CartDrawer({
       <RestoClosedDialog
         isOpen={isRestoClosedDialogOpen}
         onOpenChange={setIsRestoClosedDialogOpen}
-        onConfirm={() => {}}
+        onConfirm={() => { }}
+      />
+
+      <LocationConfirmationDialog
+        isOpen={isLocationConfirmOpen}
+        onOpenChange={setIsLocationConfirmOpen}
+        restaurant={restaurant}
+        onConfirm={handleLocationConfirm}
       />
 
       <StartOverDialog
