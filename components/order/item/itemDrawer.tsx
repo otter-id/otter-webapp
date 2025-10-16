@@ -525,19 +525,19 @@ export function ItemDrawer({
                           return (
                             <div
                               key={option.$id}
-                              className={`flex items-center justify-between py-2 px-3 border rounded-md transition-colors ${canClick
+                              className={`flex items-center justify-between py-2 px-3 border rounded-md transition-colors ${(!maxReached || isSelected) && !isOutOfStock
                                 ? "cursor-pointer hover:bg-accent"
                                 : "cursor-not-allowed opacity-60"
                                 }`}
                               onClick={() => {
-                                if (canClick) {
+                                if ((!maxReached || isSelected) && !isOutOfStock) {
                                   handleOptionChange(category.$id, option, false);
                                 }
                               }}
                             >
                               <Label
                                 htmlFor={option.$id}
-                                className={`flex items-center gap-3 flex-1 ${canClick
+                                className={`flex items-center gap-3 flex-1 ${(!maxReached || isSelected) && !isOutOfStock
                                   ? "cursor-pointer"
                                   : "cursor-not-allowed"
                                   }`}
@@ -547,13 +547,16 @@ export function ItemDrawer({
                                   id={option.$id}
                                   checked={isSelected}
                                   onCheckedChange={() => {
-                                    if (canClick) {
+                                    if ((!maxReached || isSelected) && !isOutOfStock) {
                                       handleOptionChange(category.$id, option, false);
                                     }
                                   }}
                                   disabled={!canClick}
                                 />
-                                <span className={`${!canClick ? "text-gray-400" : ""}`}>
+                                <span className={`${(maxReached && !isSelected) || isOutOfStock
+                                  ? "text-gray-400"
+                                  : ""
+                                  }`}>
                                   {option.name}
                                   {isOutOfStock && <span className="ml-2 text-xs text-red-500">(Out of Stock)</span>}
                                 </span>
