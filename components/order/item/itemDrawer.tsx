@@ -161,17 +161,25 @@ export function ItemDrawer({
               const category = selectedItem.menuOptionCategory.find(
                 (cat) => cat.$id === categoryId
               );
-              if (
-                category &&
-                newOptions[categoryId].length >= category.maxAmount
-              ) {
-                // Don't add if it would exceed maxAmount
-                return prev;
+              if (category) {
+                // Jika maxAmount = 1, ganti pilihan (seperti radio button)
+                if (category.maxAmount === 1) {
+                  newOptions[categoryId] = [option];
+                } else if (newOptions[categoryId].length >= category.maxAmount) {
+                  // Don't add if it would exceed maxAmount untuk kategori lain
+                  return prev;
+                } else {
+                  // Add if not selected and not exceeding maxAmount
+                  newOptions[categoryId] = [...newOptions[categoryId], option];
+                }
+              } else {
+                // Add if category not found (fallback)
+                newOptions[categoryId] = [...newOptions[categoryId], option];
               }
+            } else {
+              // Add if selectedItem not found (fallback)
+              newOptions[categoryId] = [...newOptions[categoryId], option];
             }
-
-            // Add if not selected and not exceeding maxAmount
-            newOptions[categoryId] = [...newOptions[categoryId], option];
           }
         }
       }
@@ -511,6 +519,9 @@ export function ItemDrawer({
                             return outStockDate > currentDate;
                           })();
 
+                          // Untuk kategori dengan maxAmount = 1, selalu boleh klik (untuk mengganti pilihan)
+                          const canClick = !isOutOfStock && (category.maxAmount === 1 || !maxReached || isSelected);
+
                           return (
                             <div
                               key={option.$id}
@@ -540,7 +551,7 @@ export function ItemDrawer({
                                       handleOptionChange(category.$id, option, false);
                                     }
                                   }}
-                                  disabled={(maxReached && !isSelected) || isOutOfStock}
+                                  disabled={!canClick}
                                 />
                                 <span className={`${(maxReached && !isSelected) || isOutOfStock
                                   ? "text-gray-400"

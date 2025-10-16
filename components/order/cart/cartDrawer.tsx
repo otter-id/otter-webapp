@@ -15,6 +15,7 @@ import { X, RefreshCw } from "lucide-react";
 import { CartItem } from "./cartItem";
 import { CartTotals } from "./cartTotal";
 import { UpsellModal } from "./upsellModal";
+import { LocationConfirmationDialog } from "./locationConfirmationDialog";
 import { useState, useEffect } from "react";
 import { getRecommendations } from "@/lib/recommendations";
 import { toast } from "sonner";
@@ -64,6 +65,7 @@ export function CartDrawer({
 }: CartDrawerProps) {
   const router = useRouter();
   const [isUpsellOpen, setIsUpsellOpen] = useState(false);
+  const [isLocationConfirmOpen, setIsLocationConfirmOpen] = useState(false);
   const [isStartOverDialogOpen, setIsStartOverDialogOpen] = useState(false);
   const [isRestoClosedDialogOpen, setIsRestoClosedDialogOpen] =
     useState(false);
@@ -105,6 +107,10 @@ export function CartDrawer({
   };
 
   const handleContinueToPayment = () => {
+    setIsLocationConfirmOpen(true);
+  };
+
+  const handleLocationConfirm = () => {
     proceedToPayment();
   };
 
@@ -148,92 +154,97 @@ export function CartDrawer({
   return (
     <>
       <Drawer open={isOpen} onOpenChange={onOpenChange}>
-        <DrawerContent className="max-h-[85vh] p-0 max-w-md mx-auto rounded-t-[20px]">
-          <div className="h-full flex flex-col">
-            <DrawerHeader className="px-4 py-3 border-b">
-              <div className="flex items-center justify-between">
-                <DrawerTitle>Your Cart</DrawerTitle>
-                <Button
-                  variant="ghost"
-                  size="icon"
-                  className="rounded-full h-8 w-8"
-                  onClick={() => onOpenChange(false)}
-                >
-                  <X className="h-4 w-4" />
-                </Button>
-              </div>
-            </DrawerHeader>
-
-            <div className="flex-1 overflow-y-auto">
-              {cart.length > 0 ? (
-                <div>
-                  <div className="px-4 py-4 space-y-3">
-                    {cart.map((item, index) => (
-                      <div key={`${item.$id}-${index}`} className="space-y-3">
-                        <CartItem
-                          item={item}
-                          onQuantityChange={(quantity) =>
-                            onUpdateQuantity(item, quantity)
-                          }
-                          onEdit={() => onEditItem(item)}
-                          onDelete={() => handleDeleteItem(item)}
-                        />
-                        {index < cart.length - 1 && <Separator />}
-                      </div>
-                    ))}
-                  </div>
-
-                  <Separator />
-
-                  <div className="px-4 py-4">
-                    <CartTotals
-                      totals={cartTotals}
-                      isFeesExpanded={isFeesExpanded}
-                      onFeesExpandedChange={onFeesExpandedChange}
-                    />
-                  </div>
-                </div>
-              ) : (
-                <div className="text-center py-8">
-                  <p className="text-muted-foreground">Your cart is empty</p>
-                </div>
-              )}
+        <DrawerContent className="max-h-[85vh] p-0 max-w-md mx-auto rounded-t-[20px] flex flex-col">
+          <DrawerHeader className="px-4 py-3 border-b flex-shrink-0">
+            <div className="flex items-center justify-between">
+              <DrawerTitle>Your Cart</DrawerTitle>
+              <Button
+                variant="ghost"
+                size="icon"
+                className="rounded-full h-8 w-8"
+                onClick={() => onOpenChange(false)}
+              >
+                <X className="h-4 w-4" />
+              </Button>
             </div>
+          </DrawerHeader>
 
-            {cart.length > 0 && (
-              <DrawerFooter className="px-4 py-4 border-t space-y-3">
-                <Button
-                  className="w-full h-12 bg-black hover:bg-black/90"
-                  onClick={handleContinueToPayment}
-                  disabled={!restaurant?.isOpen}
-                >
-                  Continue to Payment
-                </Button>
-                <Button
-                  variant="outline"
-                  className="w-full"
-                  onClick={handleContinueShopping}
-                >
-                  Continue Shopping
-                </Button>
-                <Button
-                  variant="destructive-outline"
-                  className="w-full text-red-500 hover:text-red-600 hover:bg-red-50"
-                  onClick={handleStartOver}
-                >
-                  <RefreshCw className="h-4 w-4 mr-2" />
-                  Start Over
-                </Button>
-              </DrawerFooter>
+          <div className="flex-1 overflow-y-auto min-h-0">
+            {cart.length > 0 ? (
+              <div>
+                <div className="px-4 py-4 space-y-3">
+                  {cart.map((item, index) => (
+                    <div key={`${item.$id}-${index}`} className="space-y-3">
+                      <CartItem
+                        item={item}
+                        onQuantityChange={(quantity) =>
+                          onUpdateQuantity(item, quantity)
+                        }
+                        onEdit={() => onEditItem(item)}
+                        onDelete={() => handleDeleteItem(item)}
+                      />
+                      {index < cart.length - 1 && <Separator />}
+                    </div>
+                  ))}
+                </div>
+
+                <Separator />
+
+                <div className="px-4 py-4">
+                  <CartTotals
+                    totals={cartTotals}
+                    isFeesExpanded={isFeesExpanded}
+                    onFeesExpandedChange={onFeesExpandedChange}
+                  />
+                </div>
+              </div>
+            ) : (
+              <div className="text-center py-8">
+                <p className="text-muted-foreground">Your cart is empty</p>
+              </div>
             )}
           </div>
+
+          {cart.length > 0 && (
+            <DrawerFooter className="px-4 py-4 border-t space-y-3 flex-shrink-0">
+              <Button
+                className="w-full h-12 bg-black hover:bg-black/90"
+                onClick={handleContinueToPayment}
+                disabled={!restaurant?.isOpen}
+              >
+                Continue to Payment
+              </Button>
+              <Button
+                variant="outline"
+                className="w-full"
+                onClick={handleContinueShopping}
+              >
+                Continue Shopping
+              </Button>
+              <Button
+                variant="destructive-outline"
+                className="w-full text-red-500 hover:text-red-600 hover:bg-red-50"
+                onClick={handleStartOver}
+              >
+                <RefreshCw className="h-4 w-4 mr-2" />
+                Start Over
+              </Button>
+            </DrawerFooter>
+          )}
         </DrawerContent>
       </Drawer>
 
       <RestoClosedDialog
         isOpen={isRestoClosedDialogOpen}
         onOpenChange={setIsRestoClosedDialogOpen}
-        onConfirm={() => {}}
+        onConfirm={() => { }}
+      />
+
+      <LocationConfirmationDialog
+        isOpen={isLocationConfirmOpen}
+        onOpenChange={setIsLocationConfirmOpen}
+        restaurant={restaurant}
+        onConfirm={handleLocationConfirm}
       />
 
       <StartOverDialog
