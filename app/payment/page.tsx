@@ -72,25 +72,80 @@ function PaymentPageContent() {
 
   const steps = ["Details", "Payment"];
 
-  useEffect(() => {
-    try {
-      const sessionKey = `payment-${restaurantId}`;
-      const savedSessionString = localStorage.getItem(sessionKey);
+  const generateQris = async (orderId?: string, restId?: string) => {
+    const orderIdToUse = orderId || state.activeOrderId;
+    const restIdToUse = restId || state.restaurantId;
 
-      if (savedSessionString) {
-        const savedState = JSON.parse(savedSessionString);
-        setState(savedState);
-        if (savedState.qrString) {
-          setIsQrLoading(false);
-        }
-      } else {
-        router.replace(`/store/${restaurantId}`);
-      }
+    if (!orderIdToUse || !restIdToUse) {
+      toast("Error", { description: "Missing order or restaurant ID.", icon: <AlertTriangle className="h-4 w-4 text-red-500" /> });
+      return false;
+    }
+
+    setIsQrLoading(true);
+    try {
+      const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/checkout/pwa/qris`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ orderId: orderIdToUse, restaurantId: restIdToUse }),
+      });
+      const result = await response.json();
+      if (!response.ok) throw new Error(result.message || 'Failed to generate QR.');
+      updateState({ qrisData: result.data });
+      return true;
     } catch (error) {
-      console.error("Failed to initialize payment page from localStorage", error);
-      router.replace(`/store/${restaurantId}`);
+      toast("QR Generation Failed", { description: (error as Error).message, icon: <AlertTriangle className="h-4 w-4 text-red-500" /> });
+      return false;
     } finally {
-      setIsLoaded(true);
+      setIsQrLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    const initializePaymentPage = async () => {
+      try {
+        const sessionKey = `payment-${restaurantId}`;
+        const savedSessionString = localStorage.getItem(sessionKey);
+
+        if (savedSessionString) {
+          const savedState = JSON.parse(savedSessionString);
+
+          // Check if QRIS exists and if it's expired
+          if (savedState.qrisData && savedState.activeOrderId) {
+            const now = new Date().getTime();
+            const expiry = new Date(savedState.qrisData.expires_at).getTime();
+
+            if (expiry <= now) {
+              // QRIS expired, generate new one
+              console.log("QRIS expired, generating new one...");
+              setState(savedState); // Set state first to have order ID available
+              setIsQrLoading(true);
+              const success = await generateQris(savedState.activeOrderId, savedState.restaurantId);
+              if (!success) {
+                setIsQrLoading(false);
+              }
+            } else {
+              // QRIS still valid, use existing
+              setState(savedState);
+              setIsQrLoading(false);
+            }
+          } else {
+            // No QRIS data, just set state
+            setState(savedState);
+            setIsQrLoading(false);
+          }
+        } else {
+          router.replace(`/store/${restaurantId}`);
+        }
+      } catch (error) {
+        console.error("Failed to initialize payment page from localStorage", error);
+        router.replace(`/store/${restaurantId}`);
+      } finally {
+        setIsLoaded(true);
+      }
+    };
+
+    if (restaurantId) {
+      initializePaymentPage();
     }
   }, [restaurantId]);
 
@@ -115,26 +170,6 @@ function PaymentPageContent() {
   const handleGoBack = () => {
     if (state.currentStep > 0) return;
     router.back();
-  };
-
-  const generateQris = async (orderId: string, restId: string) => {
-    setIsQrLoading(true);
-    try {
-      const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/checkout/pwa/qris`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ orderId, restaurantId: restId }),
-      });
-      const result = await response.json();
-      if (!response.ok) throw new Error(result.message || 'Failed to generate QR.');
-      updateState({ qrisData: result.data });
-      return true;
-    } catch (error) {
-      toast("QR Generation Failed", { description: (error as Error).message, icon: <AlertTriangle className="h-4 w-4 text-red-500" /> });
-      return false;
-    } finally {
-      setIsQrLoading(false);
-    }
   };
 
   const handleContinue = async () => {
@@ -315,6 +350,7 @@ function PaymentPageContent() {
             <QrisPayment
               amount={state.totals.total}
               qrString={state.qrisData?.qr_string || ""}
+              expiresAt={state.qrisData?.expires_at || null}
               isLoading={isQrLoading}
               generateQris={() => {
                 if (state.activeOrderId && state.restaurantId) {

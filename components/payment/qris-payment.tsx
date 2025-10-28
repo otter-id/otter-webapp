@@ -11,6 +11,7 @@ import QRCode from "react-qr-code";
 interface QrisPaymentProps {
   amount: number;
   qrString: string | null;
+  expiresAt: string | null;
   isLoading: boolean;
   generateQris: () => void;
 }
@@ -18,29 +19,38 @@ interface QrisPaymentProps {
 export function QrisPayment({
   amount,
   qrString,
+  expiresAt,
   isLoading,
   generateQris,
 }: QrisPaymentProps) {
-  const [timeLeft, setTimeLeft] = useState(120); // 2 menit dalam detik
+  const [timeLeft, setTimeLeft] = useState(0);
 
-  // Atur ulang timer setiap kali qrString baru diterima (dan tidak sedang loading)
+  // Hitung waktu yang tersisa berdasarkan expiresAt
   useEffect(() => {
-    if (qrString && !isLoading) {
-      setTimeLeft(120);
-    }
-  }, [qrString, isLoading]);
-
-  // Timer hitung mundur
-  useEffect(() => {
-    if (timeLeft <= 0) {
-      generateQris(); // Panggil fungsi untuk meminta QR baru
+    if (!expiresAt) {
+      setTimeLeft(0);
       return;
     }
-    const timer = setInterval(() => {
-      setTimeLeft((prev) => prev - 1);
-    }, 1000);
+
+    const updateTimeLeft = () => {
+      const now = new Date().getTime();
+      const expiry = new Date(expiresAt).getTime();
+      const remaining = Math.max(0, Math.floor((expiry - now) / 1000));
+      setTimeLeft(remaining);
+
+      // Jika sudah expired, generate QR baru
+      if (remaining <= 0 && qrString) {
+        generateQris();
+      }
+    };
+
+    // Update immediately
+    updateTimeLeft();
+
+    // Update every second
+    const timer = setInterval(updateTimeLeft, 1000);
     return () => clearInterval(timer);
-  }, [timeLeft, generateQris]);
+  }, [expiresAt, qrString, generateQris]);
 
   const formatTime = (seconds: number) => {
     const mins = Math.floor(seconds / 60);
