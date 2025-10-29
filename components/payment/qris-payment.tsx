@@ -24,11 +24,13 @@ export function QrisPayment({
   generateQris,
 }: QrisPaymentProps) {
   const [timeLeft, setTimeLeft] = useState(0);
+  const [hasTriggeredRegeneration, setHasTriggeredRegeneration] = useState(false);
 
   // Hitung waktu yang tersisa berdasarkan expiresAt
   useEffect(() => {
     if (!expiresAt) {
       setTimeLeft(0);
+      setHasTriggeredRegeneration(false);
       return;
     }
 
@@ -38,8 +40,9 @@ export function QrisPayment({
       const remaining = Math.max(0, Math.floor((expiry - now) / 1000));
       setTimeLeft(remaining);
 
-      // Jika sudah expired, generate QR baru
-      if (remaining <= 0 && qrString) {
+      // Jika sudah expired, generate QR baru (hanya sekali)
+      if (remaining <= 0 && qrString && !hasTriggeredRegeneration && !isLoading) {
+        setHasTriggeredRegeneration(true);
         generateQris();
       }
     };
@@ -50,7 +53,14 @@ export function QrisPayment({
     // Update every second
     const timer = setInterval(updateTimeLeft, 1000);
     return () => clearInterval(timer);
-  }, [expiresAt, qrString, generateQris]);
+  }, [expiresAt, qrString, generateQris, hasTriggeredRegeneration, isLoading]);
+
+  // Reset flag ketika QR data berubah (QR baru sudah di-generate)
+  useEffect(() => {
+    if (expiresAt) {
+      setHasTriggeredRegeneration(false);
+    }
+  }, [expiresAt]);
 
   const formatTime = (seconds: number) => {
     const mins = Math.floor(seconds / 60);
