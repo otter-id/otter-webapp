@@ -32,7 +32,8 @@ import { fakeData } from "../../data/receipt-sample";
 const ReceiptContent = () => {
   const searchParams = useSearchParams();
   const orderId = searchParams.get("id");
-  const { receiptData, isLoading, error } = useReceiptData(orderId);
+  const storeId = searchParams.get("sid");
+  const { receiptData, isLoading, error } = useReceiptData(orderId, storeId);
   const data = isLoading ? fakeData.data : receiptData?.data || fakeData.data;
   const splitBillState = useSplitBill(data);
 

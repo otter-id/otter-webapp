@@ -162,9 +162,9 @@ export function RestaurantHeader({
                         (2.3k reviews)
                       </span>
                     </div> */}
-                    <Badge variant="secondary" className="font-normal mt-2">
+                    {/* <Badge variant="secondary" className="font-normal mt-2">
                       Bubble Tea
-                    </Badge>
+                    </Badge> */}
                   </div>
                 </div>
               </div>
