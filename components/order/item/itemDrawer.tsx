@@ -20,6 +20,7 @@ import { Label } from "@/components/ui/label";
 import { Badge } from "@/components/ui/badge";
 import { formatPrice, formatTextForPlaceholder } from "@/lib/utils";
 import { Textarea } from "@/components/ui/textarea";
+import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 
 // Extended MenuItem type to handle JSX elements
 interface ExtendedMenuItem extends Omit<MenuItem, "name" | "description"> {
@@ -56,6 +57,28 @@ export function ItemDrawer({
   }>({});
   const [imageError, setImageError] = useState(false);
   const [note, setNote] = useState("");
+
+  // ⛳ GANTI state info lama jadi ini
+  const [infoOpen, setInfoOpen] = useState(false);
+  const [pendingInfo, setPendingInfo] = useState<{
+    title: string;
+    description: string;
+    categoryId: string;
+    option: MenuOption;
+    isRadio: boolean;
+  } | null>(null);
+
+  const openInfo = (
+    title: string,
+    description: string,
+    categoryId: string,
+    option: MenuOption,
+    isRadio: boolean
+  ) => {
+    setPendingInfo({ title, description, categoryId, option, isRadio });
+    setInfoOpen(true);
+  };
+
 
   // Reset quantity when switching between different items (not when editing)
   useEffect(() => {
@@ -486,7 +509,31 @@ export function ItemDrawer({
                                     {option.name}
                                     {isOutOfStock && <span className="ml-2 text-xs text-red-500">(Out of Stock)</span>}
                                   </Label>
+                                  {option.description && (
+                                    <Button
+                                      type="button"
+                                      variant="ghost"
+                                      size="icon"
+                                      className="h-4 w-10 shrink-0"
+                                      onClick={(e) => {
+                                        e.preventDefault();
+                                        e.stopPropagation();
+                                        openInfo(
+                                          `${option.name}`,
+                                          option.description as string,
+                                          category.$id,
+                                          option,
+                                          false
+                                        );
+                                      }}
+
+                                      aria-label="Lihat deskripsi opsi"
+                                    >
+                                      <Info className="h-4 w-4" />
+                                    </Button>
+                                  )}
                                 </div>
+
                                 {option.price > 0 && (
                                   <span className="text-sm font-medium">
                                     +{formatPrice(option.price)}
@@ -560,7 +607,31 @@ export function ItemDrawer({
                                   {option.name}
                                   {isOutOfStock && <span className="ml-2 text-xs text-red-500">(Out of Stock)</span>}
                                 </span>
+                                {option.description && (
+                                  <Button
+                                    type="button"
+                                    variant="ghost"
+                                    size="icon"
+                                    className="h-4 w-8 shrink-0"
+                                    onClick={(e) => {
+                                      e.preventDefault();
+                                      e.stopPropagation();
+                                      openInfo(
+                                        `${option.name}`,
+                                        option.description as string,
+                                        category.$id,
+                                        option,
+                                        false
+                                      );
+                                    }}
+
+                                    aria-label="Lihat deskripsi opsi"
+                                  >
+                                    <Info className="h-4 w-4" />
+                                  </Button>
+                                )}
                               </Label>
+
                               {option.price > 0 && (
                                 <span className="text-sm font-medium pl-2">
                                   +{formatPrice(option.price)}
@@ -601,6 +672,65 @@ export function ItemDrawer({
           </DrawerFooter>
         </div>
       </DrawerContent>
+      <Dialog open={infoOpen} onOpenChange={setInfoOpen}>
+        <DialogContent className="max-w-sm [&>button]:hidden">
+          <DialogHeader className="p-6 pb-4">
+            <div className="flex flex-col items-center text-center gap-2">
+              <DialogTitle>{pendingInfo?.title}</DialogTitle>
+              <DialogDescription className="whitespace-pre-wrap mt-2">
+                {pendingInfo?.description}
+              </DialogDescription>
+            </div>
+          </DialogHeader>
+
+          <div className="mt-2 flex flex-col gap-2">
+            <Button
+              type="button"
+              variant="outline"
+              onClick={() => setInfoOpen(false)}
+              aria-label="Kembali"
+            >
+              Back
+            </Button>
+
+            {(() => {
+              if (!pendingInfo) return null;
+
+              const selected = selectedOptions[pendingInfo.categoryId] || [];
+              const isAlreadySelected = selected.some(
+                (o) => o.$id === pendingInfo.option.$id
+              );
+              if (isAlreadySelected) return null;
+
+              const isOut =
+                !!pendingInfo.option.outstock &&
+                new Date(pendingInfo.option.outstock) > new Date();
+
+              let disableSelect = isOut;
+              if (!pendingInfo.isRadio) {
+                const category = selectedItem?.menuOptionCategory.find(
+                  (c) => c.$id === pendingInfo.categoryId
+                );
+              }
+
+              return (
+                <Button
+                  type="button"
+                  aria-label="Pilih opsi ini"
+                  onClick={() => {
+                    const { categoryId, option, isRadio } = pendingInfo;
+                    handleOptionChange(categoryId, option, isRadio);
+                    setInfoOpen(false);
+                  }}
+                  disabled={disableSelect}
+                >
+                  Select
+                </Button>
+              );
+            })()}
+          </div>
+        </DialogContent>
+      </Dialog>
     </Drawer>
   );
 }
