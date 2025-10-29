@@ -68,32 +68,8 @@ export function LocationConfirmationDialog({
                                     )}
                                 </span>
                             </div>
-
-                            {restaurant.waitTime && (
-                                <div className="text-gray-600">
-                                    Wait: ~{restaurant.waitTime} mins
-                                </div>
-                            )}
                         </div>
-
-                        {restaurant.phoneNumber && (
-                            <div className="flex items-center gap-2 text-sm text-gray-600">
-                                <Phone className="h-4 w-4" />
-                                <span>{restaurant.phoneNumber}</span>
-                            </div>
-                        )}
                     </div>
-
-                    {restaurant.pickupInstructions && (
-                        <div className="mt-4 p-3 bg-blue-50 rounded-lg">
-                            <h4 className="font-medium text-sm text-blue-800 mb-1">
-                                Pickup Instructions
-                            </h4>
-                            <p className="text-sm text-blue-700">
-                                {restaurant.pickupInstructions}
-                            </p>
-                        </div>
-                    )}
                 </div>
 
                 <div className="p-6 pt-0 space-y-2">
