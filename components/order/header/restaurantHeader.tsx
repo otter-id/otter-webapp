@@ -1,10 +1,9 @@
 "use client";
 
 import Image from "next/image";
-import { MapPin, Clock, Star } from "lucide-react";
+import { MapPin, Clock } from "lucide-react";
 import { motion } from "framer-motion";
 import { Button } from "@/components/ui/button";
-import { Badge } from "@/components/ui/badge";
 import {
   Dialog,
   DialogContent,
@@ -13,7 +12,6 @@ import {
 } from "@/components/ui/dialog";
 import { useEffect, useState } from "react";
 import { Separator } from "@/components/ui/separator";
-import { cn } from "@/lib/utils"; // kalau kamu pakai
 
 interface RestaurantHeaderProps {
   name: string;
@@ -26,8 +24,8 @@ interface RestaurantHeaderProps {
   timeZone?: string;
   openingTimes?: {
     [key: string]: {
-      openTime: string;
-      closeTime: string;
+      openTime: string | null;
+      closeTime: string | null;
     }[];
   };
 
@@ -50,15 +48,13 @@ export function RestaurantHeader({
 }: RestaurantHeaderProps) {
   const [showHours, setShowHours] = useState(false);
 
-  // 👇 state buat posisi user
+  // === GEO ===
   const [userPosition, setUserPosition] = useState<{
     lat: number;
     lng: number;
   } | null>(null);
-
   const [geoError, setGeoError] = useState<string | null>(null);
 
-  // minta lokasi user sekali
   useEffect(() => {
     if (!("geolocation" in navigator)) {
       setGeoError("Geolocation not supported");
@@ -83,7 +79,8 @@ export function RestaurantHeader({
     );
   }, []);
 
-  // helper: haversine
+  const deg2rad = (deg: number) => deg * (Math.PI / 180);
+
   const getDistanceFromLatLonInKm = (
     lat1: number,
     lon1: number,
@@ -100,24 +97,17 @@ export function RestaurantHeader({
       Math.sin(dLon / 2) *
       Math.sin(dLon / 2);
     const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
-    const d = R * c; // Distance in km
-    return d;
+    return R * c;
   };
 
-  const deg2rad = (deg: number) => deg * (Math.PI / 180);
-
-  // helper: format jarak
   const formatDistance = (km: number) => {
     if (km < 1) {
-      // jadi meter
       return `${Math.round(km * 1000)} m away`;
     }
     return `${km.toFixed(1)} km away`;
   };
 
-  // hitung jarak kalau dua-duanya ada
-  let distanceText = "Distance unavailable";
-
+  let distanceText = "See on map";
   if (userPosition) {
     const distanceKm = getDistanceFromLatLonInKm(
       userPosition.lat,
@@ -126,27 +116,23 @@ export function RestaurantHeader({
       restaurantLng
     );
     distanceText = formatDistance(distanceKm);
-  } else {
-    // kalau user belum allow / belum dapat
-    distanceText = "See on map";
   }
 
-  // Calculate wait time status and color
+  // === WAIT TIME ===
   const getWaitTimeStatus = (minutes: number) => {
     if (minutes <= 10) return { label: "Short", color: "bg-green-500" };
     if (minutes <= 20) return { label: "Average", color: "bg-yellow-500" };
     return { label: "Long", color: "bg-red-500" };
   };
-
   const waitTimeStatus = getWaitTimeStatus(waitTime);
 
-  // Get current day for highlighting
+  // === OPENING TIMES ===
   const currentDay = new Date().toLocaleDateString("en-US", {
     weekday: "long",
   });
 
-  // Format time from ISO string to readable format
   const formatTime = (isoString: string) => {
+    if (!isoString) return "";
     try {
       const date = new Date(isoString);
       return date.toLocaleTimeString("en-US", {
@@ -156,11 +142,11 @@ export function RestaurantHeader({
         timeZone: timeZone,
       });
     } catch (error) {
-      return "Invalid time";
+      return "";
     }
   };
 
-  const dayMapping = {
+  const dayMapping: Record<string, string> = {
     Monday: "MON",
     Tuesday: "TUE",
     Wednesday: "WED",
@@ -180,16 +166,19 @@ export function RestaurantHeader({
     "Sunday",
   ];
 
+  // ini buat dialog
   const openingHours = daysOfWeek.map((day) => {
-    const dayKey = dayMapping[day as keyof typeof dayMapping];
+    const dayKey = dayMapping[day];
     const periods = openingTimes?.[dayKey];
 
     if (periods && periods.length > 0) {
       return {
         day: day,
-        hours: periods.map(
-          (period) => `${formatTime(period.openTime)} - ${formatTime(period.closeTime)}`
-        ),
+        hours: periods.map((period) => {
+          const open = period.openTime ? formatTime(period.openTime) : "—";
+          const close = period.closeTime ? formatTime(period.closeTime) : "—";
+          return `${open} - ${close}`;
+        }),
       };
     } else {
       return {
@@ -198,6 +187,31 @@ export function RestaurantHeader({
       };
     }
   });
+
+  // === ini bagian closes at di header ===
+  // ambil jadwal hari ini
+  const todayKey = dayMapping[currentDay];
+  const todayPeriods = openingTimes?.[todayKey];
+  let closesAtText: string | null = null;
+
+  if (todayPeriods && todayPeriods.length > 0) {
+    // ambil period terakhir (kalau 2 shift)
+    const lastPeriod = todayPeriods[todayPeriods.length - 1];
+    if (lastPeriod?.closeTime) {
+      const formatted = formatTime(lastPeriod.closeTime);
+      if (formatted) {
+        closesAtText = `Closes at ${formatted}`;
+      }
+    } else {
+      // di DB null → bisa pilih: sembunyiin aja
+      closesAtText = null;
+      // atau kalau mau keliatan:
+      // closesAtText = "Closing time not set";
+    }
+  } else {
+    // hari ini closed semua
+    closesAtText = "Closed today";
+  }
 
   return (
     <>
@@ -262,21 +276,29 @@ export function RestaurantHeader({
               <div className="flex items-center justify-between">
                 <div className="flex items-center gap-2">
                   <div
-                    className={`w-2 h-2 rounded-full ${isOpen ? "bg-green-500 animate-pulse" : "bg-red-500"
+                    className={`w-2 h-2 rounded-full ${isOpen
+                      ? "bg-green-500 animate-pulse"
+                      : "bg-red-500"
                       }`}
                   />
                   <span className="font-medium">
                     {isOpen ? "Open Now" : "Closed"}
                   </span>
-                  <div className="w-1 h-1 rounded-full bg-muted-foreground/30" />
-                  <span className="text-muted-foreground">Closes at 19:00</span>
+                  {/* bullet */}
+                  {closesAtText && (
+                    <>
+                      <div className="w-1 h-1 rounded-full bg-muted-foreground/30" />
+                      <span className="text-muted-foreground">
+                        {closesAtText}
+                      </span>
+                    </>
+                  )}
                 </div>
               </div>
 
               <div className="flex items-center gap-3 text-sm">
                 <div className="flex items-center gap-1.5">
                   <MapPin className="w-4 h-4 text-muted-foreground" />
-                  {/* 👇 ini sekarang dinamis */}
                   <span>{distanceText}</span>
                 </div>
                 <div className="w-1 h-1 rounded-full bg-muted-foreground/30" />
@@ -294,7 +316,7 @@ export function RestaurantHeader({
                 </div>
               </div>
 
-              {/* Quick Actions */}
+              {/* Actions */}
               <div className="flex gap-2 pt-2">
                 <Button
                   variant="outline"
