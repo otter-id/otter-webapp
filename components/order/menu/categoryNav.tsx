@@ -91,8 +91,8 @@ export function CategoryNav({
                   ? "default"
                   : "ghost"
                 : isSelected
-                ? "default"
-                : "outline";
+                  ? "default"
+                  : "outline";
 
               return (
                 <Button
@@ -122,7 +122,7 @@ export function CategoryNav({
 
         <Drawer open={isOpen} onOpenChange={setIsOpen}>
           <DrawerContent className="max-h-[85vh] p-0 max-w-md mx-auto rounded-t-[20px]">
-            <div className="h-full">
+            <div>
               <DrawerHeader className="px-4 py-3 border-b flex items-center justify-between">
                 <DrawerTitle>Categories</DrawerTitle>
                 <DrawerClose asChild>
@@ -135,7 +135,8 @@ export function CategoryNav({
                   </Button>
                 </DrawerClose>
               </DrawerHeader>
-              <div className="p-3 space-y-2 overflow-y-auto">
+
+              <div className=" p-3 space-y-2 overflow-y-auto max-h-[70vh] pb-6">
                 {categories.map((category) => {
                   const isPopular = isPopularCategory(category);
                   const isSelected = category.id === selectedCategoryId;
@@ -146,8 +147,8 @@ export function CategoryNav({
                       ? "default"
                       : "ghost"
                     : isSelected
-                    ? "default"
-                    : "outline";
+                      ? "default"
+                      : "outline";
 
                   return (
                     <Button
