@@ -11,8 +11,9 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { Separator } from "@/components/ui/separator";
+import { cn } from "@/lib/utils"; // kalau kamu pakai
 
 interface RestaurantHeaderProps {
   name: string;
@@ -29,6 +30,9 @@ interface RestaurantHeaderProps {
       closeTime: string;
     }[];
   };
+
+  restaurantLat: number;
+  restaurantLng: number;
 }
 
 export function RestaurantHeader({
@@ -41,8 +45,91 @@ export function RestaurantHeader({
   isOpen,
   timeZone,
   openingTimes,
+  restaurantLat,
+  restaurantLng,
 }: RestaurantHeaderProps) {
   const [showHours, setShowHours] = useState(false);
+
+  // 👇 state buat posisi user
+  const [userPosition, setUserPosition] = useState<{
+    lat: number;
+    lng: number;
+  } | null>(null);
+
+  const [geoError, setGeoError] = useState<string | null>(null);
+
+  // minta lokasi user sekali
+  useEffect(() => {
+    if (!("geolocation" in navigator)) {
+      setGeoError("Geolocation not supported");
+      return;
+    }
+
+    navigator.geolocation.getCurrentPosition(
+      (pos) => {
+        setUserPosition({
+          lat: pos.coords.latitude,
+          lng: pos.coords.longitude,
+        });
+      },
+      (err) => {
+        setGeoError(err.message);
+      },
+      {
+        enableHighAccuracy: true,
+        timeout: 8000,
+        maximumAge: 1000 * 60 * 5,
+      }
+    );
+  }, []);
+
+  // helper: haversine
+  const getDistanceFromLatLonInKm = (
+    lat1: number,
+    lon1: number,
+    lat2: number,
+    lon2: number
+  ) => {
+    const R = 6371; // km
+    const dLat = deg2rad(lat2 - lat1);
+    const dLon = deg2rad(lon2 - lon1);
+    const a =
+      Math.sin(dLat / 2) * Math.sin(dLat / 2) +
+      Math.cos(deg2rad(lat1)) *
+      Math.cos(deg2rad(lat2)) *
+      Math.sin(dLon / 2) *
+      Math.sin(dLon / 2);
+    const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+    const d = R * c; // Distance in km
+    return d;
+  };
+
+  const deg2rad = (deg: number) => deg * (Math.PI / 180);
+
+  // helper: format jarak
+  const formatDistance = (km: number) => {
+    if (km < 1) {
+      // jadi meter
+      return `${Math.round(km * 1000)} m away`;
+    }
+    return `${km.toFixed(1)} km away`;
+  };
+
+  // hitung jarak kalau dua-duanya ada
+  let distanceText = "Distance unavailable";
+
+  if (userPosition) {
+    const distanceKm = getDistanceFromLatLonInKm(
+      userPosition.lat,
+      userPosition.lng,
+      restaurantLat,
+      restaurantLng
+    );
+    distanceText = formatDistance(distanceKm);
+  } else {
+    // kalau user belum allow / belum dapat
+    distanceText = "See on map";
+  }
 
   // Calculate wait time status and color
   const getWaitTimeStatus = (minutes: number) => {
@@ -66,7 +153,7 @@ export function RestaurantHeader({
         hour: "2-digit",
         minute: "2-digit",
         hour12: true,
-        timeZone: timeZone
+        timeZone: timeZone,
       });
     } catch (error) {
       return "Invalid time";
@@ -189,7 +276,8 @@ export function RestaurantHeader({
               <div className="flex items-center gap-3 text-sm">
                 <div className="flex items-center gap-1.5">
                   <MapPin className="w-4 h-4 text-muted-foreground" />
-                  <span>2.5 km away</span>
+                  {/* 👇 ini sekarang dinamis */}
+                  <span>{distanceText}</span>
                 </div>
                 <div className="w-1 h-1 rounded-full bg-muted-foreground/30" />
                 <div className="flex items-center gap-1.5">
@@ -211,7 +299,8 @@ export function RestaurantHeader({
                 <Button
                   variant="outline"
                   className="flex-1 h-9"
-                  onClick={() => window.open(googleMapsUrl, "_blank")}>
+                  onClick={() => window.open(googleMapsUrl, "_blank")}
+                >
                   Open in Google Maps
                 </Button>
                 <Button
@@ -249,7 +338,6 @@ export function RestaurantHeader({
                   >
                     {schedule.day}
                   </span>
-                  {/* Ganti span menjadi div untuk menampung beberapa baris jadwal */}
                   <div
                     className={
                       schedule.day === currentDay
@@ -257,7 +345,6 @@ export function RestaurantHeader({
                         : "text-muted-foreground text-left"
                     }
                   >
-                    {/* Lakukan map pada array `schedule.hours` */}
                     {schedule.hours.map((timeSlot, i) => (
                       <div key={i}>{timeSlot}</div>
                     ))}
