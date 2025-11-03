@@ -211,6 +211,8 @@ export default function FoodOrderingPage({
           isOpen={restaurant?.isOpen || false}
           timeZone={restaurant?.timezone || undefined}
           openingTimes={restaurant?.openingTimes}
+          restaurantLat={restaurant?.latitude ?? 0}
+          restaurantLng={restaurant?.longitude ?? 0}
         />
 
         <div className="sticky top-0 z-20">
