@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import Image from "next/image";
 import { X, Minus, Plus, AlertTriangle, Check, Info } from "lucide-react";
 import { MenuItem, MenuOption } from "@/types/restaurant";
@@ -20,7 +20,13 @@ import { Label } from "@/components/ui/label";
 import { Badge } from "@/components/ui/badge";
 import { formatPrice, formatTextForPlaceholder } from "@/lib/utils";
 import { Textarea } from "@/components/ui/textarea";
-import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
 
 // Extended MenuItem type to handle JSX elements
 interface ExtendedMenuItem extends Omit<MenuItem, "name" | "description"> {
@@ -58,7 +64,7 @@ export function ItemDrawer({
   const [imageError, setImageError] = useState(false);
   const [note, setNote] = useState("");
 
-  // ⛳ GANTI state info lama jadi ini
+  // dialog info
   const [infoOpen, setInfoOpen] = useState(false);
   const [pendingInfo, setPendingInfo] = useState<{
     title: string;
@@ -79,6 +85,9 @@ export function ItemDrawer({
     setInfoOpen(true);
   };
 
+  // 👇 ini buat tinggi (80vh ↔ 100vh)
+  const [isExpanded, setIsExpanded] = useState(false);
+  const scrollRef = useRef<HTMLDivElement | null>(null);
 
   // Reset quantity when switching between different items (not when editing)
   useEffect(() => {
@@ -104,6 +113,7 @@ export function ItemDrawer({
         setNote("");
       }
       setImageError(false);
+      setIsExpanded(false); // balik ke awal
     }
   }, [isOpen, editingCartItem]);
 
@@ -111,12 +121,10 @@ export function ItemDrawer({
   useEffect(() => {
     if (selectedItem) {
       if (editingCartItem) {
-        // Convert from cart format to internal format
         const options: { [categoryId: string]: MenuOption[] } = {};
 
         Object.entries(editingCartItem.selectedOptions).forEach(
           ([categoryId, cartOptions]) => {
-            // Find the original option objects from the menu item
             const category = selectedItem.menuOptionCategory.find(
               (cat) => cat.$id === categoryId
             );
@@ -144,7 +152,6 @@ export function ItemDrawer({
 
         setSelectedOptions(options);
       } else {
-        // Don't pre-select any options when adding a new item
         setSelectedOptions({});
       }
     }
@@ -159,10 +166,8 @@ export function ItemDrawer({
       const newOptions = { ...prev };
 
       if (isRadio) {
-        // For radio buttons, replace the selection
         newOptions[categoryId] = [option];
       } else {
-        // For checkboxes, toggle the selection
         if (!newOptions[categoryId]) {
           newOptions[categoryId] = [option];
         } else {
@@ -171,7 +176,6 @@ export function ItemDrawer({
           );
 
           if (existingIndex >= 0) {
-            // Remove if already selected
             newOptions[categoryId] = newOptions[categoryId].filter(
               (_, i) => i !== existingIndex
             );
@@ -179,28 +183,22 @@ export function ItemDrawer({
               delete newOptions[categoryId];
             }
           } else {
-            // Check if adding this option would exceed maxAmount
             if (selectedItem) {
               const category = selectedItem.menuOptionCategory.find(
                 (cat) => cat.$id === categoryId
               );
               if (category) {
-                // Jika maxAmount = 1, ganti pilihan (seperti radio button)
                 if (category.maxAmount === 1) {
                   newOptions[categoryId] = [option];
                 } else if (newOptions[categoryId].length >= category.maxAmount) {
-                  // Don't add if it would exceed maxAmount untuk kategori lain
                   return prev;
                 } else {
-                  // Add if not selected and not exceeding maxAmount
                   newOptions[categoryId] = [...newOptions[categoryId], option];
                 }
               } else {
-                // Add if category not found (fallback)
                 newOptions[categoryId] = [...newOptions[categoryId], option];
               }
             } else {
-              // Add if selectedItem not found (fallback)
               newOptions[categoryId] = [...newOptions[categoryId], option];
             }
           }
@@ -217,15 +215,12 @@ export function ItemDrawer({
     );
   };
 
-  // Menyesuaikan kalkulasi harga total dengan discountPrice
   const calculateTotalPrice = (): number => {
     if (!selectedItem) return 0;
 
-    // Gunakan discountPrice jika ada, jika tidak gunakan price biasa
     const baseItemPrice = selectedItem.discountPrice ?? selectedItem.price;
     let total = baseItemPrice * quantity;
 
-    // Tambahkan harga opsi, dengan mempertimbangkan discountPrice juga
     Object.values(selectedOptions).forEach((options) => {
       options.forEach((option) => {
         const optionPrice = option.discountPrice ?? option.price;
@@ -236,17 +231,12 @@ export function ItemDrawer({
     return total;
   };
 
-  // Menyesuaikan logika disabled button dengan minAmount
   const isRequiredOptionsMissing = (): boolean => {
     if (!selectedItem) return true;
 
-    // Memeriksa apakah ada kategori yang persyaratan minimumnya tidak terpenuhi
     return selectedItem.menuOptionCategory.some((category) => {
       const minAmount = category.minAmount || 0;
       const selectedCount = selectedOptions[category.$id]?.length || 0;
-
-      // Jika jumlah minimum disyaratkan (minAmount > 0) tetapi pengguna memilih kurang dari itu,
-      // maka persyaratan dianggap tidak terpenuhi.
       return minAmount > 0 && selectedCount < minAmount;
     });
   };
@@ -285,10 +275,41 @@ export function ItemDrawer({
     }
   };
 
+  // 👇 inti permintaanmu: kalau udah nyentuh atas → langsung kecil
+  const handleScroll = () => {
+    const el = scrollRef.current;
+    if (!el) return;
+
+    const top = el.scrollTop;
+
+    // scroll ke bawah dikit → perbesar
+    if (!isExpanded && top > 10) {
+      setIsExpanded(true);
+      return;
+    }
+
+    // scroll balik ke atas → langsung kecil lagi (tanpa delay)
+    if (isExpanded && top === 0) {
+      setIsExpanded(false);
+    }
+  };
+
   return (
     <Drawer open={isOpen} onOpenChange={onOpenChange}>
-      <DrawerContent className="max-h-[80vh] p-0 max-w-md mx-auto rounded-t-[20px]">
-        <div className="h-full overflow-y-auto">
+      {/* className kamu tetap */}
+      <DrawerContent
+        className="max-h-[80vh] p-0 max-w-md mx-auto rounded-t-[20px]"
+        // cuma gaya transisinya aja
+        style={{
+          maxHeight: isExpanded ? "100vh" : "80vh",
+          transition: "max-height 0.25s ease-in-out",
+        }}
+      >
+        <div
+          className="h-full overflow-y-auto"
+          ref={scrollRef}
+          onScroll={handleScroll}
+        >
           <DrawerHeader className="px-4 py-3 border-b sticky top-0 bg-white z-10">
             <div className="flex items-center justify-between">
               <DrawerTitle>Customize Order</DrawerTitle>
@@ -389,14 +410,12 @@ export function ItemDrawer({
                 const isRequirementMet = selectedCount >= minAmount;
                 let requirementText = "";
 
-                // Jika min dan max sama, cukup tampilkan "Pilih X"
                 if (minAmount > 0) {
                   requirementText = `(Pilih ${minAmount})`;
                 }
 
-                // Membuat teks persyaratan (misal: "(Pilih 2, Maks. 3)")
                 if (maxAmount > 1 && maxAmount != category.menuOptionId.length) {
-                  requirementText = `(Pilih ${minAmount}, Maks. ${maxAmount})`
+                  requirementText = `(Pilih ${minAmount}, Maks. ${maxAmount})`;
                 }
 
                 return (
@@ -419,7 +438,6 @@ export function ItemDrawer({
                             {" Terpilih"}
                           </Badge>
                         )}
-                        {/* Menggunakan minAmount untuk validasi badge */}
                         {minAmount > 0 &&
                           (isRequirementMet ? (
                             <Badge className="bg-green-100 text-green-700 hover:bg-green-100 flex gap-1">
@@ -443,7 +461,6 @@ export function ItemDrawer({
                             (opt) => opt.$id === value
                           );
                           if (option) {
-                            // Cek apakah option out of stock
                             const isOutOfStock = (() => {
                               if (!option.outstock) return false;
                               const outStockDate = new Date(option.outstock);
@@ -451,7 +468,6 @@ export function ItemDrawer({
                               return outStockDate > currentDate;
                             })();
 
-                            // Jika tidak out of stock, handle option change
                             if (!isOutOfStock) {
                               handleOptionChange(category.$id, option, true);
                             }
@@ -460,32 +476,26 @@ export function ItemDrawer({
                       >
                         <div className="space-y-2">
                           {category.menuOptionId.map((option) => {
-                            // Mengecek status stock berdasarkan atribut outstock
                             const isOutOfStock = (() => {
-                              // Jika outstock null, berarti stock ada
                               if (!option.outstock) return false;
-
-                              // Jika outstock ada value, cek apakah tanggal di masa depan
                               const outStockDate = new Date(option.outstock);
                               const currentDate = new Date();
-
-                              // Jika tanggal outstock di masa depan, berarti stock tidak ada
-                              // Jika tanggal outstock di masa lalu atau sekarang, berarti stock ada
                               return outStockDate > currentDate;
                             })();
 
                             return (
                               <div
                                 key={option.$id}
-                                className={`flex items-center justify-between py-2 px-3 border rounded-md transition-colors ${!isOutOfStock ? "cursor-pointer hover:bg-accent" : "cursor-not-allowed opacity-60"
+                                className={`flex items-center justify-between py-2 px-3 border rounded-md transition-colors ${!isOutOfStock
+                                  ? "cursor-pointer hover:bg-accent"
+                                  : "cursor-not-allowed opacity-60"
                                   }`}
                                 onClick={() => {
                                   if (isOutOfStock) return;
 
-                                  const value = option.$id;
                                   const foundOption =
                                     category.menuOptionId.find(
-                                      (opt) => opt.$id === value
+                                      (opt) => opt.$id === option.$id
                                     );
                                   if (foundOption) {
                                     handleOptionChange(
@@ -504,10 +514,17 @@ export function ItemDrawer({
                                   />
                                   <Label
                                     htmlFor={option.$id}
-                                    className={`${!isOutOfStock ? "cursor-pointer" : "cursor-not-allowed text-gray-400"}`}
+                                    className={`${!isOutOfStock
+                                      ? "cursor-pointer"
+                                      : "cursor-not-allowed text-gray-400"
+                                      }`}
                                   >
                                     {option.name}
-                                    {isOutOfStock && <span className="ml-2 text-xs text-red-500">(Out of Stock)</span>}
+                                    {isOutOfStock && (
+                                      <span className="ml-2 text-xs text-red-500">
+                                        (Out of Stock)
+                                      </span>
+                                    )}
                                   </Label>
                                   {option.description && (
                                     <Button
@@ -526,7 +543,6 @@ export function ItemDrawer({
                                           false
                                         );
                                       }}
-
                                       aria-label="Lihat deskripsi opsi"
                                     >
                                       <Info className="h-4 w-4" />
@@ -552,22 +568,18 @@ export function ItemDrawer({
                             category.$id,
                             option.$id
                           );
-                          // Mengecek status stock berdasarkan atribut outstock
                           const isOutOfStock = (() => {
-                            // Jika outstock null, berarti stock ada
                             if (!option.outstock) return false;
-
-                            // Jika outstock ada value, cek apakah tanggal di masa depan
                             const outStockDate = new Date(option.outstock);
                             const currentDate = new Date();
-
-                            // Jika tanggal outstock di masa depan, berarti stock tidak ada
-                            // Jika tanggal outstock di masa lalu atau sekarang, berarti stock ada
                             return outStockDate > currentDate;
                           })();
 
-                          // Untuk kategori dengan maxAmount = 1, selalu boleh klik (untuk mengganti pilihan)
-                          const canClick = !isOutOfStock && (category.maxAmount === 1 || !maxReached || isSelected);
+                          const canClick =
+                            !isOutOfStock &&
+                            (category.maxAmount === 1 ||
+                              !maxReached ||
+                              isSelected);
 
                           return (
                             <div
@@ -577,8 +589,15 @@ export function ItemDrawer({
                                 : "cursor-not-allowed opacity-60"
                                 }`}
                               onClick={() => {
-                                if ((!maxReached || isSelected) && !isOutOfStock) {
-                                  handleOptionChange(category.$id, option, false);
+                                if (
+                                  (!maxReached || isSelected) &&
+                                  !isOutOfStock
+                                ) {
+                                  handleOptionChange(
+                                    category.$id,
+                                    option,
+                                    false
+                                  );
                                 }
                               }}
                             >
@@ -588,14 +607,21 @@ export function ItemDrawer({
                                   ? "cursor-pointer"
                                   : "cursor-not-allowed"
                                   }`}
-                                onClick={e => e.stopPropagation()}
+                                onClick={(e) => e.stopPropagation()}
                               >
                                 <Checkbox
                                   id={option.$id}
                                   checked={isSelected}
                                   onCheckedChange={() => {
-                                    if ((!maxReached || isSelected) && !isOutOfStock) {
-                                      handleOptionChange(category.$id, option, false);
+                                    if (
+                                      (!maxReached || isSelected) &&
+                                      !isOutOfStock
+                                    ) {
+                                      handleOptionChange(
+                                        category.$id,
+                                        option,
+                                        false
+                                      );
                                     }
                                   }}
                                   disabled={!canClick}
@@ -624,7 +650,6 @@ export function ItemDrawer({
                                         false
                                       );
                                     }}
-
                                     aria-label="Lihat deskripsi opsi"
                                   >
                                     <Info className="h-4 w-4" />
@@ -672,6 +697,7 @@ export function ItemDrawer({
           </DrawerFooter>
         </div>
       </DrawerContent>
+
       <Dialog open={infoOpen} onOpenChange={setInfoOpen}>
         <DialogContent className="max-w-sm [&>button]:hidden">
           <DialogHeader className="p-6 pb-4">
