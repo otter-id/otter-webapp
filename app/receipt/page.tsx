@@ -99,6 +99,7 @@ const ReceiptContent = () => {
           <>
             {data.status === "UNPAID" && <UnpaidWarning />}
             {data.orderStatus == "REFUNDED" && <RefundedWarning />}
+            <ReceiptHeader data={data} />
             <ReceiptActions data={data} orderId={orderId} />
             {/* <RestaurantFeedback data={data} /> */}
             {/* <PickupInfo data={data} /> */}
