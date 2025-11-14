@@ -17,6 +17,7 @@ import { SplitBill } from "../../components/receipt/SplitBill";
 import { RestaurantFeedback } from "../../components/receipt/RestaurantFeedback";
 import { Footer } from "../../components/receipt/Footer";
 import { UnpaidWarning } from "../../components/receipt/UnpaidWarning";
+import { RefundedWarning } from "../../components/receipt/RefundedWarning";
 
 // Skeleton components
 import { ReceiptHeaderSkeleton } from "../../components/receipt/skeletons/ReceiptHeaderSkeleton";
@@ -97,7 +98,7 @@ const ReceiptContent = () => {
         ) : (
           <>
             {data.status === "UNPAID" && <UnpaidWarning />}
-            <ReceiptHeader data={data} />
+            {data.orderStatus == "REFUNDED" && <RefundedWarning />}
             <ReceiptActions data={data} orderId={orderId} />
             {/* <RestaurantFeedback data={data} /> */}
             {/* <PickupInfo data={data} /> */}
