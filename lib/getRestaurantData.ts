@@ -1,4 +1,5 @@
 import { Restaurant } from "@/types/restaurant";
+import { GenAuthorization } from "./genAuthorization";
 
 interface RestaurantResponse {
   data: Restaurant;
@@ -19,6 +20,7 @@ export async function getRestaurantData(
       {
         // Revalidate setiap 60 detik
         next: { revalidate: 60 },
+        headers: { "Authorization": `Bearer ${GenAuthorization.sync()}` }
       }
     );
 

@@ -25,6 +25,7 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
+import { GenAuthorization } from "@/lib/genAuthorization";
 
 interface PaymentState {
   restaurantId: string | null;
@@ -99,7 +100,7 @@ function PaymentPageContent() {
     try {
       const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/checkout/pwa/qris`, {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${GenAuthorization.sync()}` },
         body: JSON.stringify({ orderId: orderIdToUse, restaurantId: restIdToUse }),
       });
       const result = await response.json();
@@ -190,7 +191,7 @@ function PaymentPageContent() {
     try {
       const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/menu/stock?restaurantId=${state.restaurantId}`);
       const result = await response.json();
-      
+
       if (!response.ok) {
         throw new Error(result.message || 'Failed to check stock.');
       }
@@ -198,7 +199,7 @@ function PaymentPageContent() {
       const now = new Date();
       const outOfStockMenus: string[] = [];
       const outOfStockMenuOptions: { categoryName: string; name: string; menuName: string }[] = [];
-      
+
       // Check menu items
       const outOfStockMenuIds = result.data.menu.documents.filter((menu: { outstock: string | null; $id: string }) => {
         if (menu.outstock) {
@@ -251,9 +252,9 @@ function PaymentPageContent() {
       };
     } catch (error) {
       console.error('Error checking stock:', error);
-      toast("Gagal mengecek stok", { 
-        description: "Terjadi kesalahan saat mengecek ketersediaan stok.", 
-        icon: <AlertTriangle className="h-4 w-4 text-red-500" /> 
+      toast("Gagal mengecek stok", {
+        description: "Terjadi kesalahan saat mengecek ketersediaan stok.",
+        icon: <AlertTriangle className="h-4 w-4 text-red-500" />
       });
       return { hasOutOfStock: false, outOfStockMenus: [], outOfStockMenuOptions: [] };
     }
@@ -296,7 +297,7 @@ function PaymentPageContent() {
     try {
       const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/order/pwa`, {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        headers: { 'Content-Type': 'application/json', "Authorization": `Bearer ${GenAuthorization.sync()}` },
         body: JSON.stringify(orderBody),
       });
       const result = await response.json();
@@ -473,7 +474,7 @@ function PaymentPageContent() {
         </div>
       </div>
       <PaymentMethodDrawer isOpen={isMethodDrawerOpen} onOpenChange={setIsMethodDrawerOpen} onSelectMethod={(method) => setSelectedMethod(method)} />
-      
+
       <AlertDialog open={outOfStockDialog.isOpen} onOpenChange={(open) => setOutOfStockDialog({ ...outOfStockDialog, isOpen: open })}>
         <AlertDialogContent>
           <AlertDialogHeader>
