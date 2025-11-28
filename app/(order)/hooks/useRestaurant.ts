@@ -8,6 +8,8 @@ import {
   RestaurantData,
 } from "@/types/restaurant";
 
+import { GenAuthorization } from "@/lib/genAuthorization";
+
 export function useRestaurant(restaurantId: string) {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -17,8 +19,10 @@ export function useRestaurant(restaurantId: string) {
   useEffect(() => {
     const fetchRestaurant = async () => {
       try {
+
         const response = await fetch(
-          `${process.env.NEXT_PUBLIC_API_URL}/restaurant/pwa/${restaurantId}`
+          `${process.env.NEXT_PUBLIC_API_URL}/restaurant/pwa/${restaurantId}`,
+          { headers: { "Authorization": `Bearer ${GenAuthorization.sync()}` } }
         );
         const data = await response.json();
 
