@@ -17,6 +17,7 @@ import { SplitBill } from "../../components/receipt/SplitBill";
 import { RestaurantFeedback } from "../../components/receipt/RestaurantFeedback";
 import { Footer } from "../../components/receipt/Footer";
 import { UnpaidWarning } from "../../components/receipt/UnpaidWarning";
+import { RefundedWarning } from "../../components/receipt/RefundedWarning";
 
 // Skeleton components
 import { ReceiptHeaderSkeleton } from "../../components/receipt/skeletons/ReceiptHeaderSkeleton";
@@ -32,7 +33,8 @@ import { fakeData } from "../../data/receipt-sample";
 const ReceiptContent = () => {
   const searchParams = useSearchParams();
   const orderId = searchParams.get("id");
-  const { receiptData, isLoading, error } = useReceiptData(orderId);
+  const storeId = searchParams.get("sid");
+  const { receiptData, isLoading, error } = useReceiptData(orderId, storeId);
   const data = isLoading ? fakeData.data : receiptData?.data || fakeData.data;
   const splitBillState = useSplitBill(data);
 
@@ -87,7 +89,7 @@ const ReceiptContent = () => {
           <>
             <ReceiptHeaderSkeleton />
             <ReceiptActionsSkeleton />
-            <PickupInfoSkeleton />
+            {/* <PickupInfoSkeleton /> */}
             <OrderDetailsSkeleton />
             <OrderSummarySkeleton />
             <PointsCardSkeleton />
@@ -96,10 +98,11 @@ const ReceiptContent = () => {
         ) : (
           <>
             {data.status === "UNPAID" && <UnpaidWarning />}
+            {data.orderStatus == "REFUNDED" && <RefundedWarning />}
             <ReceiptHeader data={data} />
             <ReceiptActions data={data} orderId={orderId} />
-            <RestaurantFeedback data={data} />
-            <PickupInfo data={data} />
+            {/* <RestaurantFeedback data={data} /> */}
+            {/* <PickupInfo data={data} /> */}
             <OrderDetails data={data} />
             <OrderSummary
               data={data}

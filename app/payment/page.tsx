@@ -16,6 +16,15 @@ import { Label } from "@/components/ui/label";
 import { CartItem, CartTotals, CartRestourant } from "@/app/(order)/hooks/useCart";
 import { PaymentSkeleton } from "@/components/payment/skeletons/PaymentSkeleton";
 import { toast } from "sonner";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
 
 interface PaymentState {
   restaurantId: string | null;
@@ -69,28 +78,88 @@ function PaymentPageContent() {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isCheckingStatus, setIsCheckingStatus] = useState(false);
   const [isQrLoading, setIsQrLoading] = useState(true);
+  const [outOfStockDialog, setOutOfStockDialog] = useState<{
+    isOpen: boolean;
+    menus: string[];
+    menuOptions: { categoryName: string; name: string; menuName: string }[];
+  }>({ isOpen: false, menus: [], menuOptions: [] });
 
   const steps = ["Details", "Payment"];
 
-  useEffect(() => {
-    try {
-      const sessionKey = `payment-${restaurantId}`;
-      const savedSessionString = localStorage.getItem(sessionKey);
+  const generateQris = async (orderId?: string, restId?: string) => {
+    const orderIdToUse = orderId || state.activeOrderId;
+    const restIdToUse = restId || state.restaurantId;
 
-      if (savedSessionString) {
-        const savedState = JSON.parse(savedSessionString);
-        setState(savedState);
-        if (savedState.qrString) {
-          setIsQrLoading(false);
-        }
-      } else {
-        router.replace(`/store/${restaurantId}`);
-      }
+    if (!orderIdToUse || !restIdToUse) {
+      toast("Error", { description: "Missing order or restaurant ID.", icon: <AlertTriangle className="h-4 w-4 text-red-500" /> });
+      return false;
+    }
+
+    setIsQrLoading(true);
+    try {
+      const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/checkout/pwa/qris`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ orderId: orderIdToUse, restaurantId: restIdToUse }),
+      });
+      const result = await response.json();
+      if (!response.ok) throw new Error(result.message || 'Failed to generate QR.');
+      updateState({ qrisData: result.data });
+      return true;
     } catch (error) {
-      console.error("Failed to initialize payment page from localStorage", error);
-      router.replace(`/store/${restaurantId}`);
+      toast("QR Generation Failed", { description: (error as Error).message, icon: <AlertTriangle className="h-4 w-4 text-red-500" /> });
+      return false;
     } finally {
-      setIsLoaded(true);
+      setIsQrLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    const initializePaymentPage = async () => {
+      try {
+        const sessionKey = `payment-${restaurantId}`;
+        const savedSessionString = localStorage.getItem(sessionKey);
+
+        if (savedSessionString) {
+          const savedState = JSON.parse(savedSessionString);
+
+          // Check if QRIS exists and if it's expired
+          if (savedState.qrisData && savedState.activeOrderId) {
+            const now = new Date().getTime();
+            const expiry = new Date(savedState.qrisData.expires_at).getTime();
+
+            if (expiry <= now) {
+              // QRIS expired, generate new one
+              console.log("QRIS expired, generating new one...");
+              setState(savedState); // Set state first to have order ID available
+              setIsQrLoading(true);
+              const success = await generateQris(savedState.activeOrderId, savedState.restaurantId);
+              if (!success) {
+                setIsQrLoading(false);
+              }
+            } else {
+              // QRIS still valid, use existing
+              setState(savedState);
+              setIsQrLoading(false);
+            }
+          } else {
+            // No QRIS data, just set state
+            setState(savedState);
+            setIsQrLoading(false);
+          }
+        } else {
+          router.replace(`/store/${restaurantId}`);
+        }
+      } catch (error) {
+        console.error("Failed to initialize payment page from localStorage", error);
+        router.replace(`/store/${restaurantId}`);
+      } finally {
+        setIsLoaded(true);
+      }
+    };
+
+    if (restaurantId) {
+      initializePaymentPage();
     }
   }, [restaurantId]);
 
@@ -117,23 +186,76 @@ function PaymentPageContent() {
     router.back();
   };
 
-  const generateQris = async (orderId: string, restId: string) => {
-    setIsQrLoading(true);
+  const checkStock = async (): Promise<{ hasOutOfStock: boolean; outOfStockMenus: string[]; outOfStockMenuOptions: { categoryName: string; name: string; menuName: string }[] }> => {
     try {
-      const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/checkout/pwa/qris`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ orderId, restaurantId: restId }),
-      });
+      const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/menu/stock?restaurantId=${state.restaurantId}`);
       const result = await response.json();
-      if (!response.ok) throw new Error(result.message || 'Failed to generate QR.');
-      updateState({ qrisData: result.data });
-      return true;
+      
+      if (!response.ok) {
+        throw new Error(result.message || 'Failed to check stock.');
+      }
+
+      const now = new Date();
+      const outOfStockMenus: string[] = [];
+      const outOfStockMenuOptions: { categoryName: string; name: string; menuName: string }[] = [];
+      
+      // Check menu items
+      const outOfStockMenuIds = result.data.menu.documents.filter((menu: { outstock: string | null; $id: string }) => {
+        if (menu.outstock) {
+          const outstockDate = new Date(menu.outstock);
+          return outstockDate > now;
+        }
+        return false;
+      });
+
+      // Check menu options
+      const outOfStockOptionIds = result.data.menuOption.documents.filter((option: { outstock: string | null; $id: string }) => {
+        if (option.outstock) {
+          const outstockDate = new Date(option.outstock);
+          return outstockDate > now;
+        }
+        return false;
+      });
+
+      // Check cart items against out of stock menus
+      state.cart.forEach((cartItem) => {
+        const isMenuOutOfStock = outOfStockMenuIds.some((menu: { $id: string }) => menu.$id === cartItem.$id);
+        if (isMenuOutOfStock && !outOfStockMenus.includes(cartItem.name)) {
+          outOfStockMenus.push(cartItem.name);
+        }
+
+        // Check cart item options against out of stock options
+        Object.values(cartItem.selectedOptions || {}).forEach((options) => {
+          options.forEach((option) => {
+            const isOptionOutOfStock = outOfStockOptionIds.some((outOption: { $id: string }) => outOption.$id === option.$id);
+            if (isOptionOutOfStock) {
+              const existingOption = outOfStockMenuOptions.find(
+                (opt) => opt.categoryName === option.categoryName && opt.name === option.name && opt.menuName === cartItem.name
+              );
+              if (!existingOption) {
+                outOfStockMenuOptions.push({
+                  categoryName: option.categoryName,
+                  name: option.name,
+                  menuName: cartItem.name,
+                });
+              }
+            }
+          });
+        });
+      });
+
+      return {
+        hasOutOfStock: outOfStockMenus.length > 0 || outOfStockMenuOptions.length > 0,
+        outOfStockMenus,
+        outOfStockMenuOptions,
+      };
     } catch (error) {
-      toast("QR Generation Failed", { description: (error as Error).message, icon: <AlertTriangle className="h-4 w-4 text-red-500" /> });
-      return false;
-    } finally {
-      setIsQrLoading(false);
+      console.error('Error checking stock:', error);
+      toast("Gagal mengecek stok", { 
+        description: "Terjadi kesalahan saat mengecek ketersediaan stok.", 
+        icon: <AlertTriangle className="h-4 w-4 text-red-500" /> 
+      });
+      return { hasOutOfStock: false, outOfStockMenus: [], outOfStockMenuOptions: [] };
     }
   };
 
@@ -143,11 +265,23 @@ function PaymentPageContent() {
     }
 
     if (!state.name || !state.isPhoneValid) {
-      toast("Please complete your details", { icon: <AlertTriangle className="h-4 w-4 text-yellow-500" /> });
+      toast("Mohon lengkapi detail Anda", { icon: <AlertTriangle className="h-4 w-4 text-yellow-500" /> });
       return;
     }
 
     setIsSubmitting(true);
+
+    // Check stock first
+    const stockCheck = await checkStock();
+    if (stockCheck.hasOutOfStock) {
+      setIsSubmitting(false);
+      setOutOfStockDialog({
+        isOpen: true,
+        menus: stockCheck.outOfStockMenus,
+        menuOptions: stockCheck.outOfStockMenuOptions,
+      });
+      return;
+    }
     const orderBody = {
       restaurantId: state.restaurantId,
       name: state.name,
@@ -260,7 +394,7 @@ function PaymentPageContent() {
                         <div>
                           <h3 className="font-medium">{item.name}</h3>
                           <div className="text-xs text-muted-foreground mt-1 space-y-0.5">
-                            {Object.values(item.selectedOptions).flat().map((opt) => (<div key={opt.$id}>{opt.name}</div>))}
+                            {Object.values(item.selectedOptions).flat().map((opt) => (<div key={opt.$id}>{opt.categoryName}: {opt.name}</div>))}
                           </div>
                         </div>
                         <div className="text-right">
@@ -315,6 +449,7 @@ function PaymentPageContent() {
             <QrisPayment
               amount={state.totals.total}
               qrString={state.qrisData?.qr_string || ""}
+              expiresAt={state.qrisData?.expires_at || null}
               isLoading={isQrLoading}
               generateQris={() => {
                 if (state.activeOrderId && state.restaurantId) {
@@ -338,6 +473,45 @@ function PaymentPageContent() {
         </div>
       </div>
       <PaymentMethodDrawer isOpen={isMethodDrawerOpen} onOpenChange={setIsMethodDrawerOpen} onSelectMethod={(method) => setSelectedMethod(method)} />
+      
+      <AlertDialog open={outOfStockDialog.isOpen} onOpenChange={(open) => setOutOfStockDialog({ ...outOfStockDialog, isOpen: open })}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Stok Habis</AlertDialogTitle>
+            <AlertDialogDescription>
+              {outOfStockDialog.menus.length > 0 && (
+                <>
+                  <p className="font-medium text-foreground">Menu berikut stoknya habis:</p>
+                  <ul className="mt-2 space-y-1 mb-3">
+                    {outOfStockDialog.menus.map((menu, index) => (
+                      <li key={index} className="text-foreground">• {menu}</li>
+                    ))}
+                  </ul>
+                </>
+              )}
+              {outOfStockDialog.menuOptions.length > 0 && (
+                <>
+                  <p className="font-medium text-foreground">Opsi Menu berikut stoknya habis:</p>
+                  <ul className="mt-2 space-y-1 mb-3">
+                    {outOfStockDialog.menuOptions.map((option, index) => (
+                      <li key={index} className="text-foreground">• {option.categoryName}: {option.name} ({option.menuName})</li>
+                    ))}
+                  </ul>
+                </>
+              )}
+              <p className="mt-3">Silakan hapus item tersebut dari keranjang Anda dan coba lagi.</p>
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogAction onClick={() => {
+              setOutOfStockDialog({ isOpen: false, menus: [], menuOptions: [] });
+              router.push(`/store/${state.restaurantId}`);
+            }}>
+              Kembali ke Menu
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
   );
 }

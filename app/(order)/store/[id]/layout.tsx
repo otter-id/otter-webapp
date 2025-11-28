@@ -2,26 +2,17 @@ import type React from "react";
 import { Toaster } from "@/components/ui/toaster";
 import "@/app/(order)/store/[id]/globals.css";
 
-export default function RootLayout({
+export default function StoreLayout({
   children,
 }: {
   children: React.ReactNode;
 }) {
   return (
-    <html lang="en">
-      <head>
-        <meta
-          name="viewport"
-          content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover"
-        />
-        <link rel="icon" href="/icon/favicon.ico" />
-      </head>
-      <body>
-        <div id="root">{children}</div>
-        <div id="drawer-root" />
-        <Toaster />
-      </body>
-    </html>
+    <>
+      <div id="root">{children}</div>
+      <div id="drawer-root" />
+      <Toaster />
+    </>
   );
 }
 

@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import Image from "next/image";
 import { X, Minus, Plus, AlertTriangle, Check, Info } from "lucide-react";
 import { MenuItem, MenuOption } from "@/types/restaurant";
@@ -20,6 +20,13 @@ import { Label } from "@/components/ui/label";
 import { Badge } from "@/components/ui/badge";
 import { formatPrice, formatTextForPlaceholder } from "@/lib/utils";
 import { Textarea } from "@/components/ui/textarea";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
 
 // Extended MenuItem type to handle JSX elements
 interface ExtendedMenuItem extends Omit<MenuItem, "name" | "description"> {
@@ -57,6 +64,31 @@ export function ItemDrawer({
   const [imageError, setImageError] = useState(false);
   const [note, setNote] = useState("");
 
+  // dialog info
+  const [infoOpen, setInfoOpen] = useState(false);
+  const [pendingInfo, setPendingInfo] = useState<{
+    title: string;
+    description: string;
+    categoryId: string;
+    option: MenuOption;
+    isRadio: boolean;
+  } | null>(null);
+
+  const openInfo = (
+    title: string,
+    description: string,
+    categoryId: string,
+    option: MenuOption,
+    isRadio: boolean
+  ) => {
+    setPendingInfo({ title, description, categoryId, option, isRadio });
+    setInfoOpen(true);
+  };
+
+  // 👇 ini buat tinggi (80vh ↔ 100vh)
+  const [isExpanded, setIsExpanded] = useState(false);
+  const scrollRef = useRef<HTMLDivElement | null>(null);
+
   // Reset quantity when switching between different items (not when editing)
   useEffect(() => {
     if (!editingCartItem && selectedItem) {
@@ -81,6 +113,7 @@ export function ItemDrawer({
         setNote("");
       }
       setImageError(false);
+      setIsExpanded(false); // balik ke awal
     }
   }, [isOpen, editingCartItem]);
 
@@ -88,12 +121,10 @@ export function ItemDrawer({
   useEffect(() => {
     if (selectedItem) {
       if (editingCartItem) {
-        // Convert from cart format to internal format
         const options: { [categoryId: string]: MenuOption[] } = {};
 
         Object.entries(editingCartItem.selectedOptions).forEach(
           ([categoryId, cartOptions]) => {
-            // Find the original option objects from the menu item
             const category = selectedItem.menuOptionCategory.find(
               (cat) => cat.$id === categoryId
             );
@@ -103,7 +134,7 @@ export function ItemDrawer({
                   (opt) => opt.$id === cartOption.$id
                 );
                 return (
-                  originalOption || {
+                  originalOption || ({
                     $id: cartOption.$id,
                     name: cartOption.name,
                     price: cartOption.price,
@@ -111,7 +142,8 @@ export function ItemDrawer({
                     description: null,
                     isInStock: true,
                     index: null,
-                  }
+                    outstock: null,
+                  } as MenuOption)
                 );
               });
             }
@@ -120,7 +152,6 @@ export function ItemDrawer({
 
         setSelectedOptions(options);
       } else {
-        // Don't pre-select any options when adding a new item
         setSelectedOptions({});
       }
     }
@@ -135,10 +166,8 @@ export function ItemDrawer({
       const newOptions = { ...prev };
 
       if (isRadio) {
-        // For radio buttons, replace the selection
         newOptions[categoryId] = [option];
       } else {
-        // For checkboxes, toggle the selection
         if (!newOptions[categoryId]) {
           newOptions[categoryId] = [option];
         } else {
@@ -147,7 +176,6 @@ export function ItemDrawer({
           );
 
           if (existingIndex >= 0) {
-            // Remove if already selected
             newOptions[categoryId] = newOptions[categoryId].filter(
               (_, i) => i !== existingIndex
             );
@@ -155,22 +183,24 @@ export function ItemDrawer({
               delete newOptions[categoryId];
             }
           } else {
-            // Check if adding this option would exceed maxAmount
             if (selectedItem) {
               const category = selectedItem.menuOptionCategory.find(
                 (cat) => cat.$id === categoryId
               );
-              if (
-                category &&
-                newOptions[categoryId].length >= category.maxAmount
-              ) {
-                // Don't add if it would exceed maxAmount
-                return prev;
+              if (category) {
+                if (category.maxAmount === 1) {
+                  newOptions[categoryId] = [option];
+                } else if (newOptions[categoryId].length >= category.maxAmount) {
+                  return prev;
+                } else {
+                  newOptions[categoryId] = [...newOptions[categoryId], option];
+                }
+              } else {
+                newOptions[categoryId] = [...newOptions[categoryId], option];
               }
+            } else {
+              newOptions[categoryId] = [...newOptions[categoryId], option];
             }
-
-            // Add if not selected and not exceeding maxAmount
-            newOptions[categoryId] = [...newOptions[categoryId], option];
           }
         }
       }
@@ -185,15 +215,12 @@ export function ItemDrawer({
     );
   };
 
-  // Menyesuaikan kalkulasi harga total dengan discountPrice
   const calculateTotalPrice = (): number => {
     if (!selectedItem) return 0;
 
-    // Gunakan discountPrice jika ada, jika tidak gunakan price biasa
     const baseItemPrice = selectedItem.discountPrice ?? selectedItem.price;
     let total = baseItemPrice * quantity;
 
-    // Tambahkan harga opsi, dengan mempertimbangkan discountPrice juga
     Object.values(selectedOptions).forEach((options) => {
       options.forEach((option) => {
         const optionPrice = option.discountPrice ?? option.price;
@@ -203,18 +230,13 @@ export function ItemDrawer({
 
     return total;
   };
-  
-  // Menyesuaikan logika disabled button dengan minAmount
+
   const isRequiredOptionsMissing = (): boolean => {
     if (!selectedItem) return true;
 
-    // Memeriksa apakah ada kategori yang persyaratan minimumnya tidak terpenuhi
     return selectedItem.menuOptionCategory.some((category) => {
       const minAmount = category.minAmount || 0;
       const selectedCount = selectedOptions[category.$id]?.length || 0;
-
-      // Jika jumlah minimum disyaratkan (minAmount > 0) tetapi pengguna memilih kurang dari itu,
-      // maka persyaratan dianggap tidak terpenuhi.
       return minAmount > 0 && selectedCount < minAmount;
     });
   };
@@ -253,10 +275,41 @@ export function ItemDrawer({
     }
   };
 
+  // 👇 inti permintaanmu: kalau udah nyentuh atas → langsung kecil
+  const handleScroll = () => {
+    const el = scrollRef.current;
+    if (!el) return;
+
+    const top = el.scrollTop;
+
+    // scroll ke bawah dikit → perbesar
+    if (!isExpanded && top > 10) {
+      setIsExpanded(true);
+      return;
+    }
+
+    // scroll balik ke atas → langsung kecil lagi (tanpa delay)
+    if (isExpanded && top === 0) {
+      setIsExpanded(false);
+    }
+  };
+
   return (
     <Drawer open={isOpen} onOpenChange={onOpenChange}>
-      <DrawerContent className="max-h-[80vh] p-0 max-w-md mx-auto rounded-t-[20px]">
-        <div className="h-full overflow-y-auto">
+      {/* className kamu tetap */}
+      <DrawerContent
+        className="max-h-[80vh] p-0 max-w-md mx-auto rounded-t-[20px]"
+        // cuma gaya transisinya aja
+        style={{
+          maxHeight: isExpanded ? "100vh" : "80vh",
+          transition: "max-height 0.25s ease-in-out",
+        }}
+      >
+        <div
+          className="h-full overflow-y-auto"
+          ref={scrollRef}
+          onScroll={handleScroll}
+        >
           <DrawerHeader className="px-4 py-3 border-b sticky top-0 bg-white z-10">
             <div className="flex items-center justify-between">
               <DrawerTitle>Customize Order</DrawerTitle>
@@ -357,14 +410,12 @@ export function ItemDrawer({
                 const isRequirementMet = selectedCount >= minAmount;
                 let requirementText = "";
 
-                // Jika min dan max sama, cukup tampilkan "Pilih X"
                 if (minAmount > 0) {
                   requirementText = `(Pilih ${minAmount})`;
                 }
 
-                // Membuat teks persyaratan (misal: "(Pilih 2, Maks. 3)")
                 if (maxAmount > 1 && maxAmount != category.menuOptionId.length) {
-                  requirementText = `(Pilih ${minAmount}, Maks. ${maxAmount})`
+                  requirementText = `(Pilih ${minAmount}, Maks. ${maxAmount})`;
                 }
 
                 return (
@@ -387,7 +438,6 @@ export function ItemDrawer({
                             {" Terpilih"}
                           </Badge>
                         )}
-                        {/* Menggunakan minAmount untuk validasi badge */}
                         {minAmount > 0 &&
                           (isRequirementMet ? (
                             <Badge className="bg-green-100 text-green-700 hover:bg-green-100 flex gap-1">
@@ -411,49 +461,103 @@ export function ItemDrawer({
                             (opt) => opt.$id === value
                           );
                           if (option) {
-                            handleOptionChange(category.$id, option, true);
+                            const isOutOfStock = (() => {
+                              if (!option.outstock) return false;
+                              const outStockDate = new Date(option.outstock);
+                              const currentDate = new Date();
+                              return outStockDate > currentDate;
+                            })();
+
+                            if (!isOutOfStock) {
+                              handleOptionChange(category.$id, option, true);
+                            }
                           }
                         }}
                       >
                         <div className="space-y-2">
-                          {category.menuOptionId.map((option) => (
-                            <div
-                              key={option.$id}
-                              className="flex items-center justify-between py-2 px-3 border rounded-md cursor-pointer"
-                              onClick={() => {
-                                const value = option.$id;
-                                const foundOption =
-                                  category.menuOptionId.find(
-                                    (opt) => opt.$id === value
-                                  );
-                                if (foundOption) {
-                                  handleOptionChange(
-                                    category.$id,
-                                    foundOption,
-                                    true
-                                  );
-                                }
-                              }}
-                            >
-                              <div className="flex items-center gap-3">
-                                <RadioGroupItem
-                                  value={option.$id}
-                                  id={option.$id}
-                                />
-                                <Label
-                                  htmlFor={option.$id}
-                                  className="cursor-pointer"
-                                >
-                                  {option.name}
-                                </Label>
+                          {category.menuOptionId.map((option) => {
+                            const isOutOfStock = (() => {
+                              if (!option.outstock) return false;
+                              const outStockDate = new Date(option.outstock);
+                              const currentDate = new Date();
+                              return outStockDate > currentDate;
+                            })();
+
+                            return (
+                              <div
+                                key={option.$id}
+                                className={`flex items-center justify-between py-2 px-3 border rounded-md transition-colors ${!isOutOfStock
+                                  ? "cursor-pointer hover:bg-accent"
+                                  : "cursor-not-allowed opacity-60"
+                                  }`}
+                                onClick={() => {
+                                  if (isOutOfStock) return;
+
+                                  const foundOption =
+                                    category.menuOptionId.find(
+                                      (opt) => opt.$id === option.$id
+                                    );
+                                  if (foundOption) {
+                                    handleOptionChange(
+                                      category.$id,
+                                      foundOption,
+                                      true
+                                    );
+                                  }
+                                }}
+                              >
+                                <div className="flex items-center gap-3">
+                                  <RadioGroupItem
+                                    value={option.$id}
+                                    id={option.$id}
+                                    disabled={isOutOfStock}
+                                  />
+                                  <Label
+                                    htmlFor={option.$id}
+                                    className={`${!isOutOfStock
+                                      ? "cursor-pointer"
+                                      : "cursor-not-allowed text-gray-400"
+                                      }`}
+                                  >
+                                    {option.name}
+                                    {isOutOfStock && (
+                                      <span className="ml-2 text-xs text-red-500">
+                                        (Out of Stock)
+                                      </span>
+                                    )}
+                                  </Label>
+                                  {option.description && (
+                                    <Button
+                                      type="button"
+                                      variant="ghost"
+                                      size="icon"
+                                      className="h-4 w-10 shrink-0"
+                                      onClick={(e) => {
+                                        e.preventDefault();
+                                        e.stopPropagation();
+                                        openInfo(
+                                          `${option.name}`,
+                                          option.description as string,
+                                          category.$id,
+                                          option,
+                                          false
+                                        );
+                                      }}
+                                      aria-label="Lihat deskripsi opsi"
+                                    >
+                                      <Info className="h-4 w-4" />
+                                    </Button>
+                                  )}
+                                </div>
+
+                                {option.price > 0 && (
+                                  <span className="text-sm font-medium">
+                                    +{formatPrice(option.price)}
+                                  </span>
+                                )}
                               </div>
-                              {option.price > 0 && (
-                                <span className="text-sm font-medium">
-                                  +{formatPrice(option.price)}
-                                </span>
-                              )}
-                            </div>
-                          ))}
+                            );
+                          })}
                         </div>
                       </RadioGroup>
                     ) : (
@@ -464,27 +568,55 @@ export function ItemDrawer({
                             category.$id,
                             option.$id
                           );
+                          const isOutOfStock = (() => {
+                            if (!option.outstock) return false;
+                            const outStockDate = new Date(option.outstock);
+                            const currentDate = new Date();
+                            return outStockDate > currentDate;
+                          })();
+
+                          const canClick =
+                            !isOutOfStock &&
+                            (category.maxAmount === 1 ||
+                              !maxReached ||
+                              isSelected);
 
                           return (
                             <div
                               key={option.$id}
-                              className={`flex items-center justify-between py-2 px-3 border rounded-md transition-colors ${!maxReached || isSelected
-                                  ? "cursor-pointer hover:bg-accent"
-                                  : "cursor-not-allowed opacity-60"
+                              className={`flex items-center justify-between py-2 px-3 border rounded-md transition-colors ${(!maxReached || isSelected) && !isOutOfStock
+                                ? "cursor-pointer hover:bg-accent"
+                                : "cursor-not-allowed opacity-60"
                                 }`}
+                              onClick={() => {
+                                if (
+                                  (!maxReached || isSelected) &&
+                                  !isOutOfStock
+                                ) {
+                                  handleOptionChange(
+                                    category.$id,
+                                    option,
+                                    false
+                                  );
+                                }
+                              }}
                             >
                               <Label
                                 htmlFor={option.$id}
-                                className={`flex items-center gap-3 flex-1 ${!maxReached || isSelected
-                                    ? "cursor-pointer"
-                                    : "cursor-not-allowed"
+                                className={`flex items-center gap-3 flex-1 ${(!maxReached || isSelected) && !isOutOfStock
+                                  ? "cursor-pointer"
+                                  : "cursor-not-allowed"
                                   }`}
+                                onClick={(e) => e.stopPropagation()}
                               >
                                 <Checkbox
                                   id={option.$id}
                                   checked={isSelected}
                                   onCheckedChange={() => {
-                                    if (!maxReached || isSelected) {
+                                    if (
+                                      (!maxReached || isSelected) &&
+                                      !isOutOfStock
+                                    ) {
                                       handleOptionChange(
                                         category.$id,
                                         option,
@@ -492,15 +624,39 @@ export function ItemDrawer({
                                       );
                                     }
                                   }}
-                                  disabled={maxReached && !isSelected}
+                                  disabled={!canClick}
                                 />
-                                <span className={`${maxReached && !isSelected
-                                    ? "text-gray-400"
-                                    : ""
+                                <span className={`${(maxReached && !isSelected) || isOutOfStock
+                                  ? "text-gray-400"
+                                  : ""
                                   }`}>
                                   {option.name}
+                                  {isOutOfStock && <span className="ml-2 text-xs text-red-500">(Out of Stock)</span>}
                                 </span>
+                                {option.description && (
+                                  <Button
+                                    type="button"
+                                    variant="ghost"
+                                    size="icon"
+                                    className="h-4 w-8 shrink-0"
+                                    onClick={(e) => {
+                                      e.preventDefault();
+                                      e.stopPropagation();
+                                      openInfo(
+                                        `${option.name}`,
+                                        option.description as string,
+                                        category.$id,
+                                        option,
+                                        false
+                                      );
+                                    }}
+                                    aria-label="Lihat deskripsi opsi"
+                                  >
+                                    <Info className="h-4 w-4" />
+                                  </Button>
+                                )}
                               </Label>
+
                               {option.price > 0 && (
                                 <span className="text-sm font-medium pl-2">
                                   +{formatPrice(option.price)}
@@ -541,6 +697,66 @@ export function ItemDrawer({
           </DrawerFooter>
         </div>
       </DrawerContent>
+
+      <Dialog open={infoOpen} onOpenChange={setInfoOpen}>
+        <DialogContent className="max-w-sm [&>button]:hidden">
+          <DialogHeader className="p-6 pb-4">
+            <div className="flex flex-col items-center text-center gap-2">
+              <DialogTitle>{pendingInfo?.title}</DialogTitle>
+              <DialogDescription className="whitespace-pre-wrap mt-2">
+                {pendingInfo?.description}
+              </DialogDescription>
+            </div>
+          </DialogHeader>
+
+          <div className="mt-2 flex flex-col gap-2">
+            <Button
+              type="button"
+              variant="outline"
+              onClick={() => setInfoOpen(false)}
+              aria-label="Kembali"
+            >
+              Back
+            </Button>
+
+            {(() => {
+              if (!pendingInfo) return null;
+
+              const selected = selectedOptions[pendingInfo.categoryId] || [];
+              const isAlreadySelected = selected.some(
+                (o) => o.$id === pendingInfo.option.$id
+              );
+              if (isAlreadySelected) return null;
+
+              const isOut =
+                !!pendingInfo.option.outstock &&
+                new Date(pendingInfo.option.outstock) > new Date();
+
+              let disableSelect = isOut;
+              if (!pendingInfo.isRadio) {
+                const category = selectedItem?.menuOptionCategory.find(
+                  (c) => c.$id === pendingInfo.categoryId
+                );
+              }
+
+              return (
+                <Button
+                  type="button"
+                  aria-label="Pilih opsi ini"
+                  onClick={() => {
+                    const { categoryId, option, isRadio } = pendingInfo;
+                    handleOptionChange(categoryId, option, isRadio);
+                    setInfoOpen(false);
+                  }}
+                  disabled={disableSelect}
+                >
+                  Select
+                </Button>
+              );
+            })()}
+          </div>
+        </DialogContent>
+      </Dialog>
     </Drawer>
   );
 }

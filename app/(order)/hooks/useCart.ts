@@ -27,6 +27,7 @@ export interface CartItem {
   note?: string;
   selectedOptions: {
     [categoryId: string]: {
+      categoryName: string;
       $id: string;
       name: string;
       price: number;
@@ -270,6 +271,7 @@ export function useCart(restaurant: Restaurant | null) {
     const formattedOptions: CartItem["selectedOptions"] = {};
     Object.entries(selectedOptions).forEach(([categoryId, options]) => {
       formattedOptions[categoryId] = options.map((option) => ({
+        categoryName: menuItem.menuOptionCategory.find((category) => category.$id === categoryId)?.name || "",
         $id: option.$id,
         name: option.name,
         price: option.price,

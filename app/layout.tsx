@@ -14,6 +14,10 @@ export default function RootLayout({
     <html lang="en" >
       <head>
         <link rel="icon" href="/icon/favicon.ico" />
+        <meta
+          name="viewport"
+          content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover"
+        />
       </head>
 
       <body className="bg-gray-50 min-h-screen">

@@ -124,7 +124,7 @@ export const useSplitBill = (data: ReceiptData["data"]) => {
       0
     );
 
-    const taxRatio = data.taxesAndFees / totalAssigned;
+    const taxRatio = (data.taxesAndFees + data.service) / totalAssigned;
     Object.keys(result).forEach((person) => {
       const personAmount = result[person];
       const personTax = personAmount * taxRatio;

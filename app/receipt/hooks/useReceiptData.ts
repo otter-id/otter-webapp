@@ -2,7 +2,7 @@ import { useState, useEffect } from "react";
 import axios from "axios";
 import { ReceiptData } from "@/types/receipt";
 
-export const useReceiptData = (orderId: string | null) => {
+export const useReceiptData = (orderId: string | null, storeId: string | null) => {
   const [receiptData, setReceiptData] = useState<ReceiptData | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -17,7 +17,7 @@ export const useReceiptData = (orderId: string | null) => {
 
       try {
         const response = await axios.get(
-          `${process.env.NEXT_PUBLIC_SERVER_URL}/api/receipt?id=${orderId}`,
+          `${process.env.NEXT_PUBLIC_SERVER_URL}/api/receipt?id=${orderId}` + (storeId ? `&sid=${storeId}` : ""),
           {
             headers: {
               "Access-Control-Allow-Origin": "*",

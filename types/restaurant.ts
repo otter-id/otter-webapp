@@ -12,6 +12,7 @@ export interface Restaurant {
   rushWaitTime: number;
   emoji: string;
   isOpen: boolean;
+  isPublished: boolean;
   phoneNumber: string;
   pickupInstructions: string | null;
   googleMapsUrl: string | null;
@@ -68,6 +69,7 @@ export interface MenuOption {
   discountPrice: number;
   isInStock: boolean;
   index: number | null;
+  outstock: string | null; // datetime string
   $id: string;
 }
 

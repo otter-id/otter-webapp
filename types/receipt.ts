@@ -8,12 +8,13 @@ export interface ReceiptData {
     orderNumber: string;
     firstName: string;
     status: "PAID" | "UNPAID";
-    orderStatus: "ONGOING" | "READY" | "FINISHED";
+    orderStatus: "ONGOING" | "READY" | "FINISHED" | "REFUNDED";
     items: Array<{
       name: string;
       quantity: number;
       price: number;
       image: string;
+      notes: string;
       modifiers: Array<{
         name: string;
         price: number;
@@ -21,6 +22,7 @@ export interface ReceiptData {
     }>;
     subtotal: number;
     taxesAndFees: number;
+    service: number;
     total: number;
     pointsEarned: number;
     paymentMethod: string;

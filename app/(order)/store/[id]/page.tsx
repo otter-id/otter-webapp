@@ -1,340 +1,88 @@
-"use client";
+import { Metadata } from "next";
+import { FoodOrderingClient } from "@/components/order/FoodOrderingClient";
+import { getRestaurantData } from "@/lib/getRestaurantData";
 
-import { useState, useEffect } from "react";
-import { RestaurantHeader } from "@/components/order/header/restaurantHeader";
-import { StickyFooter } from "@/components/order/cart/stickyFooter";
-import { CategoryNav } from "@/components/order/menu/categoryNav";
-import { MenuItem } from "@/components/order/menu/menuItem";
-import { CartDrawer } from "@/components/order/cart/cartDrawer";
-import { ItemDrawer } from "@/components/order/item/itemDrawer";
-import { useCart } from "@/app/(order)/hooks/useCart";
-import { useScrollSync } from "@/app/(order)/hooks/useScroll";
-import { useRestaurant } from "@/app/(order)/hooks/useRestaurant";
-import { DeleteConfirmation } from "@/components/order/cart/deleteDialog";
-import { MenuItem as MenuItemType } from "@/types/restaurant";
-import { toast } from "sonner";
-import { Check, X, AlertTriangle } from "lucide-react";
-import { SearchOverlay } from "@/components/order/search/searchOverlay";
-import { Button } from "@/components/ui/button";
-
-import { use } from "react";
-import { RestaurantHeaderSkeleton } from "@/components/order/skeletons/RestaurantHeaderSkeleton";
-import { SearchOverlaySkeleton } from "@/components/order/skeletons/SearchOverlaySkeleton";
-import { CategoryNavSkeleton } from "@/components/order/skeletons/CategoryNavSkeleton";
-import { Skeleton } from "@/components/ui/skeleton";
-import { MenuItemSkeleton } from "@/components/order/skeletons/MenuItemSkeleton";
-import { StickyFooterSkeleton } from "@/components/order/skeletons/StickyFooterSkeleton";
-
-export default function FoodOrderingPage({
-  params,
-}: {
+interface PageProps {
   params: Promise<{ id: string }>;
-}) {
-  const { id } = use(params);
-  const { loading, error, restaurant, menuCategories } = useRestaurant(id);
-  const [selectedCategoryId, setSelectedCategoryId] = useState<string>("");
-  const [isCartOpen, setIsCartOpen] = useState(false);
-  const [isItemDrawerOpen, setIsItemDrawerOpen] = useState(false);
-  const [selectedItem, setSelectedItem] = useState<MenuItemType | null>(null);
-  const [isFeesExpanded, setIsFeesExpanded] = useState(false);
-  const [isDeleteConfirmOpen, setIsDeleteConfirmOpen] = useState(false);
-  const [itemToDelete, setItemToDelete] = useState<any | null>(null);
-  const [isSearchOpen, setIsSearchOpen] = useState(false);
+}
 
-  const {
-    cart,
-    cartItemCount,
-    editingCartItem,
-    setEditingCartItem,
-    calculateCartTotals,
-    addToCart,
-    updateCartItem,
-    updateItemQuantity,
-    removeItem,
-    clearCart,
-    createCartItemFromMenuItem,
-  } = useCart(restaurant);
+/**
+ * Generate dynamic metadata untuk SEO dan OG tags
+ * Metadata ini akan di-render di server-side untuk setiap store
+ */
+export async function generateMetadata({
+  params,
+}: PageProps): Promise<Metadata> {
+  const { id } = await params;
+  const restaurant = await getRestaurantData(id);
 
-  // Set the first category as selected once data is loaded
-  useEffect(() => {
-    if (menuCategories.length > 0 && !selectedCategoryId) {
-      setSelectedCategoryId(menuCategories[0].$id);
-    }
-  }, [menuCategories, selectedCategoryId]);
+  // Default metadata jika restaurant tidak ditemukan
+  if (!restaurant) {
+    return {
+      title: "Otter – Order Online",
+      description: "Order food and drinks online with Otter",
+      openGraph: {
+        title: "Otter – Order Online",
+        description: "Order food and drinks online with Otter",
+        images: [
+          {
+            url: "https://app.otter.id/og-default.png",
+            width: 1200,
+            height: 630,
+            alt: "Otter",
+          },
+        ],
+      },
+      twitter: {
+        card: "summary_large_image",
+        title: "Otter – Order Online",
+        description: "Order food and drinks online with Otter",
+      },
+    };
+  }
 
-  // Handle ItemDrawer open/close
-  const handleItemDrawerOpenChange = (isOpen: boolean) => {
-    setIsItemDrawerOpen(isOpen);
+  // Dynamic metadata berdasarkan data restaurant
+  const title = `${restaurant.name} – Order Online`;
+  const description = `Order online and track your order live. Powered by Otter`;
+  const imageUrl =  restaurant.image || restaurant.logo;
 
-    // Reset editing state when drawer is closed
-    if (!isOpen) {
-      setEditingCartItem(null);
-    }
-  };
-
-  const {
-    categoryRefs,
-    categoryButtonsRef,
-    scrollContainerRef,
-    scrollCategoryIntoView,
-  } = useScrollSync({
-    onScroll: (categoryId) => {
-      setSelectedCategoryId(categoryId);
-      scrollCategoryIntoView(categoryId);
+  return {
+    title,
+    description,
+    openGraph: {
+      title,
+      description,
+      images: [
+        {
+          url: imageUrl,
+          width: 1200,
+          height: 630,
+          alt: restaurant.name,
+        },
+      ],
+      type: "website",
+      siteName: "Otter",
     },
-  });
-
-  const handleCategorySelect = (categoryId: string) => {
-    setSelectedCategoryId(categoryId);
-    if (categoryRefs.current[categoryId]) {
-      categoryRefs.current[categoryId]?.scrollIntoView({
-        behavior: "smooth",
-        block: "start",
-      });
-    }
+    twitter: {
+      card: "summary_large_image",
+      title,
+      description,
+      images: [imageUrl],
+    },
+    // Metadata tambahan untuk WhatsApp dan social media lainnya
+    other: {
+      "og:image:width": "1200",
+      "og:image:height": "630",
+    },
   };
+}
 
-  const handleItemClick = (item: MenuItemType) => {
-    setSelectedItem(item);
-    setIsItemDrawerOpen(true);
-  };
+/**
+ * Page component untuk store ordering
+ * Ini adalah server component yang render client component
+ */
+export default async function FoodOrderingPage({ params }: PageProps) {
+  const { id } = await params;
 
-  const handleAddToCartWithToast = (item: any) => {
-    addToCart(item);
-    setIsItemDrawerOpen(false);
-    setSelectedItem(null);
-
-    toast("Item added to cart", {
-      icon: <Check className="h-4 w-4 text-green-500" />,
-      description: `${item.name} has been added to your cart`,
-    });
-  };
-
-  const handleEditCartItem = (item: any) => {
-    // Find the original menu item
-    for (const category of menuCategories) {
-      const menuItem = category.menuId.find(
-        (menuItem) => menuItem.$id === item.$id
-      );
-      if (menuItem) {
-        setSelectedItem(menuItem);
-        setEditingCartItem(item);
-        setIsItemDrawerOpen(true);
-        setIsCartOpen(false);
-        break;
-      }
-    }
-  };
-
-  const handleDeleteConfirmation = (item: any) => {
-    removeItem(item);
-    setItemToDelete(null);
-    setIsDeleteConfirmOpen(false);
-    setIsCartOpen(true);
-
-    toast("Item removed", {
-      icon: <X className="h-4 w-4 text-red-500" />,
-      description: `${item.name} has been removed from your cart`,
-    });
-  };
-
-  const handleDeleteRequest = (item: any) => {
-    setItemToDelete(item);
-    setIsDeleteConfirmOpen(true);
-  };
-
-  const getItemQuantityInCart = (itemId: string) => {
-    return cart.reduce((total, cartItem) => {
-      if (cartItem.$id === itemId) {
-        return total + cartItem.quantity;
-      }
-      return total;
-    }, 0);
-  };
-
-  if (loading) {
-     return (
-      <div className="min-h-screen bg-gray-50 pb-[72px]">
-        <div className="max-w-md mx-auto bg-white shadow-sm">
-          <RestaurantHeaderSkeleton />
-          <div className="sticky top-0 z-20">
-            <SearchOverlaySkeleton className="border-b shadow-sm" />
-            <CategoryNavSkeleton className="border-b shadow-sm" />
-          </div>
-          <div className="px-3 py-4 space-y-6">
-            {/* Mensimulasikan 2 blok kategori */}
-            {[...Array(2)].map((_, categoryIndex) => (
-              <div key={categoryIndex}>
-                <Skeleton className="h-6 w-1/3 mb-3" />
-                <div className="space-y-4">
-                  {/* Mensimulasikan 3 item menu per kategori */}
-                  {[...Array(3)].map((_, itemIndex) => (
-                    <MenuItemSkeleton key={itemIndex} />
-                  ))}
-                </div>
-              </div>
-            ))}
-          </div>
-        </div>
-        <StickyFooterSkeleton />
-      </div>
-    );
-  }
-
-  if (error) {
-    return (
-      <div className="min-h-screen flex items-center justify-center bg-gray-50">
-        <div className="max-w-sm mx-auto text-center p-6 bg-white rounded-lg shadow-lg">
-          <AlertTriangle className="h-12 w-12 text-red-500 mx-auto mb-4" />
-          <h3 className="text-lg font-semibold text-gray-900 mb-2">
-            Something went wrong
-          </h3>
-          <p className="text-gray-600 mb-6">{error}</p>
-          <Button onClick={() => window.location.reload()} className="w-full">
-            Try again
-          </Button>
-        </div>
-      </div>
-    );
-  }
-
-  return (
-    <div className="min-h-screen bg-gray-50 pb-[72px]">
-      <div className="max-w-md mx-auto bg-white shadow-sm">
-        <RestaurantHeader
-          name={restaurant?.name || ""}
-          logo={restaurant?.logo || ""}
-          image={restaurant?.image || ""}
-          googleMapsUrl={restaurant?.googleMapsUrl || ""}
-          location={restaurant?.location || ""}
-          waitTime={restaurant?.waitTime || 0}
-          isOpen={restaurant?.isOpen || false}
-          timeZone={restaurant?.timezone || undefined}
-          openingTimes={restaurant?.openingTimes}
-        />
-
-        <div className="sticky top-0 z-20">
-          <SearchOverlay
-            menuItems={menuCategories.flatMap((category) => category.menuId)}
-            onItemClick={handleItemClick}
-            onAddItem={handleAddToCartWithToast}
-            isOpen={isSearchOpen}
-            onOpenChange={setIsSearchOpen}
-            className="border-b shadow-sm"
-            getItemQuantityInCart={getItemQuantityInCart}
-          />
-
-          <CategoryNav
-            categories={menuCategories.map((cat) => ({
-              id: cat.$id,
-              name: cat.name,
-            }))}
-            selectedCategoryId={selectedCategoryId}
-            scrollContainerRef={scrollContainerRef}
-            categoryButtonsRef={categoryButtonsRef}
-            onCategorySelect={handleCategorySelect}
-            className="border-b shadow-sm"
-          />
-        </div>
-
-        <div className="px-3 py-4 space-y-6">
-          {menuCategories.map((category) => (
-            <div
-              key={category.$id}
-              ref={(el) => {
-                if (el) {
-                  categoryRefs.current[category.$id] = el;
-                }
-              }}
-              data-category={category.$id}
-              className="scroll-mt-[145px]"
-            >
-              <h2 className="text-lg font-bold mb-3">{category.name}</h2>
-              <div className="space-y-4">
-                {category.menuId.map((item, index) => {
-                  // Create a unique key for items in the Popular category
-                  const isPopularCategory =
-                    category.name === "Popular" ||
-                    category.$id === "popular-category";
-                  const itemKey = isPopularCategory
-                    ? `popular-${item.$id}-${index}`
-                    : item.$id;
-
-                  return (
-                    <MenuItem
-                      key={itemKey}
-                      item={item}
-                      onItemClick={() => handleItemClick(item)}
-                      quantity={getItemQuantityInCart(item.$id)}
-                      isInPopularCategory={isPopularCategory}
-                    />
-                  );
-                })}
-              </div>
-            </div>
-          ))}
-        </div>
-      </div>
-
-      <StickyFooter
-        cartItemCount={cartItemCount}
-        cartTotal={calculateCartTotals().total}
-        onCartClick={() => setIsCartOpen(true)}
-      />
-
-      <ItemDrawer
-        isOpen={isItemDrawerOpen}
-        onOpenChange={handleItemDrawerOpenChange}
-        selectedItem={selectedItem}
-        editingCartItem={editingCartItem}
-        onAddToCart={handleAddToCartWithToast}
-        onUpdateCartItem={(item) => {
-          updateCartItem(item);
-          setIsItemDrawerOpen(false);
-          setSelectedItem(null);
-          setEditingCartItem(null);
-          setIsCartOpen(true);
-
-          toast("Cart updated", {
-            icon: <Check className="h-4 w-4 text-green-500" />,
-            description: `${item.name} has been updated in your cart`,
-          });
-        }}
-        createCartItemFromMenuItem={createCartItemFromMenuItem}
-      />
-
-      <CartDrawer
-        isOpen={isCartOpen}
-        onOpenChange={setIsCartOpen}
-        restaurant={restaurant}
-        cart={cart}
-        cartItemCount={cartItemCount}
-        cartTotals={calculateCartTotals()}
-        isFeesExpanded={isFeesExpanded}
-        onFeesExpandedChange={setIsFeesExpanded}
-        onUpdateQuantity={updateItemQuantity}
-        onEditItem={handleEditCartItem}
-        onDeleteItem={handleDeleteRequest}
-        onClearCart={clearCart}
-      />
-
-      <DeleteConfirmation
-        isOpen={isDeleteConfirmOpen}
-        onOpenChange={setIsDeleteConfirmOpen}
-        item={itemToDelete}
-        onConfirm={handleDeleteConfirmation}
-      />
-
-      <style jsx global>{`
-        .scrollbar-none::-webkit-scrollbar {
-          display: none;
-        }
-        input[type="text"]::-webkit-search-cancel-button,
-        input[type="text"]::-webkit-search-decoration {
-          -webkit-appearance: none;
-          appearance: none;
-        }
-      `}</style>
-    </div>
-  );
+  return <FoodOrderingClient storeId={id} />;
 }

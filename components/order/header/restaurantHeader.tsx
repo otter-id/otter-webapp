@@ -1,17 +1,16 @@
 "use client";
 
 import Image from "next/image";
-import { MapPin, Clock, Star } from "lucide-react";
+import { MapPin, Clock } from "lucide-react";
 import { motion } from "framer-motion";
 import { Button } from "@/components/ui/button";
-import { Badge } from "@/components/ui/badge";
 import {
   Dialog,
   DialogContent,
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { Separator } from "@/components/ui/separator";
 
 interface RestaurantHeaderProps {
@@ -25,10 +24,13 @@ interface RestaurantHeaderProps {
   timeZone?: string;
   openingTimes?: {
     [key: string]: {
-      openTime: string;
-      closeTime: string;
+      openTime: string | null;
+      closeTime: string | null;
     }[];
   };
+
+  restaurantLat: number;
+  restaurantLng: number;
 }
 
 export function RestaurantHeader({
@@ -41,39 +43,110 @@ export function RestaurantHeader({
   isOpen,
   timeZone,
   openingTimes,
+  restaurantLat,
+  restaurantLng,
 }: RestaurantHeaderProps) {
   const [showHours, setShowHours] = useState(false);
 
-  // Calculate wait time status and color
+  // === GEO ===
+  const [userPosition, setUserPosition] = useState<{
+    lat: number;
+    lng: number;
+  } | null>(null);
+  const [geoError, setGeoError] = useState<string | null>(null);
+
+  useEffect(() => {
+    if (!("geolocation" in navigator)) {
+      setGeoError("Geolocation not supported");
+      return;
+    }
+
+    navigator.geolocation.getCurrentPosition(
+      (pos) => {
+        setUserPosition({
+          lat: pos.coords.latitude,
+          lng: pos.coords.longitude,
+        });
+      },
+      (err) => {
+        setGeoError(err.message);
+      },
+      {
+        enableHighAccuracy: true,
+        timeout: 8000,
+        maximumAge: 1000 * 60 * 5,
+      }
+    );
+  }, []);
+
+  const deg2rad = (deg: number) => deg * (Math.PI / 180);
+
+  const getDistanceFromLatLonInKm = (
+    lat1: number,
+    lon1: number,
+    lat2: number,
+    lon2: number
+  ) => {
+    const R = 6371; // km
+    const dLat = deg2rad(lat2 - lat1);
+    const dLon = deg2rad(lon2 - lon1);
+    const a =
+      Math.sin(dLat / 2) * Math.sin(dLat / 2) +
+      Math.cos(deg2rad(lat1)) *
+      Math.cos(deg2rad(lat2)) *
+      Math.sin(dLon / 2) *
+      Math.sin(dLon / 2);
+    const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+    return R * c;
+  };
+
+  const formatDistance = (km: number) => {
+    if (km < 1) {
+      return `${Math.round(km * 1000)} m away`;
+    }
+    return `${km.toFixed(1)} km away`;
+  };
+
+  let distanceText = "See on map";
+  if (userPosition) {
+    const distanceKm = getDistanceFromLatLonInKm(
+      userPosition.lat,
+      userPosition.lng,
+      restaurantLat,
+      restaurantLng
+    );
+    distanceText = formatDistance(distanceKm);
+  }
+
+  // === WAIT TIME ===
   const getWaitTimeStatus = (minutes: number) => {
     if (minutes <= 10) return { label: "Short", color: "bg-green-500" };
     if (minutes <= 20) return { label: "Average", color: "bg-yellow-500" };
     return { label: "Long", color: "bg-red-500" };
   };
-
   const waitTimeStatus = getWaitTimeStatus(waitTime);
 
-  // Get current day for highlighting
+  // === OPENING TIMES ===
   const currentDay = new Date().toLocaleDateString("en-US", {
     weekday: "long",
   });
 
-  // Format time from ISO string to readable format
   const formatTime = (isoString: string) => {
+    if (!isoString) return "";
     try {
       const date = new Date(isoString);
       return date.toLocaleTimeString("en-US", {
         hour: "2-digit",
         minute: "2-digit",
         hour12: true,
-        timeZone: timeZone
+        timeZone: timeZone,
       });
     } catch (error) {
-      return "Invalid time";
+      return "";
     }
   };
 
-  const dayMapping = {
+  const dayMapping: Record<string, string> = {
     Monday: "MON",
     Tuesday: "TUE",
     Wednesday: "WED",
@@ -93,16 +166,19 @@ export function RestaurantHeader({
     "Sunday",
   ];
 
+  // ini buat dialog
   const openingHours = daysOfWeek.map((day) => {
-    const dayKey = dayMapping[day as keyof typeof dayMapping];
+    const dayKey = dayMapping[day];
     const periods = openingTimes?.[dayKey];
 
     if (periods && periods.length > 0) {
       return {
         day: day,
-        hours: periods.map(
-          (period) => `${formatTime(period.openTime)} - ${formatTime(period.closeTime)}`
-        ),
+        hours: periods.map((period) => {
+          const open = period.openTime ? formatTime(period.openTime) : "—";
+          const close = period.closeTime ? formatTime(period.closeTime) : "—";
+          return `${open} - ${close}`;
+        }),
       };
     } else {
       return {
@@ -111,6 +187,31 @@ export function RestaurantHeader({
       };
     }
   });
+
+  // === ini bagian closes at di header ===
+  // ambil jadwal hari ini
+  const todayKey = dayMapping[currentDay];
+  const todayPeriods = openingTimes?.[todayKey];
+  let closesAtText: string | null = null;
+
+  if (todayPeriods && todayPeriods.length > 0) {
+    // ambil period terakhir (kalau 2 shift)
+    const lastPeriod = todayPeriods[todayPeriods.length - 1];
+    if (lastPeriod?.closeTime) {
+      const formatted = formatTime(lastPeriod.closeTime);
+      if (formatted) {
+        closesAtText = `Closes at ${formatted}`;
+      }
+    } else {
+      // di DB null → bisa pilih: sembunyiin aja
+      closesAtText = null;
+      // atau kalau mau keliatan:
+      // closesAtText = "Closing time not set";
+    }
+  } else {
+    // hari ini closed semua
+    closesAtText = "Closed today";
+  }
 
   return (
     <>
@@ -162,9 +263,9 @@ export function RestaurantHeader({
                         (2.3k reviews)
                       </span>
                     </div> */}
-                    <Badge variant="secondary" className="font-normal mt-2">
+                    {/* <Badge variant="secondary" className="font-normal mt-2">
                       Bubble Tea
-                    </Badge>
+                    </Badge> */}
                   </div>
                 </div>
               </div>
@@ -175,21 +276,30 @@ export function RestaurantHeader({
               <div className="flex items-center justify-between">
                 <div className="flex items-center gap-2">
                   <div
-                    className={`w-2 h-2 rounded-full ${isOpen ? "bg-green-500 animate-pulse" : "bg-red-500"
+                    className={`w-2 h-2 rounded-full ${isOpen
+                      ? "bg-green-500 animate-pulse"
+                      : "bg-red-500"
                       }`}
                   />
                   <span className="font-medium">
                     {isOpen ? "Open Now" : "Closed"}
                   </span>
-                  <div className="w-1 h-1 rounded-full bg-muted-foreground/30" />
-                  <span className="text-muted-foreground">Closes at 19:00</span>
+                  {/* bullet */}
+                  {closesAtText && (
+                    <>
+                      <div className="w-1 h-1 rounded-full bg-muted-foreground/30" />
+                      <span className="text-muted-foreground">
+                        {closesAtText}
+                      </span>
+                    </>
+                  )}
                 </div>
               </div>
 
               <div className="flex items-center gap-3 text-sm">
                 <div className="flex items-center gap-1.5">
                   <MapPin className="w-4 h-4 text-muted-foreground" />
-                  <span>2.5 km away</span>
+                  <span>{distanceText}</span>
                 </div>
                 <div className="w-1 h-1 rounded-full bg-muted-foreground/30" />
                 <div className="flex items-center gap-1.5">
@@ -206,12 +316,13 @@ export function RestaurantHeader({
                 </div>
               </div>
 
-              {/* Quick Actions */}
+              {/* Actions */}
               <div className="flex gap-2 pt-2">
                 <Button
                   variant="outline"
                   className="flex-1 h-9"
-                  onClick={() => window.open(googleMapsUrl, "_blank")}>
+                  onClick={() => window.open(googleMapsUrl, "_blank")}
+                >
                   Open in Google Maps
                 </Button>
                 <Button
@@ -249,7 +360,6 @@ export function RestaurantHeader({
                   >
                     {schedule.day}
                   </span>
-                  {/* Ganti span menjadi div untuk menampung beberapa baris jadwal */}
                   <div
                     className={
                       schedule.day === currentDay
@@ -257,7 +367,6 @@ export function RestaurantHeader({
                         : "text-muted-foreground text-left"
                     }
                   >
-                    {/* Lakukan map pada array `schedule.hours` */}
                     {schedule.hours.map((timeSlot, i) => (
                       <div key={i}>{timeSlot}</div>
                     ))}

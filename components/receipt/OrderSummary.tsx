@@ -24,10 +24,14 @@ export function OrderSummary({ data, onSplitBill }: OrderSummaryProps) {
           <span>Rp {data.subtotal.toLocaleString()}</span>
         </div>
         <div className="flex justify-between">
-          <span>Taxes and Fees</span>
+          <span>Tax</span>
           <span>Rp {data.taxesAndFees.toLocaleString()}</span>
         </div>
-        <Separator variant="otter" orientation="horizontal" />
+        <div className="flex justify-between">
+          <span>Service Charge</span>
+          <span>Rp {data.service.toLocaleString()}</span>
+        </div>
+        <Separator  orientation="horizontal" />
         <div className="flex justify-between font-bold">
           <span>Total</span>
           <span>Rp {data.total.toLocaleString()}</span>

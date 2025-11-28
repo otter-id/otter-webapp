@@ -54,7 +54,7 @@ export function CartItem({
                   ([categoryId, options]) =>
                     options.map((option) => (
                       <div key={option.$id}>
-                        {option.name}
+                        {option.categoryName}: {option.name} 
                         {option.price > 0 && ` (+${formatPrice(option.price)})`}
                       </div>
                     ))

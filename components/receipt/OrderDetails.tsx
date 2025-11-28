@@ -86,6 +86,9 @@ export function OrderDetails({ data }: OrderDetailsProps) {
                     </div>
                   ))}
                 </div>
+                {item.notes && (
+                  <p className="text-muted-foreground">Notes: {item.notes}</p>
+                )}
               </div>
             </div>
             {index < data.items.length - 1 && (
