@@ -19,7 +19,7 @@ export const GenAuth = {
       const token_new = token_cur.substring(0, 125);
       const local_cur = CryptoJS.AES.encrypt(token_new, local_secret).toString();
 
-      console.log({ schema: 'sync init', token_cur, token_new })
+      // console.log({ schema: 'sync init', token_cur, token_new })
       return { token: token_cur, store: local_cur };
     }
 
@@ -28,7 +28,7 @@ export const GenAuth = {
       const token_new = CryptoJS.AES.encrypt(token_cur.substring(0, 125), token_secret).toString();
       const local_new = CryptoJS.AES.encrypt(token_new, local_secret).toString();
 
-      console.log({ schema: 'sync edit', token_cur, token_new })
+      // console.log({ schema: 'sync edit', token_cur, token_new })
       return { token: token_new, store: local_new };
     }
 
@@ -43,7 +43,7 @@ export const GenAuth = {
       throw new Error("Failed setup one time token");
     }
 
-    console.log({ schema: 'store', value: param.value });
+    // console.log({ schema: 'store', value: param.value });
     localStorage.setItem(local_key, param.value);
   },
 };
