@@ -25,7 +25,7 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
-import { GenAuthorization } from "@/lib/genAuthorization";
+import { GenAuth } from "@/lib/genAuth";
 
 interface PaymentState {
   restaurantId: string | null;
@@ -98,12 +98,14 @@ function PaymentPageContent() {
 
     setIsQrLoading(true);
     try {
+      const { token, store } = await GenAuth.token();
       const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/checkout/pwa/qris`, {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${GenAuthorization.sync()}` },
+        headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
         body: JSON.stringify({ orderId: orderIdToUse, restaurantId: restIdToUse }),
       });
       const result = await response.json();
+      await GenAuth.store({ value: store });
       if (!response.ok) throw new Error(result.message || 'Failed to generate QR.');
       updateState({ qrisData: result.data });
       return true;
@@ -295,12 +297,14 @@ function PaymentPageContent() {
       })),
     };
     try {
+      const { token, store } = await GenAuth.token();
       const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/order/pwa`, {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json', "Authorization": `Bearer ${GenAuthorization.sync()}` },
+        headers: { 'Content-Type': 'application/json', "Authorization": `Bearer ${token}` },
         body: JSON.stringify(orderBody),
       });
       const result = await response.json();
+      await GenAuth.store({ value: store });
       if (!response.ok) throw new Error(result.message || 'Failed to place order.');
 
       const { orderId, restaurantId: restId, subtotal, tax, service, total } = result.data;

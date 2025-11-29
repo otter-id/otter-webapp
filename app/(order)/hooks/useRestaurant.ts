@@ -8,7 +8,7 @@ import {
   RestaurantData,
 } from "@/types/restaurant";
 
-import { GenAuthorization } from "@/lib/genAuthorization";
+import { GenAuth } from "@/lib/genAuth";
 
 export function useRestaurant(restaurantId: string) {
   const [loading, setLoading] = useState(true);
@@ -19,18 +19,19 @@ export function useRestaurant(restaurantId: string) {
   useEffect(() => {
     const fetchRestaurant = async () => {
       try {
-
+        const { token, store } = await GenAuth.token();
         const response = await fetch(
           `${process.env.NEXT_PUBLIC_API_URL}/restaurant/pwa/${restaurantId}`,
-          { headers: { "Authorization": `Bearer ${GenAuthorization.sync()}` } }
+          { headers: { "Authorization": `Bearer ${token}` } }
         );
-        const data = await response.json();
+        const result = await response.json();
 
+        await GenAuth.store({ value: store });
         if (!response.ok) {
-          throw new Error(data.message || "Failed to fetch restaurant data");
+          throw new Error(result.message || "Failed to fetch restaurant data");
         }
 
-        const restaurantData = data.data;
+        const restaurantData = result.data;
 
         if (!restaurantData.isPublished) {
           window.location.replace("https://app.otter.id/");
