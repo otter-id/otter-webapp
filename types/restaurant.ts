@@ -30,6 +30,15 @@ export interface Restaurant {
   };
 }
 
+export interface RestaurantInfo {
+  $id: string;
+  name: string;
+  location: string;
+  image: string;
+  logo: string;
+  isPublished: boolean;
+}
+
 export interface MenuCategory {
   name: string;
   index: number | null;

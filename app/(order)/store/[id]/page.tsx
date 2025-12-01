@@ -15,6 +15,7 @@ export async function generateMetadata({
 }: PageProps): Promise<Metadata> {
   const { id } = await params;
   const restaurant = await getRestaurantData(id);
+  // console.log({ restaurant })
 
   // Default metadata jika restaurant tidak ditemukan
   if (!restaurant) {
@@ -44,7 +45,7 @@ export async function generateMetadata({
   // Dynamic metadata berdasarkan data restaurant
   const title = `${restaurant.name} – Order Online`;
   const description = `Order online and track your order live. Powered by Otter`;
-  const imageUrl =  restaurant.image || restaurant.logo;
+  const imageUrl = restaurant.image || restaurant.logo;
 
   return {
     title,

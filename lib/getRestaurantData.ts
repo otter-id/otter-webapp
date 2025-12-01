@@ -1,8 +1,8 @@
-import { Restaurant } from "@/types/restaurant";
+import { RestaurantInfo } from "@/types/restaurant";
 import { GenAuth } from "./genAuth";
 
 interface RestaurantResponse {
-  data: Restaurant;
+  data: RestaurantInfo;
 }
 
 /**
@@ -11,16 +11,17 @@ interface RestaurantResponse {
  */
 export async function getRestaurantData(
   restaurantId: string
-): Promise<Restaurant | null> {
+): Promise<RestaurantInfo | null> {
   try {
     const apiUrl = process.env.NEXT_PUBLIC_API_URL || "https://api.otter.id/v1";
     const response = await fetch(
-      `${apiUrl}/restaurant/pwa/${restaurantId}`,
+      `${apiUrl}/restaurant/info/${restaurantId}`,
       {
         // Revalidate setiap 60 detik
         next: { revalidate: 60 },
       }
     );
+
 
     if (!response.ok) {
       console.error(
