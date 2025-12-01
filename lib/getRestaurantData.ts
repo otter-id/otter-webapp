@@ -13,7 +13,7 @@ export async function getRestaurantData(
   restaurantId: string
 ): Promise<RestaurantInfo | null> {
   try {
-    const apiUrl = process.env.NEXT_PUBLIC_API_URL || "https://api.otter.id/v1";
+    const apiUrl = process.env.API_URL || "https://api.otter.id/v1";
     const response = await fetch(
       `${apiUrl}/restaurant/info/${restaurantId}`,
       {

@@ -8,7 +8,7 @@ import {
   RestaurantData,
 } from "@/types/restaurant";
 
-import { GenAuth } from "@/lib/genAuth";
+import { Actions } from "@/app/actions";
 
 export function useRestaurant(restaurantId: string) {
   const [loading, setLoading] = useState(true);
@@ -19,18 +19,7 @@ export function useRestaurant(restaurantId: string) {
   useEffect(() => {
     const fetchRestaurant = async () => {
       try {
-        const { token, store } = await GenAuth.token();
-        const response = await fetch(
-          `${process.env.NEXT_PUBLIC_API_URL}/restaurant/pwa/${restaurantId}`,
-          { headers: { "Authorization": `Bearer ${token}` } }
-        );
-        const result = await response.json();
-
-        await GenAuth.store({ value: store });
-        if (!response.ok) {
-          throw new Error(result.message || "Failed to fetch restaurant data");
-        }
-
+        const result = await Actions.getRestaurantPwa(restaurantId);
         const restaurantData = result.data;
 
         if (!restaurantData.isPublished) {
@@ -40,6 +29,8 @@ export function useRestaurant(restaurantId: string) {
 
         setRestaurant(restaurantData);
 
+        let allCategories = [...restaurantData.menuCategoryId];
+
         const recommendedItems = [
           ...restaurantData.menuCategoryId.flatMap((category: any) =>
             category.menuId.filter((item: any) => item.isRecommended)
@@ -48,9 +39,6 @@ export function useRestaurant(restaurantId: string) {
             (item: any) => item.isRecommended
           ),
         ];
-
-        let allCategories = [...restaurantData.menuCategoryId];
-
         if (recommendedItems.length) {
           const popularCategory = {
             name: "Popular",

@@ -1,19 +1,20 @@
-'use client'
+import { cookies } from "next/headers";
 import CryptoJS from "crypto-js";
 import { GenAuthSaveParam, GenAuthSyncReturn } from "./types";
 
 export const GenAuth = {
   token: async (): Promise<GenAuthSyncReturn> => {
-    const local_key = process.env.NEXT_PUBLIC_LS_AUTH_KEY;
-    const local_secret = process.env.NEXT_PUBLIC_LS_AUTH_SECRET;
-    const token_secret = process.env.NEXT_PUBLIC_ONE_TIME_SECRET;
-    const token_init = process.env.NEXT_PUBLIC_ONE_TIME_INIT;
+    const local_key = process.env.COOKIE_AUTH_KEY;
+    const local_secret = process.env.COOKIE_AUTH_SECRET;
+    const token_secret = process.env.ONE_TIME_SECRET;
+    const token_init = process.env.ONE_TIME_INIT;
 
     if (!local_key || !local_secret || !token_secret || !token_init) {
       throw new Error("Failed setup one time token");
     }
 
-    const local = localStorage.getItem(local_key);
+    const cookieStore = await cookies();
+    const local = cookieStore.get(local_key)?.value;
     if (!local) {
       const token_cur = CryptoJS.AES.encrypt(token_init, token_secret).toString();
       const token_new = token_cur.substring(0, 125);
@@ -36,14 +37,14 @@ export const GenAuth = {
     return { token: token_cur, store: local_new };
   },
   store: async (param: GenAuthSaveParam) => {
-    const local_key = process.env.NEXT_PUBLIC_LS_AUTH_KEY;
-    const local_secret = process.env.NEXT_PUBLIC_LS_AUTH_SECRET;
+    const local_key = process.env.COOKIE_AUTH_KEY;
+    const local_secret = process.env.COOKIE_AUTH_SECRET;
 
     if (!local_key || !local_secret) {
       throw new Error("Failed setup one time token");
     }
 
     // console.log({ schema: 'store', value: param.value });
-    localStorage.setItem(local_key, param.value);
+    (await cookies()).set(local_key, param.value);
   },
 };

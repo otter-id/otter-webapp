@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import axios from "axios";
+import { Actions } from "@/app/actions";
 // import { User } from "@/types/user";
 
 export const useEmailVerification = (token: string | null) => {
@@ -16,33 +16,11 @@ export const useEmailVerification = (token: string | null) => {
       }
 
       try {
-        const response = await axios.get(
-          `${process.env.NEXT_PUBLIC_SERVER_URL}/api/verify-email?token=${token}`,
-          {
-            headers: {
-              "Access-Control-Allow-Origin": "*",
-              Accept: "application/json",
-              "Content-Type": "application/json",
-            },
-            withCredentials: true,
-          }
-        );
-        setUser(response.data);
+        const result = await Actions.verifyEmail(token);
+        setUser(result);
         setError(null);
       } catch (err) {
-        if (axios.isAxiosError(err)) {
-          setError(
-            err.response?.data?.message ||
-              `Failed to fetch user: ${err.message}`
-          );
-          console.error("Axios error details:", {
-            message: err.message,
-            response: err.response?.data,
-            status: err.response?.status,
-          });
-        } else {
-          setError("An unexpected error occurred");
-        }
+        setError(err instanceof Error ? err.message : "An error occurred");
         console.error("Error fetching user:", err);
       } finally {
         setIsLoading(false);

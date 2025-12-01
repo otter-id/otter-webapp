@@ -1,5 +1,6 @@
 import { useState, useEffect } from "react";
 import axios from "axios";
+import { Actions } from "@/app/actions";
 import { ReceiptData } from "@/types/receipt";
 
 export const useReceiptData = (orderId: string | null, storeId: string | null) => {
@@ -16,32 +17,11 @@ export const useReceiptData = (orderId: string | null, storeId: string | null) =
       }
 
       try {
-        const response = await axios.get(
-          `${process.env.NEXT_PUBLIC_SERVER_URL}/api/receipt?id=${orderId}` + (storeId ? `&sid=${storeId}` : ""),
-          {
-            headers: {
-              "Access-Control-Allow-Origin": "*",
-              Accept: "application/json",
-              "Content-Type": "application/json",
-            },
-          }
-        );
-        setReceiptData(response.data);
+        const result = await Actions.getReceiptData(orderId, storeId);
+        setReceiptData(result);
         setError(null);
       } catch (err) {
-        if (axios.isAxiosError(err)) {
-          setError(
-            err.response?.data?.message ||
-              `Failed to fetch receipt data: ${err.message}`
-          );
-          console.error("Axios error details:", {
-            message: err.message,
-            response: err.response?.data,
-            status: err.response?.status,
-          });
-        } else {
-          setError("An unexpected error occurred");
-        }
+        setError(err instanceof Error ? err.message : "An error occurred");
         console.error("Error fetching receipt data:", err);
       } finally {
         setIsLoading(false);
