@@ -46,3 +46,12 @@ export interface CartTotals {
 export type GroupedResults = {
   [category: string]: SearchResult[];
 };
+
+export type GenAuthSyncReturn = {
+  token: string;
+  store: string;
+}
+
+export type GenAuthSaveParam = {
+  value: string;
+}
