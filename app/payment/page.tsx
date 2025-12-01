@@ -163,6 +163,12 @@ function PaymentPageContent() {
     }
   }, [restaurantId]);
 
+  useEffect(() => {
+    if (state.currentStep === 1) {
+      window.scrollTo({ top: 0, behavior: "smooth" });
+    }
+  }, [state.currentStep]);
+
   const updateState = (updates: Partial<PaymentState>) => {
     setState(prevState => {
       const newState = { ...prevState, ...updates };
