@@ -80,6 +80,7 @@ export async function generateMetadata({
 /**
  * Page component untuk store ordering
  * Ini adalah server component yang render client component
+ * 
  */
 export default async function FoodOrderingPage({ params }: PageProps) {
   const { id } = await params;
