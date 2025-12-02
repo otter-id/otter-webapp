@@ -4,27 +4,31 @@ import { GenAuth } from "@/utils/server";
 const API_URL = process.env.API_URL;
 
 export const ApiGetRestaurantPwa = async (restaurantId: string) => {
-  const { token, store } = await GenAuth.token();
-  const response: Response = await fetch(`${API_URL}/restaurant/pwa/${restaurantId}`, { headers: { Authorization: `Bearer ${token}` } });
+  try {
+    const { token, store } = await GenAuth.token();
+    const response: Response = await fetch(`${API_URL}/restaurant/pwa/${restaurantId}`, { headers: { Authorization: `Bearer ${token}` } });
 
-  const result = await response.json();
-  await GenAuth.store({ value: store });
-  if (!response.ok) throw new Error(result.message || "Failed to fetch restaurant data");
+    const result = await response.json();
+    await GenAuth.store({ value: store });
+    if (!response.ok) return { error: result.message || "Failed to fetch restaurant data" };
 
-  return result;
+    console.log(result);
+    return result;
+  } catch (error: any) {
+    return { error: error.message || "An unexpected error occurred" };
+  }
 };
 
 export const ApiGetRestaurantInfo = async (restaurantId: string) => {
   try {
     const response = await fetch(`${API_URL}/restaurant/info/${restaurantId}`, { next: { revalidate: 60 } });
+    if (!response.ok) return { error: "Failed to fetch restaurant info" };
 
-    if (!response.ok) return null;
+    const result = await response.json();
+    if (!result.data.isPublished) return { error: "Restaurant is not published" };
 
-    const data = await response.json();
-    if (!data.data.isPublished) return null;
-
-    return data.data;
-  } catch (_error) {
-    return null;
+    return result;
+  } catch (error: any) {
+    return { error: error.message || "An unexpected error occurred" };
   }
 };
