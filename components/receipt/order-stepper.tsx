@@ -6,7 +6,7 @@ import {
   ShoppingBag,
   BookmarkCheck,
 } from "lucide-react";
-import { cn } from "@/lib/utils";
+import { cn } from "@/utils/utils";
 
 interface OrderStepperProps {
   orderStatus?: string;
@@ -86,11 +86,10 @@ export default function OrderStepper({
             className="absolute left-0 h-full"
             style={{
               background: "#F2C94C",
-              width: `${
-                ((Math.min(currentStep, steps.length) - 1) /
+              width: `${((Math.min(currentStep, steps.length) - 1) /
                   (steps.length - 1)) *
                 100
-              }%`,
+                }%`,
             }}
           />
         </div>

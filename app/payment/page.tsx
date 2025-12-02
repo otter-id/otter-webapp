@@ -6,7 +6,7 @@ import Image from "next/image";
 import { ArrowLeft, QrCode, User, Phone, Check, FileText, Loader2, AlertTriangle, X } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Separator } from "@/components/ui/separator";
-import { formatPrice } from "@/lib/utils";
+import { formatPrice } from "@/utils/utils";
 import { PaymentMethodDrawer } from "@/components/payment/payment-method-drawer";
 import { QrisPayment } from "@/components/payment/qris-payment";
 import { Stepper } from "@/components/ui/stepper";

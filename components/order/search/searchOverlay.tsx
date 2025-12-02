@@ -7,8 +7,8 @@ import { Button } from "@/components/ui/button";
 import { X, SearchIcon, ChevronLeft } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import { MenuItem as MenuItemComponent } from "@/components/order/menu/menuItem";
-import { highlightText } from "@/lib/utils";
-import { cn } from "@/lib/utils";
+import { highlightText } from "@/utils/utils";
+import { cn } from "@/utils/utils";
 
 interface SearchResult extends MenuItem {
   matchedOn: "name" | "description" | "both";
@@ -104,8 +104,8 @@ export function SearchOverlay({
               nameMatch && descMatch
                 ? "both"
                 : nameMatch
-                ? "name"
-                : "description",
+                  ? "name"
+                  : "description",
           };
           return true;
         }

@@ -9,7 +9,7 @@ import {
   DrawerTitle,
 } from "@/components/ui/drawer";
 import { Button } from "@/components/ui/button";
-import { cn } from "@/lib/utils";
+import { cn } from "@/utils/utils";
 import { useState } from "react";
 
 interface PaymentMethodDrawerProps {

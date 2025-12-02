@@ -1,6 +1,6 @@
 "use client";
 
-import { cn } from "@/lib/utils";
+import { cn } from "@/utils/utils";
 import { Check } from "lucide-react";
 
 interface StepperProps {
@@ -25,8 +25,8 @@ export function Stepper({ steps, currentStep, className }: StepperProps) {
                 index < currentStep
                   ? "bg-black border-black text-white"
                   : index === currentStep
-                  ? "border-black text-black"
-                  : "border-gray-300 text-gray-300"
+                    ? "border-black text-black"
+                    : "border-gray-300 text-gray-300"
               )}
             >
               {index < currentStep ? (

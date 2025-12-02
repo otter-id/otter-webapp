@@ -6,7 +6,7 @@ import { ThumbsUp, ThumbsDown, Send } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import { cardVariants } from "../../app/receipt/utils/animations";
 import { useState } from "react";
-import { cn } from "@/lib/utils";
+import { cn } from "@/utils/utils";
 import { Textarea } from "@/components/ui/textarea";
 import { ReceiptData } from "@/types/receipt";
 const MotionCard = motion(Card);
@@ -45,7 +45,7 @@ export function RestaurantFeedback({ data }: { data: ReceiptData["data"] }) {
               className={cn(
                 "w-24 border border-green-500 hover:bg-green-50",
                 feedback === "like" &&
-                  "bg-green-500 hover:bg-green-500 text-white hover:text-white"
+                "bg-green-500 hover:bg-green-500 text-white hover:text-white"
               )}
               onClick={() => handleFeedback("like")}
               disabled={feedback !== null}
@@ -59,13 +59,13 @@ export function RestaurantFeedback({ data }: { data: ReceiptData["data"] }) {
                   animate={
                     feedback === "like"
                       ? {
-                          scale: [1, 1.5, 1],
-                          rotate: [0, -45, 0],
-                          transition: {
-                            duration: 0.5,
-                            ease: "easeOut",
-                          },
-                        }
+                        scale: [1, 1.5, 1],
+                        rotate: [0, -45, 0],
+                        transition: {
+                          duration: 0.5,
+                          ease: "easeOut",
+                        },
+                      }
                       : {}
                   }
                 />
@@ -77,7 +77,7 @@ export function RestaurantFeedback({ data }: { data: ReceiptData["data"] }) {
               className={cn(
                 "w-24 border border-red-500 hover:bg-red-50",
                 feedback === "dislike" &&
-                  "bg-red-500 hover:bg-red-500 text-white hover:text-white"
+                "bg-red-500 hover:bg-red-500 text-white hover:text-white"
               )}
               onClick={() => handleFeedback("dislike")}
               disabled={feedback !== null}

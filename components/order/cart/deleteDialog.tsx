@@ -9,7 +9,7 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog"
-import type { CartItem } from "@/lib/types"
+import type { CartItem } from "@/utils/types"
 
 interface DeleteConfirmationProps {
   isOpen: boolean

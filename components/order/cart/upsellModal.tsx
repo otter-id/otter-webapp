@@ -10,7 +10,7 @@ import {
 } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Plus } from "lucide-react";
-import { formatPrice, formatTextForPlaceholder } from "@/lib/utils";
+import { formatPrice, formatTextForPlaceholder } from "@/utils/utils";
 import type { MenuItem } from "@/types/restaurant";
 import { motion } from "framer-motion";
 import { useState } from "react";
@@ -73,7 +73,7 @@ export function UpsellModal({
               <div className="relative w-20 h-20 flex-shrink-0 rounded-lg overflow-hidden bg-muted">
                 {item.image && !imageErrors[item.$id] ? (
                   <Image
-                    onDragStart={(event)=> event.preventDefault()}
+                    onDragStart={(event) => event.preventDefault()}
                     src={item.image}
                     alt={
                       typeof item.name === "string" ? item.name : "Menu item"
@@ -110,9 +110,8 @@ export function UpsellModal({
                     onClick={() => onAddItem(item)}
                   >
                     <Plus
-                      className={`h-4 w-4 transition-transform ${
-                        addedItems.includes(item.$id) ? "scale-150" : ""
-                      }`}
+                      className={`h-4 w-4 transition-transform ${addedItems.includes(item.$id) ? "scale-150" : ""
+                        }`}
                     />
                   </Button>
                 </div>

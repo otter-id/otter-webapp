@@ -1,9 +1,9 @@
-import type { CartTotals as CartTotalsType } from "@/lib/types"
+import type { CartTotals as CartTotalsType } from "@/utils/types"
 import { Button } from "@/components/ui/button"
 import { Separator } from "@/components/ui/separator"
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible"
 import { ChevronDown, ChevronUp } from "lucide-react"
-import { formatPrice } from "@/lib/utils"
+import { formatPrice } from "@/utils/utils"
 
 interface CartTotalsProps {
   totals: CartTotalsType
