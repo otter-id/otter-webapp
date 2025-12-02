@@ -17,7 +17,6 @@ import { CartTotals } from "./cartTotal";
 import { UpsellModal } from "./upsellModal";
 import { LocationConfirmationDialog } from "./locationConfirmationDialog";
 import { useState, useEffect } from "react";
-import { getRecommendations } from "@/lib/recommendations";
 import { toast } from "sonner";
 import { Check } from "lucide-react";
 import type { MenuItem, Restaurant } from "@/types/restaurant";
@@ -69,7 +68,6 @@ export function CartDrawer({
   const [isStartOverDialogOpen, setIsStartOverDialogOpen] = useState(false);
   const [isRestoClosedDialogOpen, setIsRestoClosedDialogOpen] =
     useState(false);
-  const recommendations = getRecommendations(cart);
 
   useEffect(() => {
     if (isOpen && restaurant && !restaurant.isOpen) {

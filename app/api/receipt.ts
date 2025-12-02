@@ -1,5 +1,4 @@
 'use server'
-
 const API_URL = process.env.API_URL;
 
 export const ApiGetReceiptData = async (orderId: string, storeId: string | null) => {

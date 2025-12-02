@@ -5,22 +5,11 @@ try {
   // ignore error
 }
 
-/** @type {import('next').NextConfig} */
 const nextConfig = {
-  eslint: {
-    ignoreDuringBuilds: true,
-  },
   typescript: {
     ignoreBuildErrors: true,
   },
   images: {
-    domains: [
-      "franchise.sharetea.com.au",
-      "www.texanerin.com",
-      "aw.otternow.id",
-      "aw.otter.id",
-      // Add other domains you're loading images from
-    ],
     remotePatterns: [
       {
         protocol: "https",
@@ -37,7 +26,6 @@ const nextConfig = {
 };
 
 mergeConfig(nextConfig, userConfig);
-
 function mergeConfig(nextConfig, userConfig) {
   if (!userConfig) {
     return;
