@@ -11,8 +11,11 @@ export function useRestaurant(restaurantId: string) {
   useEffect(() => {
     const fetchRestaurant = async () => {
       try {
+        console.log(restaurantId);
         const result = await ApiGetRestaurantPwa(restaurantId);
         const restaurantData = result.data;
+
+        console.log(result);
 
         if (!restaurantData.isPublished) {
           window.location.replace("https://app.otter.id/");
