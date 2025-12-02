@@ -1,4 +1,4 @@
-import { skeletonClass } from "@/../app/receipt/utils/animations";
+import { skeletonClass } from "@/app/receipt/utils/animations";
 
 export function ReceiptActionsSkeleton() {
   return (

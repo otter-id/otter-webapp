@@ -4,7 +4,7 @@ import { Button } from "@/components/ui/button";
 import { buttonVariants } from "@/app/receipt/utils/animations";
 import { Share, FileDown } from "lucide-react";
 import { ReceiptData } from "@/types/receipt";
-import { genReceiptPDF } from "@/utils/server";
+import { genReceiptPDF } from "@/utils/client";
 import { motion } from "framer-motion";
 interface ReceiptActionsProps {
   data: ReceiptData["data"];
