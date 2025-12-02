@@ -1,5 +1,5 @@
 import { Metadata } from "next";
-import { FoodOrderingClient } from "@/components/order/FoodOrderingClient";
+import { FoodOrderingClient } from "@/components/order/food-ordering-client";
 import { ApiGetRestaurantInfo } from "@/app/api";
 
 interface PageProps {

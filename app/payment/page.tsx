@@ -13,8 +13,8 @@ import { Stepper } from "@/components/ui/stepper";
 import { PhoneInput } from "@/components/payment/phone-input";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { CartItem, CartTotals, CartRestourant } from "@/app/(order)/hooks/useCart";
-import { PaymentSkeleton } from "@/components/payment/skeletons/PaymentSkeleton";
+import { CartItem, CartTotals, CartRestourant } from "@/app/(order)/hooks/use-cart";
+import { PaymentSkeleton } from "@/components/payment/skeletons/payment-skeleton";
 import { toast } from "sonner";
 import {
   AlertDialog,

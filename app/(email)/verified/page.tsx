@@ -3,7 +3,7 @@
 import { CheckCircle } from "lucide-react";
 import { Card, CardContent, CardHeader } from "@/components/ui/card";
 import { useSearchParams } from "next/navigation";
-import { useEmailVerification } from "./hooks/useEmailVerification";
+import { useEmailVerification } from "./hooks/use-email-verification";
 import { Suspense } from "react";
 
 function VerificationContent() {

@@ -6,7 +6,7 @@ import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { X, SearchIcon, ChevronLeft } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
-import { MenuItem as MenuItemComponent } from "@/components/order/menu/menuItem";
+import { MenuItem as MenuItemComponent } from "@/components/order/menu/menu-item";
 import { highlightText } from "@/utils/client";
 import { cn } from "@/utils/client";
 

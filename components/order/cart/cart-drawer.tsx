@@ -1,7 +1,7 @@
-// components/order/cart/cartDrawer.tsx
+// components/order/cart/cart-drawer.tsx
 "use client";
 
-import type { CartItem as CartItemType } from "@/app/(order)/hooks/useCart";
+import type { CartItem as CartItemType } from "@/app/(order)/hooks/use-cart";
 import {
   Drawer,
   DrawerContent,
@@ -13,16 +13,16 @@ import { JSX } from "react";
 import { Button } from "@/components/ui/button";
 import { Separator } from "@/components/ui/separator";
 import { X, RefreshCw } from "lucide-react";
-import { CartItem } from "./cartItem";
-import { CartTotals } from "./cartTotal";
-import { UpsellModal } from "./upsellModal";
-import { LocationConfirmationDialog } from "./locationConfirmationDialog";
+import { CartItem } from "./cart-item";
+import { CartTotals } from "./cart-total";
+import { UpsellModal } from "./upsell-modal";
+import { LocationConfirmationDialog } from "./location-confirmation-dialog";
 import { useState, useEffect } from "react";
 import { toast } from "sonner";
 import { Check } from "lucide-react";
 import type { MenuItem, Restaurant } from "@/types/restaurant";
-import { StartOverDialog } from "./startOverDialog";
-import { RestoClosedDialog } from "./restoClosedDialog";
+import { StartOverDialog } from "./start-over-dialog";
+import { RestoClosedDialog } from "./resto-closed-dialog";
 import { useRouter } from "next/navigation";
 
 interface ExtendedMenuItem extends Omit<MenuItem, "name" | "description"> {

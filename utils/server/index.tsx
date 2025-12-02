@@ -1,1 +1,1 @@
-export * from "./genAuth";
+export * from "./gen-auth";

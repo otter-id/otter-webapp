@@ -16,7 +16,7 @@ import {
 import { motion } from "framer-motion";
 import { cardVariants } from "@/app/receipt/utils/animations";
 import { ReceiptData } from "@/types/receipt";
-import { useSplitBill } from "@/app/receipt/hooks/useSplitBill";
+import { useSplitBill } from "@/app/receipt/hooks/use-split-bill";
 import { Badge } from "@/components/ui/badge";
 
 const MotionCard = motion(Card);

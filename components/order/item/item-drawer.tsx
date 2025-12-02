@@ -4,7 +4,7 @@ import { useState, useEffect, useRef } from "react";
 import Image from "next/image";
 import { X, Minus, Plus, AlertTriangle, Check, Info } from "lucide-react";
 import { MenuItem, MenuOption } from "@/types/restaurant";
-import { CartItem } from "@/app/(order)/hooks/useCart";
+import { CartItem } from "@/app/(order)/hooks/use-cart";
 import {
   Drawer,
   DrawerContent,

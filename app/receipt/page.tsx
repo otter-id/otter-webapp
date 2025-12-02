@@ -3,29 +3,29 @@
 import { Suspense } from "react";
 import { useSearchParams } from "next/navigation";
 import { motion } from "framer-motion";
-import { useReceiptData } from "./hooks/useReceiptData";
-import { useSplitBill } from "./hooks/useSplitBill";
+import { useReceiptData } from "./hooks/use-receipt-data";
+import { useSplitBill } from "./hooks/use-split-bill";
 import { containerVariants } from "./utils/animations";
-import { ErrorState } from "@/components/receipt/ErrorState";
-import { ReceiptHeader } from "@/components/receipt/ReceiptHeader";
-import { ReceiptActions } from "@/components/receipt/ReceiptActions";
-import { PickupInfo } from "@/components/receipt/PickupInfo";
-import { OrderDetails } from "@/components/receipt/OrderDetails";
-import { OrderSummary } from "@/components/receipt/OrderSummary";
-import { PointsCard } from "@/components/receipt/PointsCard";
-import { SplitBill } from "@/components/receipt/SplitBill";
-import { RestaurantFeedback } from "@/components/receipt/RestaurantFeedback";
-import { Footer } from "@/components/receipt/Footer";
-import { UnpaidWarning } from "@/components/receipt/UnpaidWarning";
-import { RefundedWarning } from "@/components/receipt/RefundedWarning";
+import { ErrorState } from "@/components/receipt/error-state";
+import { ReceiptHeader } from "@/components/receipt/receipt-header";
+import { ReceiptActions } from "@/components/receipt/receipt-actions";
+import { PickupInfo } from "@/components/receipt/pickup-info";
+import { OrderDetails } from "@/components/receipt/order-details";
+import { OrderSummary } from "@/components/receipt/order-summary";
+import { PointsCard } from "@/components/receipt/points-card";
+import { SplitBill } from "@/components/receipt/split-bill";
+import { RestaurantFeedback } from "@/components/receipt/restaurant-feedback";
+import { Footer } from "@/components/receipt/footer";
+import { UnpaidWarning } from "@/components/receipt/unpaid-warning";
+import { RefundedWarning } from "@/components/receipt/refunded-warning";
 
 // Skeleton components
-import { ReceiptHeaderSkeleton } from "@/components/receipt/skeletons/ReceiptHeaderSkeleton";
-import { ReceiptActionsSkeleton } from "@/components/receipt/skeletons/ReceiptActionsSkeleton";
-import { PickupInfoSkeleton } from "@/components/receipt/skeletons/PickupInfoSkeleton";
-import { OrderDetailsSkeleton } from "@/components/receipt/skeletons/OrderDetailsSkeleton";
-import { OrderSummarySkeleton } from "@/components/receipt/skeletons/OrderSummarySkeleton";
-import { PointsCardSkeleton } from "@/components/receipt/skeletons/PointsCardSkeleton";
+import { ReceiptHeaderSkeleton } from "@/components/receipt/skeletons/receipt-header-skeleton";
+import { ReceiptActionsSkeleton } from "@/components/receipt/skeletons/receipt-actions-skeleton";
+import { PickupInfoSkeleton } from "@/components/receipt/skeletons/pickup-info-skeleton";
+import { OrderDetailsSkeleton } from "@/components/receipt/skeletons/order-details-skeleton";
+import { OrderSummarySkeleton } from "@/components/receipt/skeletons/order-summary-skeleton";
+import { PointsCardSkeleton } from "@/components/receipt/skeletons/points-card-skeleton";
 
 // Temporary data for development
 import { fakeReceiptData } from "@/utils/client";

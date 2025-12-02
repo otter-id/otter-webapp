@@ -1,27 +1,28 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { RestaurantHeader } from "@/components/order/header/restaurantHeader";
-import { StickyFooter } from "@/components/order/cart/stickyFooter";
-import { CategoryNav } from "@/components/order/menu/categoryNav";
-import { MenuItem } from "@/components/order/menu/menuItem";
-import { CartDrawer } from "@/components/order/cart/cartDrawer";
-import { ItemDrawer } from "@/components/order/item/itemDrawer";
-import { useCart } from "@/app/(order)/hooks/useCart";
-import { useScrollSync } from "@/app/(order)/hooks/useScroll";
-import { useRestaurant } from "@/app/(order)/hooks/useRestaurant";
-import { DeleteConfirmation } from "@/components/order/cart/deleteDialog";
+import { RestaurantHeader } from "@/components/order/header/restaurant-header";
+import { StickyFooter } from "@/components/order/cart/sticky-footer";
+import { CategoryNav } from "@/components/order/menu/category-nav";
+import { MenuItem } from "@/components/order/menu/menu-item";
+import { CartDrawer } from "@/components/order/cart/cart-drawer";
+import { ItemDrawer } from "@/components/order/item/item-drawer";
+import { useCart } from "@/app/(order)/hooks/use-cart";
+import { useScrollSync } from "@/app/(order)/hooks/use-scroll";
+import { useRestaurant } from "@/app/(order)/hooks/use-restaurant";
+import { DeleteConfirmation } from "@/components/order/cart/delete-dialog";
 import { MenuItem as MenuItemType } from "@/types/restaurant";
 import { toast } from "sonner";
 import { Check, X, AlertTriangle } from "lucide-react";
-import { SearchOverlay } from "@/components/order/search/searchOverlay";
+import { SearchOverlay } from "@/components/order/search/search-overlay";
 import { Button } from "@/components/ui/button";
-import { RestaurantHeaderSkeleton } from "@/components/order/skeletons/RestaurantHeaderSkeleton";
-import { SearchOverlaySkeleton } from "@/components/order/skeletons/SearchOverlaySkeleton";
-import { CategoryNavSkeleton } from "@/components/order/skeletons/CategoryNavSkeleton";
+import { RestaurantHeaderSkeleton } from "@/components/order/skeletons/restaurant-header-skeleton";
+import { SearchOverlaySkeleton } from "@/components/order/skeletons/search-overlay-skeleton";
+import { CategoryNavSkeleton } from "@/components/order/skeletons/category-nav-skeleton";
+// import { CartSkeleton } from "@/components/order/skeletons/CartSkeleton";
+import { MenuItemSkeleton } from "@/components/order/skeletons/menu-item-skeleton";
+import { StickyFooterSkeleton } from "@/components/order/skeletons/sticky-footer-skeleton";
 import { Skeleton } from "@/components/ui/skeleton";
-import { MenuItemSkeleton } from "@/components/order/skeletons/MenuItemSkeleton";
-import { StickyFooterSkeleton } from "@/components/order/skeletons/StickyFooterSkeleton";
 
 interface FoodOrderingClientProps {
   storeId: string;
