@@ -5,7 +5,7 @@ import Image from "next/image";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { motion } from "framer-motion";
-import { cardVariants } from "../../app/receipt/utils/animations";
+import { cardVariants } from "@/app/receipt/utils/animations";
 import { ReceiptData } from "@/types/receipt";
 import OrderStepper from "@/components/receipt/order-stepper";
 const MotionCard = motion.create(Card);
@@ -45,8 +45,8 @@ export function ReceiptHeader({ data }: ReceiptHeaderProps) {
           <Badge
             variant={data.status === "PAID" ? "default" : "secondary"}
             className={`mb-2 ${data.status === "PAID"
-                ? "bg-green-500 hover:bg-green-600 text-white"
-                : ""
+              ? "bg-green-500 hover:bg-green-600 text-white"
+              : ""
               }`}
           >
             {data.status}

@@ -5,7 +5,7 @@ import { Separator } from "@/components/ui/separator";
 import { Button } from "@/components/ui/button";
 import { Users } from "lucide-react";
 import { motion } from "framer-motion";
-import { cardVariants } from "../../app/receipt/utils/animations";
+import { cardVariants } from "@/app/receipt/utils/animations";
 import { ReceiptData } from "@/types/receipt";
 
 const MotionCard = motion(Card);
@@ -31,7 +31,7 @@ export function OrderSummary({ data, onSplitBill }: OrderSummaryProps) {
           <span>Service Charge</span>
           <span>Rp {data.service.toLocaleString()}</span>
         </div>
-        <Separator  orientation="horizontal" />
+        <Separator orientation="horizontal" />
         <div className="flex justify-between font-bold">
           <span>Total</span>
           <span>Rp {data.total.toLocaleString()}</span>

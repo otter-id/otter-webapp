@@ -2,7 +2,7 @@
 
 import Image from "next/image";
 import { motion } from "framer-motion";
-import { cardVariants } from "../../app/receipt/utils/animations";
+import { cardVariants } from "@/app/receipt/utils/animations";
 
 export function Footer() {
   return (

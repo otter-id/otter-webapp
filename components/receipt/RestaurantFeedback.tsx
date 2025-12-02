@@ -4,7 +4,7 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { ThumbsUp, ThumbsDown, Send } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
-import { cardVariants } from "../../app/receipt/utils/animations";
+import { cardVariants } from "@/app/receipt/utils/animations";
 import { useState } from "react";
 import { cn } from "@/utils/client";
 import { Textarea } from "@/components/ui/textarea";

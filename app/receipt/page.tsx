@@ -6,36 +6,36 @@ import { motion } from "framer-motion";
 import { useReceiptData } from "./hooks/useReceiptData";
 import { useSplitBill } from "./hooks/useSplitBill";
 import { containerVariants } from "./utils/animations";
-import { ErrorState } from "../../components/receipt/ErrorState";
-import { ReceiptHeader } from "../../components/receipt/ReceiptHeader";
-import { ReceiptActions } from "../../components/receipt/ReceiptActions";
-import { PickupInfo } from "../../components/receipt/PickupInfo";
-import { OrderDetails } from "../../components/receipt/OrderDetails";
-import { OrderSummary } from "../../components/receipt/OrderSummary";
-import { PointsCard } from "../../components/receipt/PointsCard";
-import { SplitBill } from "../../components/receipt/SplitBill";
-import { RestaurantFeedback } from "../../components/receipt/RestaurantFeedback";
-import { Footer } from "../../components/receipt/Footer";
-import { UnpaidWarning } from "../../components/receipt/UnpaidWarning";
-import { RefundedWarning } from "../../components/receipt/RefundedWarning";
+import { ErrorState } from "@/components/receipt/ErrorState";
+import { ReceiptHeader } from "@/components/receipt/ReceiptHeader";
+import { ReceiptActions } from "@/components/receipt/ReceiptActions";
+import { PickupInfo } from "@/components/receipt/PickupInfo";
+import { OrderDetails } from "@/components/receipt/OrderDetails";
+import { OrderSummary } from "@/components/receipt/OrderSummary";
+import { PointsCard } from "@/components/receipt/PointsCard";
+import { SplitBill } from "@/components/receipt/SplitBill";
+import { RestaurantFeedback } from "@/components/receipt/RestaurantFeedback";
+import { Footer } from "@/components/receipt/Footer";
+import { UnpaidWarning } from "@/components/receipt/UnpaidWarning";
+import { RefundedWarning } from "@/components/receipt/RefundedWarning";
 
 // Skeleton components
-import { ReceiptHeaderSkeleton } from "../../components/receipt/skeletons/ReceiptHeaderSkeleton";
-import { ReceiptActionsSkeleton } from "../../components/receipt/skeletons/ReceiptActionsSkeleton";
-import { PickupInfoSkeleton } from "../../components/receipt/skeletons/PickupInfoSkeleton";
-import { OrderDetailsSkeleton } from "../../components/receipt/skeletons/OrderDetailsSkeleton";
-import { OrderSummarySkeleton } from "../../components/receipt/skeletons/OrderSummarySkeleton";
-import { PointsCardSkeleton } from "../../components/receipt/skeletons/PointsCardSkeleton";
+import { ReceiptHeaderSkeleton } from "@/components/receipt/skeletons/ReceiptHeaderSkeleton";
+import { ReceiptActionsSkeleton } from "@/components/receipt/skeletons/ReceiptActionsSkeleton";
+import { PickupInfoSkeleton } from "@/components/receipt/skeletons/PickupInfoSkeleton";
+import { OrderDetailsSkeleton } from "@/components/receipt/skeletons/OrderDetailsSkeleton";
+import { OrderSummarySkeleton } from "@/components/receipt/skeletons/OrderSummarySkeleton";
+import { PointsCardSkeleton } from "@/components/receipt/skeletons/PointsCardSkeleton";
 
 // Temporary data for development
-import { fakeData } from "../../data/receipt-sample";
+import { fakeReceiptData } from "@/utils/client";
 
 const ReceiptContent = () => {
   const searchParams = useSearchParams();
   const orderId = searchParams.get("id");
   const storeId = searchParams.get("sid");
   const { receiptData, isLoading, error } = useReceiptData(orderId, storeId);
-  const data = isLoading ? fakeData.data : receiptData?.data || fakeData.data;
+  const data = isLoading ? fakeReceiptData.data : receiptData?.data || fakeReceiptData.data;
   const splitBillState = useSplitBill(data);
 
   // Show error if we have no order ID

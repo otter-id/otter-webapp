@@ -14,9 +14,9 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { motion } from "framer-motion";
-import { cardVariants } from "../../app/receipt/utils/animations";
+import { cardVariants } from "@/app/receipt/utils/animations";
 import { ReceiptData } from "@/types/receipt";
-import { useSplitBill } from "../../app/receipt/hooks/useSplitBill";
+import { useSplitBill } from "@/app/receipt/hooks/useSplitBill";
 import { Badge } from "@/components/ui/badge";
 
 const MotionCard = motion(Card);
@@ -136,9 +136,9 @@ export function SplitBill({ data, onClose, splitBillState }: SplitBillProps) {
                       {item.modifiers.length > 0 && (
                         <span className="text-sm text-muted-foreground ml-2">
                           (
-                        {item.modifiers
-                          .map((mod) => mod.name)
-                          .join(", ")}
+                          {item.modifiers
+                            .map((mod) => mod.name)
+                            .join(", ")}
                           )
                         </span>
                       )}
