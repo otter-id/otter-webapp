@@ -47,10 +47,10 @@ export function UpsellModal({ isOpen, onOpenChange, recommendations, onAddItem, 
           <DialogTitle>Complete Your Order</DialogTitle>
           <DialogDescription>Popular items that go well with your order</DialogDescription>
         </DialogHeader>
-        <div className="px-6 pb-4 space-y-4">
+        <div className="space-y-4 px-6 pb-4">
           {recommendations.map((item, index) => (
             <motion.div key={`upsell-${item.$id}-${index}`} initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} className="flex gap-3">
-              <div className="relative w-20 h-20 flex-shrink-0 rounded-lg overflow-hidden bg-muted">
+              <div className="relative h-20 w-20 flex-shrink-0 overflow-hidden rounded-lg bg-muted">
                 {item.image && !imageErrors[item.$id] ? (
                   <Image
                     onDragStart={(event) => event.preventDefault()}
@@ -61,22 +61,22 @@ export function UpsellModal({ isOpen, onOpenChange, recommendations, onAddItem, 
                     onError={() => handleImageError(item.$id)}
                   />
                 ) : (
-                  <div className="w-full h-full rounded-lg overflow-hidden bg-yellow-50 border-2 border-yellow-100 flex items-center justify-center p-2 text-center">
-                    <span className="text-yellow-800 font-medium text-xs whitespace-pre-line">{formatTextForPlaceholder(item.name, 1, 2)}</span>
+                  <div className="flex h-full w-full items-center justify-center overflow-hidden rounded-lg border-2 border-yellow-100 bg-yellow-50 p-2 text-center">
+                    <span className="whitespace-pre-line font-medium text-xs text-yellow-800">{formatTextForPlaceholder(item.name, 1, 2)}</span>
                   </div>
                 )}
               </div>
-              <div className="flex-1 min-w-0">
-                <div className="flex justify-between items-start gap-2">
+              <div className="min-w-0 flex-1">
+                <div className="flex items-start justify-between gap-2">
                   <div>
-                    <h3 className="font-medium leading-none mb-1">{item.name}</h3>
-                    <p className="text-sm text-muted-foreground line-clamp-2">{item.description}</p>
-                    <p className="font-medium mt-1">{formatPrice(item.price)}</p>
+                    <h3 className="mb-1 font-medium leading-none">{item.name}</h3>
+                    <p className="line-clamp-2 text-muted-foreground text-sm">{item.description}</p>
+                    <p className="mt-1 font-medium">{formatPrice(item.price)}</p>
                   </div>
                   <Button
                     size="icon"
                     variant="default"
-                    className="rounded-full h-7 w-7 bg-black hover:bg-black/90 flex-shrink-0"
+                    className="h-7 w-7 flex-shrink-0 rounded-full bg-black hover:bg-black/90"
                     onClick={() => onAddItem(item)}
                   >
                     <Plus className={`h-4 w-4 transition-transform ${addedItems.includes(item.$id) ? "scale-150" : ""}`} />
@@ -86,7 +86,7 @@ export function UpsellModal({ isOpen, onOpenChange, recommendations, onAddItem, 
             </motion.div>
           ))}
         </div>
-        <div className="p-4 border-t space-y-2">
+        <div className="space-y-2 border-t p-4">
           <Button onClick={onContinue} className="w-full bg-black hover:bg-black/90">
             Continue to Payment
           </Button>

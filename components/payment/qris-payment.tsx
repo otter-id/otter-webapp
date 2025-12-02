@@ -28,7 +28,7 @@ export function QrisPayment({ amount, qrString, expiresAt, isLoading, generateQr
     }
 
     const updateTimeLeft = () => {
-      const now = new Date().getTime();
+      const now = Date.now();
       const expiry = new Date(expiresAt).getTime();
       const remaining = Math.max(0, Math.floor((expiry - now) / 1000));
       setTimeLeft(remaining);
@@ -64,30 +64,30 @@ export function QrisPayment({ amount, qrString, expiresAt, isLoading, generateQr
   return (
     <div className="space-y-5">
       {/* QR Code */}
-      <div className="bg-white border rounded-lg p-5 space-y-4">
-        <div className="relative aspect-square max-w-[240px] mx-auto bg-white p-4 rounded-lg">
+      <div className="space-y-4 rounded-lg border bg-white p-5">
+        <div className="relative mx-auto aspect-square max-w-[240px] rounded-lg bg-white p-4">
           {/* Selalu render QR code jika qrString ada, bahkan saat loading */}
           {qrString && <QRCode value={qrString} size={256} style={{ height: "auto", maxWidth: "100%", width: "100%" }} viewBox={`0 0 256 256`} />}
 
           {/* Tampilkan placeholder jika QR tidak ada & tidak sedang loading (kasus error) */}
           {!qrString && !isLoading && (
-            <div className="absolute inset-0 flex items-center justify-center bg-white/80 backdrop-blur-sm rounded-lg">
-              <RefreshCw className="h-8 w-8 text-gray-500 animate-spin" />
+            <div className="absolute inset-0 flex items-center justify-center rounded-lg bg-white/80 backdrop-blur-sm">
+              <RefreshCw className="h-8 w-8 animate-spin text-gray-500" />
             </div>
           )}
 
           {/* Tampilkan overlay loading di atas QR code yang ada */}
           {isLoading && (
-            <div className="absolute inset-0 flex items-center justify-center bg-white/80 backdrop-blur-sm rounded-lg">
-              <RefreshCw className="h-8 w-8 text-gray-500 animate-spin" />
+            <div className="absolute inset-0 flex items-center justify-center rounded-lg bg-white/80 backdrop-blur-sm">
+              <RefreshCw className="h-8 w-8 animate-spin text-gray-500" />
             </div>
           )}
         </div>
 
         {/* Amount */}
         <div className="text-center">
-          <div className="text-sm text-muted-foreground">Amount to pay</div>
-          <div className="text-xl font-bold">{formatPrice(amount)}</div>
+          <div className="text-muted-foreground text-sm">Amount to pay</div>
+          <div className="font-bold text-xl">{formatPrice(amount)}</div>
         </div>
 
         <Separator />
@@ -95,17 +95,17 @@ export function QrisPayment({ amount, qrString, expiresAt, isLoading, generateQr
         {/* Expiry Timer */}
         <div className="flex items-center justify-center text-center">
           <div>
-            <div className="text-sm text-muted-foreground">Expires in</div>
-            <div className={`font-medium ${timeLeft <= 10 ? "text-red-600 animate-pulse" : ""}`}>{formatTime(timeLeft)}</div>
+            <div className="text-muted-foreground text-sm">Expires in</div>
+            <div className={`font-medium ${timeLeft <= 10 ? "animate-pulse text-red-600" : ""}`}>{formatTime(timeLeft)}</div>
           </div>
         </div>
       </div>
 
       {/* Payment Instructions */}
-      <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-4">
+      <div className="rounded-lg border border-yellow-200 bg-yellow-50 p-4">
         <div className="text-sm text-yellow-800">
-          <p className="font-medium mb-1">How to Pay with QRIS:</p>
-          <ol className="list-decimal pl-5 space-y-1">
+          <p className="mb-1 font-medium">How to Pay with QRIS:</p>
+          <ol className="list-decimal space-y-1 pl-5">
             <li>Open your e-wallet app (DANA, OVO, GoPay, ShopeePay, etc.)</li>
             <li>
               You can <strong>scan the QR code</strong> above directly
@@ -119,7 +119,7 @@ export function QrisPayment({ amount, qrString, expiresAt, isLoading, generateQr
             </li>
           </ol>
 
-          <p className="text-xs mt-2 text-yellow-700">⚠️ This QR code expires when the timer runs out. If expired, refresh to get a new one.</p>
+          <p className="mt-2 text-xs text-yellow-700">⚠️ This QR code expires when the timer runs out. If expired, refresh to get a new one.</p>
         </div>
       </div>
     </div>

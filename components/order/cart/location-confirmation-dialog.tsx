@@ -32,14 +32,14 @@ export function LocationConfirmationDialog({ isOpen, onOpenChange, restaurant, o
         </DialogHeader>
 
         <div className="px-6 pb-4">
-          <div className="bg-gray-50 rounded-lg p-4 space-y-3">
+          <div className="space-y-3 rounded-lg bg-gray-50 p-4">
             <div>
               <h3 className="font-semibold text-lg">{restaurant.name}</h3>
-              <div className="flex items-center gap-2 text-sm text-gray-600 mt-1">
+              <div className="mt-1 flex items-center gap-2 text-gray-600 text-sm">
                 <MapPin className="h-4 w-4" />
                 <span>{restaurant.location}</span>
               </div>
-              {restaurant.address && <p className="text-sm text-gray-600 ml-6">{restaurant.address}</p>}
+              {restaurant.address && <p className="ml-6 text-gray-600 text-sm">{restaurant.address}</p>}
             </div>
 
             <div className="flex items-center gap-4 text-sm">
@@ -47,9 +47,9 @@ export function LocationConfirmationDialog({ isOpen, onOpenChange, restaurant, o
                 <Clock className="h-4 w-4 text-green-500" />
                 <span className="text-gray-600">
                   {restaurant.isOpen ? (
-                    <span className="text-green-600 font-medium">Open</span>
+                    <span className="font-medium text-green-600">Open</span>
                   ) : (
-                    <span className="text-red-600 font-medium">Closed</span>
+                    <span className="font-medium text-red-600">Closed</span>
                   )}
                 </span>
               </div>
@@ -57,7 +57,7 @@ export function LocationConfirmationDialog({ isOpen, onOpenChange, restaurant, o
           </div>
         </div>
 
-        <div className="p-6 pt-0 space-y-2">
+        <div className="space-y-2 p-6 pt-0">
           <Button onClick={handleConfirm} className="w-full bg-black hover:bg-black/90" disabled={!restaurant.isOpen}>
             {restaurant.isOpen ? "Confirm & Continue to Payment" : "Restaurant is Closed"}
           </Button>

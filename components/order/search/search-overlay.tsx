@@ -108,9 +108,9 @@ export function SearchOverlay({ menuItems, onItemClick, isOpen, onOpenChange, cl
       {/* Search Trigger */}
       <div className={cn("bg-white", className)}>
         <div className="px-4 py-3">
-          <div className="flex items-center gap-2 rounded-lg border bg-background p-2 py-3 cursor-pointer" onClick={() => onOpenChange(true)}>
-            <SearchIcon className="w-5 h-5 text-muted-foreground flex-shrink-0" />
-            <span className="text-muted-foreground text-base">Search menu...</span>
+          <div className="flex cursor-pointer items-center gap-2 rounded-lg border bg-background p-2 py-3" onClick={() => onOpenChange(true)}>
+            <SearchIcon className="h-5 w-5 flex-shrink-0 text-muted-foreground" />
+            <span className="text-base text-muted-foreground">Search menu...</span>
           </div>
         </div>
       </div>
@@ -124,7 +124,7 @@ export function SearchOverlay({ menuItems, onItemClick, isOpen, onOpenChange, cl
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
               exit={{ opacity: 0 }}
-              className="fixed inset-0 bg-black/60 z-50"
+              className="fixed inset-0 z-50 bg-black/60"
               onClick={() => onOpenChange(false)}
             />
 
@@ -133,23 +133,23 @@ export function SearchOverlay({ menuItems, onItemClick, isOpen, onOpenChange, cl
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
               exit={{ opacity: 0, y: 20 }}
-              className="fixed inset-0 z-50 flex flex-col pointer-events-none"
+              className="pointer-events-none fixed inset-0 z-50 flex flex-col"
             >
-              <div className="w-full max-w-md mx-auto h-full flex flex-col bg-white pointer-events-auto">
+              <div className="pointer-events-auto mx-auto flex h-full w-full max-w-md flex-col bg-white">
                 {/* Sticky Search Header */}
                 <div className="sticky top-0 z-10 border-b bg-white/80 backdrop-blur-xl">
-                  <div className="px-4 py-3 flex items-center gap-3">
-                    <Button variant="ghost" size="icon" className="h-10 w-10 rounded-full flex-shrink-0" onClick={() => onOpenChange(false)}>
+                  <div className="flex items-center gap-3 px-4 py-3">
+                    <Button variant="ghost" size="icon" className="h-10 w-10 flex-shrink-0 rounded-full" onClick={() => onOpenChange(false)}>
                       <ChevronLeft className="h-4 w-4" />
                     </Button>
-                    <div className="flex-1 flex items-center gap-2 rounded-md border bg-background p-2">
-                      <SearchIcon className="w-5 h-5 text-muted-foreground flex-shrink-0" />
+                    <div className="flex flex-1 items-center gap-2 rounded-md border bg-background p-2">
+                      <SearchIcon className="h-5 w-5 flex-shrink-0 text-muted-foreground" />
                       <Input
                         type="text"
                         placeholder="Search menu..."
                         value={searchQuery}
                         onChange={(e) => setSearchQuery(e.target.value)}
-                        className="border-0 bg-transparent p-0 focus-visible:ring-0 ring-0 text-base placeholder:text-muted-foreground"
+                        className="border-0 bg-transparent p-0 text-base ring-0 placeholder:text-muted-foreground focus-visible:ring-0"
                         autoFocus
                       />
                       {searchQuery && (
@@ -168,7 +168,7 @@ export function SearchOverlay({ menuItems, onItemClick, isOpen, onOpenChange, cl
                       <div className="space-y-6">
                         {Object.entries(getSearchResults()).map(([category, items]) => (
                           <div key={category}>
-                            <h3 className="text-sm font-medium text-muted-foreground mb-3">{category}</h3>
+                            <h3 className="mb-3 font-medium text-muted-foreground text-sm">{category}</h3>
                             <div className="space-y-4">
                               {items.map((item, index) => (
                                 <motion.div
@@ -195,13 +195,13 @@ export function SearchOverlay({ menuItems, onItemClick, isOpen, onOpenChange, cl
                           </div>
                         ))}
                         {Object.keys(getSearchResults()).length === 0 && (
-                          <div className="text-center py-8">
+                          <div className="py-8 text-center">
                             <p className="text-muted-foreground">No items found for "{searchQuery}"</p>
                           </div>
                         )}
                       </div>
                     ) : (
-                      <div className="text-center py-8">
+                      <div className="py-8 text-center">
                         <p className="text-muted-foreground">Start typing to search menu items</p>
                       </div>
                     )}

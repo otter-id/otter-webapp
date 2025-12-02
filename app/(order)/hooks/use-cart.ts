@@ -97,14 +97,14 @@ export function useCart(restaurant: Restaurant | null) {
   }, [currentCartItems, restaurant]);
 
   // Fungsi helper untuk membuat "tanda tangan" unik dari sebuah item
-  const generateItemSignature = (item: CartItem): string => {
+  const generateItemSignature = useCallback((item: CartItem): string => {
     const optionIds = Object.values(item.selectedOptions || {})
       .flat()
       .map((opt) => opt.$id)
       .sort()
       .join(",");
     return `${item.$id}|${optionIds}|note:${item.note || ""}`;
-  };
+  }, []);
 
   const addToCart = useCallback(
     (newItem: CartItem) => {
@@ -153,7 +153,7 @@ export function useCart(restaurant: Restaurant | null) {
         return updatedCart;
       });
     },
-    [restaurant],
+    [restaurant, generateItemSignature],
   );
 
   const updateCartItem = useCallback(
@@ -192,7 +192,7 @@ export function useCart(restaurant: Restaurant | null) {
 
       setEditingCartItem(null);
     },
-    [editingCartItem, restaurant],
+    [editingCartItem, restaurant, generateItemSignature],
   );
 
   const updateItemQuantity = useCallback(

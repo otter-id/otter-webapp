@@ -35,7 +35,7 @@ export function RestaurantFeedback({ data }: { data: ReceiptData["data"] }) {
   return (
     <MotionCard variants={cardVariants} className="rounded-xl">
       <CardContent className="py-4">
-        <div className="text-center space-y-2">
+        <div className="space-y-2 text-center">
           <h3 className="font-medium text-black">How was your experience with {data.restaurantName}?</h3>
           <div className="flex justify-center gap-4">
             <Button
@@ -43,7 +43,7 @@ export function RestaurantFeedback({ data }: { data: ReceiptData["data"] }) {
               size="lg"
               className={cn(
                 "w-24 border border-green-500 hover:bg-green-50",
-                feedback === "like" && "bg-green-500 hover:bg-green-500 text-white hover:text-white",
+                feedback === "like" && "bg-green-500 text-white hover:bg-green-500 hover:text-white",
               )}
               onClick={() => handleFeedback("like")}
               disabled={feedback !== null}
@@ -71,7 +71,7 @@ export function RestaurantFeedback({ data }: { data: ReceiptData["data"] }) {
               size="lg"
               className={cn(
                 "w-24 border border-red-500 hover:bg-red-50",
-                feedback === "dislike" && "bg-red-500 hover:bg-red-500 text-white hover:text-white",
+                feedback === "dislike" && "bg-red-500 text-white hover:bg-red-500 hover:text-white",
               )}
               onClick={() => handleFeedback("dislike")}
               disabled={feedback !== null}
@@ -82,7 +82,7 @@ export function RestaurantFeedback({ data }: { data: ReceiptData["data"] }) {
           <AnimatePresence mode="wait">
             {feedback === "dislike" && !isSubmitted && (
               <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0 }} className="space-y-3">
-                <p className="text-sm text-muted-foreground">Tell us what we can improve</p>
+                <p className="text-muted-foreground text-sm">Tell us what we can improve</p>
                 <Textarea
                   placeholder="Your feedback helps us get better"
                   value={improvementFeedback}
@@ -100,7 +100,7 @@ export function RestaurantFeedback({ data }: { data: ReceiptData["data"] }) {
                 initial={{ opacity: 0, y: 10 }}
                 animate={{ opacity: 1, y: 0 }}
                 exit={{ opacity: 0 }}
-                className="text-sm text-muted-foreground"
+                className="text-muted-foreground text-sm"
               >
                 Thank you for your feedback!
               </motion.p>

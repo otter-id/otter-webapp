@@ -21,7 +21,7 @@ export function CartTotals({ totals, isFeesExpanded, onFeesExpandedChange }: Car
             <span>{formatPrice(totals.subtotal)}</span>
           </div>
           <CollapsibleTrigger asChild>
-            <Button variant="ghost" className="w-full justify-between h-auto p-0 hover:bg-transparent">
+            <Button variant="ghost" className="h-auto w-full justify-between p-0 hover:bg-transparent">
               <span className="text-muted-foreground">Taxes & Fees</span>
               <div className="flex items-center gap-2">
                 <span>{formatPrice(totals.tax + totals.serviceFee)}</span>
@@ -31,11 +31,11 @@ export function CartTotals({ totals, isFeesExpanded, onFeesExpandedChange }: Car
           </CollapsibleTrigger>
           <CollapsibleContent className="space-y-2">
             <div className="flex justify-between pl-4">
-              <span className="text-sm text-muted-foreground">Tax ({totals.taxPercentage}%)</span>
+              <span className="text-muted-foreground text-sm">Tax ({totals.taxPercentage}%)</span>
               <span className="text-sm">{formatPrice(totals.tax)}</span>
             </div>
             <div className="flex justify-between pl-4">
-              <span className="text-sm text-muted-foreground">Service Fee ({totals.servicePercentage}%)</span>
+              <span className="text-muted-foreground text-sm">Service Fee ({totals.servicePercentage}%)</span>
               <span className="text-sm">{formatPrice(totals.serviceFee)}</span>
             </div>
           </CollapsibleContent>

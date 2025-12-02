@@ -257,7 +257,7 @@ export function ItemDrawer({
     <Drawer open={isOpen} onOpenChange={onOpenChange}>
       {/* className kamu tetap */}
       <DrawerContent
-        className="max-h-[80vh] p-0 max-w-md mx-auto rounded-t-[20px]"
+        className="mx-auto max-h-[80vh] max-w-md rounded-t-[20px] p-0"
         // cuma gaya transisinya aja
         style={{
           maxHeight: isExpanded ? "100vh" : "80vh",
@@ -265,19 +265,19 @@ export function ItemDrawer({
         }}
       >
         <div className="h-full overflow-y-auto" ref={scrollRef} onScroll={handleScroll}>
-          <DrawerHeader className="px-4 py-3 border-b sticky top-0 bg-white z-10">
+          <DrawerHeader className="sticky top-0 z-10 border-b bg-white px-4 py-3">
             <div className="flex items-center justify-between">
               <DrawerTitle>Customize Order</DrawerTitle>
-              <Button variant="ghost" size="icon" className="rounded-full h-8 w-8" onClick={() => onOpenChange(false)}>
+              <Button variant="ghost" size="icon" className="h-8 w-8 rounded-full" onClick={() => onOpenChange(false)}>
                 <X className="h-4 w-4" />
               </Button>
             </div>
           </DrawerHeader>
 
           {selectedItem && (
-            <div className="px-4 py-6 space-y-6">
+            <div className="space-y-6 px-4 py-6">
               <div className="space-y-4">
-                <div className="aspect-square relative rounded-lg overflow-hidden bg-muted">
+                <div className="relative aspect-square overflow-hidden rounded-lg bg-muted">
                   {selectedItem.image && !imageError ? (
                     <Image
                       onDragStart={(event) => event.preventDefault()}
@@ -289,22 +289,22 @@ export function ItemDrawer({
                       onError={() => setImageError(true)}
                     />
                   ) : (
-                    <div className="w-full h-full bg-yellow-50 border-2 border-yellow-100 flex items-center justify-center p-4 text-center">
-                      <span className="text-yellow-800 font-bold text-xl whitespace-pre-line">
+                    <div className="flex h-full w-full items-center justify-center border-2 border-yellow-100 bg-yellow-50 p-4 text-center">
+                      <span className="whitespace-pre-line font-bold text-xl text-yellow-800">
                         {formatTextForPlaceholder(selectedItem.name, 2, 4)}
                       </span>
                     </div>
                   )}
                 </div>
                 <div>
-                  <h2 className="text-xl font-bold">{selectedItem.name}</h2>
-                  <p className="text-muted-foreground mt-1">{selectedItem.description}</p>
+                  <h2 className="font-bold text-xl">{selectedItem.name}</h2>
+                  <p className="mt-1 text-muted-foreground">{selectedItem.description}</p>
                   <div className="flex flex-col items-start">
                     {!selectedItem.discountPrice ? (
                       <p className="font-bold">{formatPrice(selectedItem.price)}</p>
                     ) : (
                       <>
-                        <p className="text-sm text-muted-foreground line-through">{formatPrice(selectedItem.price)}</p>
+                        <p className="text-muted-foreground text-sm line-through">{formatPrice(selectedItem.price)}</p>
                         <p className="font-bold">{formatPrice(selectedItem.discountPrice)}</p>
                       </>
                     )}
@@ -315,7 +315,7 @@ export function ItemDrawer({
               <Separator />
 
               <div>
-                <h3 className="font-semibold mb-3">Quantity</h3>
+                <h3 className="mb-3 font-semibold">Quantity</h3>
                 <div className="flex items-center gap-3">
                   <Button
                     variant="outline"
@@ -326,7 +326,7 @@ export function ItemDrawer({
                   >
                     <Minus className="h-4 w-4" />
                   </Button>
-                  <span className="font-medium text-lg w-8 text-center">{quantity}</span>
+                  <span className="w-8 text-center font-medium text-lg">{quantity}</span>
                   <Button variant="outline" size="icon" className="h-8 w-8 rounded-full" onClick={() => setQuantity((q) => q + 1)}>
                     <Plus className="h-4 w-4" />
                   </Button>
@@ -354,7 +354,7 @@ export function ItemDrawer({
                     <div className="flex items-center justify-between">
                       <div>
                         <h3 className="font-semibold">
-                          {category.name} {requirementText && <span className="text-sm font-normal text-muted-foreground">{requirementText}</span>}
+                          {category.name} {requirementText && <span className="font-normal text-muted-foreground text-sm">{requirementText}</span>}
                         </h3>
                       </div>
                       <div className="flex items-center gap-2">
@@ -366,12 +366,12 @@ export function ItemDrawer({
                         )}
                         {minAmount > 0 &&
                           (isRequirementMet ? (
-                            <Badge className="bg-green-100 text-green-700 hover:bg-green-100 flex gap-1">
+                            <Badge className="flex gap-1 bg-green-100 text-green-700 hover:bg-green-100">
                               <Check className="h-3 w-3" />
                               <span>Terpilih</span>
                             </Badge>
                           ) : (
-                            <Badge className="bg-red-100 text-red-700 flex gap-1 hover:bg-red-100">
+                            <Badge className="flex gap-1 bg-red-100 text-red-700 hover:bg-red-100">
                               <AlertTriangle className="h-3 w-3" />
                               <span>Wajib</span>
                             </Badge>
@@ -410,7 +410,7 @@ export function ItemDrawer({
                             return (
                               <div
                                 key={option.$id}
-                                className={`flex items-center justify-between py-2 px-3 border rounded-md transition-colors ${
+                                className={`flex items-center justify-between rounded-md border px-3 py-2 transition-colors ${
                                   !isOutOfStock ? "cursor-pointer hover:bg-accent" : "cursor-not-allowed opacity-60"
                                 }`}
                                 onClick={() => {
@@ -426,7 +426,7 @@ export function ItemDrawer({
                                   <RadioGroupItem value={option.$id} id={option.$id} disabled={isOutOfStock} />
                                   <Label htmlFor={option.$id} className={`${!isOutOfStock ? "cursor-pointer" : "cursor-not-allowed text-gray-400"}`}>
                                     {option.name}
-                                    {isOutOfStock && <span className="ml-2 text-xs text-red-500">(Out of Stock)</span>}
+                                    {isOutOfStock && <span className="ml-2 text-red-500 text-xs">(Out of Stock)</span>}
                                   </Label>
                                   {option.description && (
                                     <Button
@@ -446,7 +446,7 @@ export function ItemDrawer({
                                   )}
                                 </div>
 
-                                {option.price > 0 && <span className="text-sm font-medium">+{formatPrice(option.price)}</span>}
+                                {option.price > 0 && <span className="font-medium text-sm">+{formatPrice(option.price)}</span>}
                               </div>
                             );
                           })}
@@ -469,7 +469,7 @@ export function ItemDrawer({
                           return (
                             <div
                               key={option.$id}
-                              className={`flex items-center justify-between py-2 px-3 border rounded-md transition-colors ${
+                              className={`flex items-center justify-between rounded-md border px-3 py-2 transition-colors ${
                                 (!maxReached || isSelected) && !isOutOfStock ? "cursor-pointer hover:bg-accent" : "cursor-not-allowed opacity-60"
                               }`}
                               onClick={() => {
@@ -480,7 +480,7 @@ export function ItemDrawer({
                             >
                               <Label
                                 htmlFor={option.$id}
-                                className={`flex items-center gap-3 flex-1 ${
+                                className={`flex flex-1 items-center gap-3 ${
                                   (!maxReached || isSelected) && !isOutOfStock ? "cursor-pointer" : "cursor-not-allowed"
                                 }`}
                                 onClick={(e) => e.stopPropagation()}
@@ -497,7 +497,7 @@ export function ItemDrawer({
                                 />
                                 <span className={`${(maxReached && !isSelected) || isOutOfStock ? "text-gray-400" : ""}`}>
                                   {option.name}
-                                  {isOutOfStock && <span className="ml-2 text-xs text-red-500">(Out of Stock)</span>}
+                                  {isOutOfStock && <span className="ml-2 text-red-500 text-xs">(Out of Stock)</span>}
                                 </span>
                                 {option.description && (
                                   <Button
@@ -517,7 +517,7 @@ export function ItemDrawer({
                                 )}
                               </Label>
 
-                              {option.price > 0 && <span className="text-sm font-medium pl-2">+{formatPrice(option.price)}</span>}
+                              {option.price > 0 && <span className="pl-2 font-medium text-sm">+{formatPrice(option.price)}</span>}
                             </div>
                           );
                         })}
@@ -527,7 +527,7 @@ export function ItemDrawer({
                 );
               })}
               <div>
-                <h3 className="font-semibold mb-3">Order Notes</h3>
+                <h3 className="mb-3 font-semibold">Order Notes</h3>
                 <Textarea
                   placeholder="Add any special requests, allergies, dietary restrictions, etc."
                   className="resize-none"
@@ -539,7 +539,7 @@ export function ItemDrawer({
             </div>
           )}
 
-          <DrawerFooter className="border-t sticky bottom-0 bg-white z-10">
+          <DrawerFooter className="sticky bottom-0 z-10 border-t bg-white">
             <Button className="w-full" size="lg" onClick={handleSubmit} disabled={!selectedItem || isRequiredOptionsMissing()}>
               {editingCartItem ? `Update Item • ${formatPrice(calculateTotalPrice())}` : `Add to Cart • ${formatPrice(calculateTotalPrice())}`}
             </Button>
@@ -550,9 +550,9 @@ export function ItemDrawer({
       <Dialog open={infoOpen} onOpenChange={setInfoOpen}>
         <DialogContent className="max-w-sm [&>button]:hidden">
           <DialogHeader className="p-6 pb-4">
-            <div className="flex flex-col items-center text-center gap-2">
+            <div className="flex flex-col items-center gap-2 text-center">
               <DialogTitle>{pendingInfo?.title}</DialogTitle>
-              <DialogDescription className="whitespace-pre-wrap mt-2">{pendingInfo?.description}</DialogDescription>
+              <DialogDescription className="mt-2 whitespace-pre-wrap">{pendingInfo?.description}</DialogDescription>
             </div>
           </DialogHeader>
 

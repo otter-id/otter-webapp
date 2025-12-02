@@ -23,8 +23,8 @@ export function DeleteConfirmation({ isOpen, onOpenChange, item, onConfirm }: De
     <AlertDialog open={isOpen} onOpenChange={onOpenChange}>
       <AlertDialogContent className="max-w-[320px] rounded-lg bg-gradient-to-b from-red-50 to-white">
         <AlertDialogHeader className="space-y-3">
-          <div className="mx-auto w-12 h-12 rounded-full bg-red-100 flex items-center justify-center">
-            <AlertTriangle className="w-6 h-6 text-red-600" />
+          <div className="mx-auto flex h-12 w-12 items-center justify-center rounded-full bg-red-100">
+            <AlertTriangle className="h-6 w-6 text-red-600" />
           </div>
           <AlertDialogTitle className="text-center">Remove Item</AlertDialogTitle>
           <AlertDialogDescription className="text-center">Are you sure you want to remove this item from your cart?</AlertDialogDescription>
@@ -37,7 +37,7 @@ export function DeleteConfirmation({ isOpen, onOpenChange, item, onConfirm }: De
               }
               onOpenChange(false);
             }}
-            className="w-full bg-red-500 hover:bg-red-600 text-white rounded-full"
+            className="w-full rounded-full bg-red-500 text-white hover:bg-red-600"
           >
             Remove
           </AlertDialogAction>

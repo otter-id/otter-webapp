@@ -28,7 +28,7 @@ export const useReceiptData = (orderId: string | null, storeId: string | null) =
     };
 
     fetchReceiptData();
-  }, [orderId]);
+  }, [orderId, storeId]);
 
   return { receiptData, isLoading, error };
 };

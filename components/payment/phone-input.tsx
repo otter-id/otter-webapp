@@ -81,19 +81,19 @@ export function PhoneInput({ value, onChange, className, disabled = false }: Pho
       <div className="flex">
         <DropdownMenu>
           <DropdownMenuTrigger asChild>
-            <Button variant="outline" className="flex items-center gap-1 px-3 rounded-r-none border-r-0 focus:ring-0" disabled={disabled}>
+            <Button variant="outline" className="flex items-center gap-1 rounded-r-none border-r-0 px-3 focus:ring-0" disabled={disabled}>
               <span className="text-base">{selectedCountry.flag}</span>
-              <span className="text-xs font-medium">{selectedCountry.dialCode}</span>
+              <span className="font-medium text-xs">{selectedCountry.dialCode}</span>
               <ChevronDown className="h-3 w-3 opacity-50" />
             </Button>
           </DropdownMenuTrigger>
           <DropdownMenuContent align="start" className="max-h-[300px] overflow-y-auto">
             {countries.map((country) => (
-              <DropdownMenuItem key={country.code} className="flex items-center gap-2 cursor-pointer" onClick={() => handleCountrySelect(country)}>
+              <DropdownMenuItem key={country.code} className="flex cursor-pointer items-center gap-2" onClick={() => handleCountrySelect(country)}>
                 <span className="text-base">{country.flag}</span>
                 <span className="text-sm">{country.name}</span>
-                <span className="text-xs text-muted-foreground ml-auto">{country.dialCode}</span>
-                {selectedCountry.code === country.code && <Check className="h-4 w-4 ml-2" />}
+                <span className="ml-auto text-muted-foreground text-xs">{country.dialCode}</span>
+                {selectedCountry.code === country.code && <Check className="ml-2 h-4 w-4" />}
               </DropdownMenuItem>
             ))}
           </DropdownMenuContent>
@@ -107,7 +107,7 @@ export function PhoneInput({ value, onChange, className, disabled = false }: Pho
           disabled={disabled}
         />
       </div>
-      {phoneNumber && !isValid && !disabled && <p className="text-xs text-red-500 mt-1">Please enter a valid phone number</p>}
+      {phoneNumber && !isValid && !disabled && <p className="mt-1 text-red-500 text-xs">Please enter a valid phone number</p>}
     </div>
   );
 }

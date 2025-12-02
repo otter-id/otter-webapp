@@ -12,7 +12,7 @@ export function highlightText(text: string, query: string): JSX.Element | string
     <>
       {parts.map((part, i) =>
         part.toLowerCase() === query.toLowerCase() ? (
-          <mark key={i} className="bg-yellow-200 dark:bg-yellow-900/50 rounded px-0.5">
+          <mark key={i} className="rounded bg-yellow-200 px-0.5 dark:bg-yellow-900/50">
             {part}
           </mark>
         ) : (

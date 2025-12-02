@@ -33,20 +33,20 @@ export function ReceiptHeader({ data }: ReceiptHeaderProps) {
         />
         <div>
           <CardTitle className="text-xl">{data.restaurantName}</CardTitle>
-          <p className="text-sm text-muted-foreground">{data.restaurantAddress}</p>
+          <p className="text-muted-foreground text-sm">{data.restaurantAddress}</p>
         </div>
       </CardHeader>
       <CardContent>
-        <div className="text-center py-4">
-          <p className="text-5xl font-bold mb-1 text-[#F2C94C]">#{data.orderNumber}</p>
+        <div className="py-4 text-center">
+          <p className="mb-1 font-bold text-5xl text-[#F2C94C]">#{data.orderNumber}</p>
           <Badge
             variant={data.status === "PAID" ? "default" : "secondary"}
-            className={`mb-2 ${data.status === "PAID" ? "bg-green-500 hover:bg-green-600 text-white" : ""}`}
+            className={`mb-2 ${data.status === "PAID" ? "bg-green-500 text-white hover:bg-green-600" : ""}`}
           >
             {data.status}
           </Badge>
-          <p className="text-2xl font-semibold mb-2">{data.firstName}</p>
-          <p className="text-sm text-muted-foreground">{format(orderDate, "d MMM yyyy | HH:mm")}</p>
+          <p className="mb-2 font-semibold text-2xl">{data.firstName}</p>
+          <p className="text-muted-foreground text-sm">{format(orderDate, "d MMM yyyy | HH:mm")}</p>
         </div>
         <OrderStepper orderStatus={data.orderStatus} paymentStatus={data.status} />
       </CardContent>

@@ -47,18 +47,18 @@ export function OrderDetails({ data }: OrderDetailsProps) {
                   alt={item.name}
                   width={96}
                   height={80}
-                  className="w-24 h-20 object-cover rounded-md flex-shrink-0"
+                  className="h-20 w-24 flex-shrink-0 rounded-md object-cover"
                   draggable={false}
                   onError={() => handleImageError(index)}
                 />
               ) : (
-                <div className="w-24 h-20 bg-yellow-50 border-2 border-yellow-100 rounded-md flex-shrink-0 flex items-center justify-center">
-                  <span className="text-yellow-800 text-sm text-center px-2">{item.name}</span>
+                <div className="flex h-20 w-24 flex-shrink-0 items-center justify-center rounded-md border-2 border-yellow-100 bg-yellow-50">
+                  <span className="px-2 text-center text-sm text-yellow-800">{item.name}</span>
                 </div>
               )}
               <div className="flex-grow space-y-1">
-                <div className="flex justify-between items-start">
-                  <span className="font-medium pr-2 break-words" style={{ maxWidth: "calc(100% - 80px)" }}>
+                <div className="flex items-start justify-between">
+                  <span className="break-words pr-2 font-medium" style={{ maxWidth: "calc(100% - 80px)" }}>
                     {item.name}
                   </span>
                   <span className="whitespace-nowrap">Rp {item.price.toLocaleString()}</span>

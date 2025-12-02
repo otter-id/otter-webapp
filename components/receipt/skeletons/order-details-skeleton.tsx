@@ -12,9 +12,9 @@ export function OrderDetailsSkeleton() {
         {[1, 2, 3].map((i) => (
           <div key={i}>
             <div className="flex space-x-4">
-              <div className={`${skeletonClass} w-24 h-20 rounded-md flex-shrink-0`} />
+              <div className={`${skeletonClass} h-20 w-24 flex-shrink-0 rounded-md`} />
               <div className="flex-grow space-y-2">
-                <div className="flex justify-between items-start">
+                <div className="flex items-start justify-between">
                   <div className={`${skeletonClass} h-5 w-2/3 rounded-md`} />
                   <div className={`${skeletonClass} h-5 w-1/4 rounded-md`} />
                 </div>
@@ -29,7 +29,7 @@ export function OrderDetailsSkeleton() {
                 </div>
               </div>
             </div>
-            {i < 3 && <Separator className="bg-yellow-100 mt-3" />}
+            {i < 3 && <Separator className="mt-3 bg-yellow-100" />}
           </div>
         ))}
       </CardContent>
