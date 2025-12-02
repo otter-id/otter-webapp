@@ -104,14 +104,22 @@ export function QrisPayment({ amount, qrString, expiresAt, isLoading, generateQr
       {/* Payment Instructions */}
       <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-4">
         <div className="text-sm text-yellow-800">
-          <p className="font-medium mb-1">Payment Instructions:</p>
+          <p className="font-medium mb-1">How to Pay with QRIS:</p>
           <ol className="list-decimal pl-5 space-y-1">
-            <li>Open your e-wallet app (GoPay, OVO, DANA, etc.)</li>
-            <li>Scan the QR code above</li>
-            <li>Confirm the payment amount</li>
-            <li>Complete the payment in your app</li>
-            <li>Click “Check Payment Status” below</li>
+            <li>Open your e-wallet app (DANA, OVO, GoPay, ShopeePay, etc.)</li>
+            <li>
+              You can <strong>scan the QR code</strong> above directly
+            </li>
+            <li>
+              Or <strong>take a screenshot</strong> of this QR and upload it from your gallery
+            </li>
+            <li>Make sure the amount is correct and complete the payment</li>
+            <li>
+              Tap the <strong>“Check Payment Status”</strong> button below
+            </li>
           </ol>
+
+          <p className="text-xs mt-2 text-yellow-700">⚠️ This QR code expires when the timer runs out. If expired, refresh to get a new one.</p>
         </div>
       </div>
     </div>
