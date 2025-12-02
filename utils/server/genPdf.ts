@@ -3,7 +3,7 @@ import { format } from "date-fns";
 import { ReceiptData } from "@/types/receipt";
 import QRCode from "qrcode";
 
-export async function generateReceiptPDF(
+export async function genReceiptPDF(
   data: ReceiptData["data"],
   orderId: string
 ) {

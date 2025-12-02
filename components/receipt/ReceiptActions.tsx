@@ -4,7 +4,7 @@ import { Button } from "@/components/ui/button";
 import { buttonVariants } from "@/app/receipt/utils/animations";
 import { Share, FileDown } from "lucide-react";
 import { ReceiptData } from "@/types/receipt";
-import { generateReceiptPDF } from "@/utils/generatePdf";
+import { genReceiptPDF } from "@/utils/server";
 import { motion } from "framer-motion";
 interface ReceiptActionsProps {
   data: ReceiptData["data"];
@@ -16,7 +16,7 @@ const MotionButton = motion.create(Button);
 export function ReceiptActions({ data, orderId }: ReceiptActionsProps) {
   const generatePDF = async () => {
     if (!orderId) return;
-    await generateReceiptPDF(data, orderId);
+    await genReceiptPDF(data, orderId);
   };
 
   return (

@@ -3,7 +3,7 @@ import { Button } from "@/components/ui/button"
 import { Separator } from "@/components/ui/separator"
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible"
 import { ChevronDown, ChevronUp } from "lucide-react"
-import { formatPrice } from "@/utils/utils"
+import { formatPrice } from "@/utils/client"
 
 interface CartTotalsProps {
   totals: CartTotalsType

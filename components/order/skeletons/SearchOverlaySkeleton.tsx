@@ -1,7 +1,7 @@
 "use client";
 
 import { Skeleton } from "@/components/ui/skeleton";
-import { cn } from "@/utils/utils";
+import { cn } from "@/utils/client";
 
 export function SearchOverlaySkeleton({ className }: { className?: string }) {
   return (

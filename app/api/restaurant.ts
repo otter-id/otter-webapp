@@ -1,5 +1,5 @@
 'use server'
-import { GenAuth } from "@/utils/genAuth";
+import { GenAuth } from "@/utils/server";
 
 const API_URL = process.env.API_URL;
 

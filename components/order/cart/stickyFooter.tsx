@@ -3,7 +3,7 @@
 import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { ShoppingBag } from "lucide-react";
-import { formatPrice } from "@/utils/utils";
+import { formatPrice } from "@/utils/client";
 
 interface StickyFooterProps {
   cartItemCount: number;

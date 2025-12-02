@@ -10,7 +10,7 @@ import {
 } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Plus } from "lucide-react";
-import { formatPrice, formatTextForPlaceholder } from "@/utils/utils";
+import { formatPrice, formatTextForPlaceholder } from "@/utils/client";
 import type { MenuItem } from "@/types/restaurant";
 import { motion } from "framer-motion";
 import { useState } from "react";

@@ -5,7 +5,7 @@ import { MenuItem as MenuItemType } from "@/types/restaurant";
 import Image from "next/image";
 import { Button } from "@/components/ui/button";
 import { Plus, ShoppingCart } from "lucide-react";
-import { formatPrice, formatTextForPlaceholder } from "@/utils/utils";
+import { formatPrice, formatTextForPlaceholder } from "@/utils/client";
 import { Badge } from "@/components/ui/badge";
 import { JSX } from "react";
 

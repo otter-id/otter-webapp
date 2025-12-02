@@ -5,7 +5,7 @@ import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Separator } from "@/components/ui/separator";
 import { RefreshCw } from "lucide-react";
-import { formatPrice } from "@/utils/utils";
+import { formatPrice } from "@/utils/client";
 import QRCode from "react-qr-code";
 
 interface QrisPaymentProps {

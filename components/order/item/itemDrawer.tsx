@@ -18,7 +18,7 @@ import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Label } from "@/components/ui/label";
 import { Badge } from "@/components/ui/badge";
-import { formatPrice, formatTextForPlaceholder } from "@/utils/utils";
+import { formatPrice, formatTextForPlaceholder } from "@/utils/client";
 import { Textarea } from "@/components/ui/textarea";
 import {
   Dialog,

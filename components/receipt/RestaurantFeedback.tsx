@@ -6,7 +6,7 @@ import { ThumbsUp, ThumbsDown, Send } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import { cardVariants } from "../../app/receipt/utils/animations";
 import { useState } from "react";
-import { cn } from "@/utils/utils";
+import { cn } from "@/utils/client";
 import { Textarea } from "@/components/ui/textarea";
 import { ReceiptData } from "@/types/receipt";
 const MotionCard = motion(Card);

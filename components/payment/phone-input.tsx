@@ -12,7 +12,7 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import { cn } from "@/utils/utils";
+import { cn } from "@/utils/client";
 
 interface Country {
   name: string;

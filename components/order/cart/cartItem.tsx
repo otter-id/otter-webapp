@@ -2,7 +2,7 @@ import type { CartItem as CartItemType } from "@/app/(order)/hooks/useCart";
 import Image from "next/image";
 import { Button } from "@/components/ui/button";
 import { Minus, Plus, Edit2, Trash2 } from "lucide-react";
-import { formatPrice } from "@/utils/utils";
+import { formatPrice } from "@/utils/client";
 
 interface CartItemProps {
   item: CartItemType;

@@ -1,6 +1,6 @@
 "use client";
 
-import { cn } from "@/utils/utils";
+import { cn } from "@/utils/client";
 import { Check } from "lucide-react";
 
 interface StepperProps {

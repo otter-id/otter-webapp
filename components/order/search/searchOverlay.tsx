@@ -7,8 +7,8 @@ import { Button } from "@/components/ui/button";
 import { X, SearchIcon, ChevronLeft } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import { MenuItem as MenuItemComponent } from "@/components/order/menu/menuItem";
-import { highlightText } from "@/utils/utils";
-import { cn } from "@/utils/utils";
+import { highlightText } from "@/utils/client";
+import { cn } from "@/utils/client";
 
 import { SearchResult, GroupedResults } from "@/types/search";
 

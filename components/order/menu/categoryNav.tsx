@@ -11,7 +11,7 @@ import {
 import { Menu, X, Sparkles } from "lucide-react";
 import { useState } from "react";
 import type { RefObject } from "react";
-import { cn } from "@/utils/utils";
+import { cn } from "@/utils/client";
 
 interface Category {
   id: string;
