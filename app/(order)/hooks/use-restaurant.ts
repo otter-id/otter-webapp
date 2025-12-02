@@ -14,6 +14,8 @@ export function useRestaurant(restaurantId: string) {
         const result = await ApiGetRestaurantPwa(restaurantId);
         const restaurantData = result.data;
 
+        console.log(result);
+
         if (!restaurantData.isPublished) {
           window.location.replace("https://app.otter.id/");
           return;

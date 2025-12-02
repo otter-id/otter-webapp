@@ -9,10 +9,10 @@ export const ApiGetRestaurantPwa = async (restaurantId: string) => {
     const response: Response = await fetch(`${API_URL}/restaurant/pwa/${restaurantId}`, { headers: { Authorization: `Bearer ${token}` } });
 
     const result = await response.json();
+    console.log(result);
     await GenAuth.store({ value: store });
     if (!response.ok) return { error: result.message || "Failed to fetch restaurant data" };
 
-    console.log(result);
     return result;
   } catch (error: any) {
     return { error: error.message || "An unexpected error occurred" };
@@ -25,6 +25,7 @@ export const ApiGetRestaurantInfo = async (restaurantId: string) => {
     if (!response.ok) return { error: "Failed to fetch restaurant info" };
 
     const result = await response.json();
+    console.log(result);
     if (!result.data.isPublished) return { error: "Restaurant is not published" };
 
     return result;
