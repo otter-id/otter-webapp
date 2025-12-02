@@ -5,10 +5,6 @@ export const metadata = {
 
 import "@/app/(email)/globals.css";
 
-export default function RootLayout({
-  children,
-}: {
-  children: React.ReactNode;
-}) {
+export default function RootLayout({ children }: { children: React.ReactNode }) {
   return <>{children}</>;
 }

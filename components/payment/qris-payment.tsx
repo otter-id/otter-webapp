@@ -1,12 +1,11 @@
 // components/payment/qris-payment.tsx
 "use client";
 
-import { useState, useEffect } from "react";
-import { Button } from "@/components/ui/button";
-import { Separator } from "@/components/ui/separator";
 import { RefreshCw } from "lucide-react";
-import { formatPrice } from "@/lib/utils";
+import { useEffect, useState } from "react";
 import QRCode from "react-qr-code";
+import { Separator } from "@/components/ui/separator";
+import { formatPrice } from "@/utils/client";
 
 interface QrisPaymentProps {
   amount: number;
@@ -16,16 +15,9 @@ interface QrisPaymentProps {
   generateQris: () => void;
 }
 
-export function QrisPayment({
-  amount,
-  qrString,
-  expiresAt,
-  isLoading,
-  generateQris,
-}: QrisPaymentProps) {
+export function QrisPayment({ amount, qrString, expiresAt, isLoading, generateQris }: QrisPaymentProps) {
   const [timeLeft, setTimeLeft] = useState(0);
-  const [hasTriggeredRegeneration, setHasTriggeredRegeneration] =
-    useState(false);
+  const [hasTriggeredRegeneration, setHasTriggeredRegeneration] = useState(false);
 
   // Hitung waktu yang tersisa berdasarkan expiresAt
   useEffect(() => {
@@ -42,12 +34,7 @@ export function QrisPayment({
       setTimeLeft(remaining);
 
       // Jika sudah expired, generate QR baru (hanya sekali)
-      if (
-        remaining <= 0 &&
-        qrString &&
-        !hasTriggeredRegeneration &&
-        !isLoading
-      ) {
+      if (remaining <= 0 && qrString && !hasTriggeredRegeneration && !isLoading) {
         setHasTriggeredRegeneration(true);
         generateQris();
       }
@@ -71,9 +58,7 @@ export function QrisPayment({
   const formatTime = (seconds: number) => {
     const mins = Math.floor(seconds / 60);
     const secs = seconds % 60;
-    return `${mins.toString().padStart(2, "0")}:${secs
-      .toString()
-      .padStart(2, "0")}`;
+    return `${mins.toString().padStart(2, "0")}:${secs.toString().padStart(2, "0")}`;
   };
 
   return (
@@ -82,14 +67,7 @@ export function QrisPayment({
       <div className="bg-white border rounded-lg p-5 space-y-4">
         <div className="relative aspect-square max-w-[240px] mx-auto bg-white p-4 rounded-lg">
           {/* Selalu render QR code jika qrString ada, bahkan saat loading */}
-          {qrString && (
-            <QRCode
-              value={qrString}
-              size={256}
-              style={{ height: "auto", maxWidth: "100%", width: "100%" }}
-              viewBox={`0 0 256 256`}
-            />
-          )}
+          {qrString && <QRCode value={qrString} size={256} style={{ height: "auto", maxWidth: "100%", width: "100%" }} viewBox={`0 0 256 256`} />}
 
           {/* Tampilkan placeholder jika QR tidak ada & tidak sedang loading (kasus error) */}
           {!qrString && !isLoading && (
@@ -118,12 +96,7 @@ export function QrisPayment({
         <div className="flex items-center justify-center text-center">
           <div>
             <div className="text-sm text-muted-foreground">Expires in</div>
-            <div
-              className={`font-medium ${timeLeft <= 10 ? "text-red-600 animate-pulse" : ""
-                }`}
-            >
-              {formatTime(timeLeft)}
-            </div>
+            <div className={`font-medium ${timeLeft <= 10 ? "text-red-600 animate-pulse" : ""}`}>{formatTime(timeLeft)}</div>
           </div>
         </div>
       </div>
@@ -138,8 +111,7 @@ export function QrisPayment({
               You can <strong>scan the QR code</strong> above directly
             </li>
             <li>
-              Or <strong>take a screenshot</strong> of this QR and upload it
-              from your gallery
+              Or <strong>take a screenshot</strong> of this QR and upload it from your gallery
             </li>
             <li>Make sure the amount is correct and complete the payment</li>
             <li>
@@ -147,10 +119,7 @@ export function QrisPayment({
             </li>
           </ol>
 
-          <p className="text-xs mt-2 text-yellow-700">
-            ⚠️ This QR code expires when the timer runs out. If expired, refresh
-            to get a new one.
-          </p>
+          <p className="text-xs mt-2 text-yellow-700">⚠️ This QR code expires when the timer runs out. If expired, refresh to get a new one.</p>
         </div>
       </div>
     </div>

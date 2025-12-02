@@ -1,6 +1,6 @@
-import { Metadata } from "next";
-import { FoodOrderingClient } from "@/components/order/FoodOrderingClient";
-import { getRestaurantData } from "@/lib/getRestaurantData";
+import type { Metadata } from "next";
+import { ApiGetRestaurantInfo } from "@/app/api";
+import { FoodOrderingClient } from "@/components/order/food-ordering-client";
 
 interface PageProps {
   params: Promise<{ id: string }>;
@@ -10,12 +10,9 @@ interface PageProps {
  * Generate dynamic metadata untuk SEO dan OG tags
  * Metadata ini akan di-render di server-side untuk setiap store
  */
-export async function generateMetadata({
-  params,
-}: PageProps): Promise<Metadata> {
+export async function generateMetadata({ params }: PageProps): Promise<Metadata> {
   const { id } = await params;
-  const restaurant = await getRestaurantData(id);
-  // console.log({ restaurant })
+  const restaurant = await ApiGetRestaurantInfo(id);
 
   // Default metadata jika restaurant tidak ditemukan
   if (!restaurant) {

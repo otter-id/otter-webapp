@@ -1,26 +1,15 @@
-let userConfig = undefined;
+let userConfig;
 try {
   userConfig = await import("./v0-user-next.config");
-} catch (e) {
+} catch (_e) {
   // ignore error
 }
 
-/** @type {import('next').NextConfig} */
 const nextConfig = {
-  eslint: {
-    ignoreDuringBuilds: true,
-  },
   typescript: {
     ignoreBuildErrors: true,
   },
   images: {
-    domains: [
-      "franchise.sharetea.com.au",
-      "www.texanerin.com",
-      "aw.otternow.id",
-      "aw.otter.id",
-      // Add other domains you're loading images from
-    ],
     remotePatterns: [
       {
         protocol: "https",
@@ -37,17 +26,13 @@ const nextConfig = {
 };
 
 mergeConfig(nextConfig, userConfig);
-
 function mergeConfig(nextConfig, userConfig) {
   if (!userConfig) {
     return;
   }
 
   for (const key in userConfig) {
-    if (
-      typeof nextConfig[key] === "object" &&
-      !Array.isArray(nextConfig[key])
-    ) {
+    if (typeof nextConfig[key] === "object" && !Array.isArray(nextConfig[key])) {
       nextConfig[key] = {
         ...nextConfig[key],
         ...userConfig[key],

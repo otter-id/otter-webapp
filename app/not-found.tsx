@@ -1,5 +1,5 @@
+import { ArrowLeft, MapPin } from "lucide-react";
 import Link from "next/link";
-import { MapPin, ArrowLeft } from "lucide-react";
 import { Button } from "@/components/ui/button";
 
 export default function NotFound() {
@@ -10,21 +10,14 @@ export default function NotFound() {
           <MapPin className="absolute left-1/2 top-1/2 h-20 w-20 -translate-x-1/2 -translate-y-1/2 text-amber-300" />
         </div>
 
-        <h1 className="text-4xl font-extrabold tracking-tight sm:text-5xl">
-          Whoops! You've wandered off the map
-        </h1>
+        <h1 className="text-4xl font-extrabold tracking-tight sm:text-5xl">Whoops! You've wandered off the map</h1>
 
         <p className="text-lg text-gray-500">
-          The page you're looking for seems to have taken a vacation. Maybe it's
-          sipping cocktails on a beach somewhere?
+          The page you're looking for seems to have taken a vacation. Maybe it's sipping cocktails on a beach somewhere?
         </p>
 
         <div className="pt-4">
-          <Button
-            asChild
-            size="lg"
-            className="gap-2 bg-[#ffca36] hover:bg-amber-500 text-black border-none"
-          >
+          <Button asChild size="lg" className="gap-2 bg-[#ffca36] hover:bg-amber-500 text-black border-none">
             <Link href="https://otter.id">
               <ArrowLeft className="h-4 w-4" />
               <span>Maybe recommend Otter to your friends?</span>
