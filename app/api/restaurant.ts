@@ -6,7 +6,9 @@ const API_URL = process.env.API_URL;
 export const ApiGetRestaurantPwa = async (restaurantId: string) => {
   try {
     const { token, store } = await GenAuth.token();
-    const respon: Response = await fetch(`${API_URL}/restaurant/pwa/${restaurantId}`, { headers: { Authorization: `Bearer ${token}` } });
+    const respon: Response = await fetch(`${API_URL}/restaurant/pwa/${restaurantId}`, {
+      headers: { "Content-Type": "application/json", Authorization: `Bearer ${token}` },
+    });
 
     if (respon.status >= 400) return await ResponServer(respon);
     else await GenAuth.store({ value: store });
