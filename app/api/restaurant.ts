@@ -8,6 +8,9 @@ export const ApiGetRestaurantPwa = async (restaurantId: string) => {
     const { token, store } = await GenAuth.token();
     const response: Response = await fetch(`${API_URL}/restaurant/pwa/${restaurantId}`, { headers: { Authorization: `Bearer ${token}` } });
 
+    console.log(`${API_URL}/restaurant/pwa/${restaurantId}`);
+    console.log({ headers: { Authorization: `Bearer ${token}` } });
+
     const result = await response.json();
     console.log(result);
     await GenAuth.store({ value: store });

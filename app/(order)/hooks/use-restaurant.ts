@@ -11,6 +11,7 @@ export function useRestaurant(restaurantId: string) {
   useEffect(() => {
     const fetchRestaurant = async () => {
       try {
+        console.log(restaurantId);
         const result = await ApiGetRestaurantPwa(restaurantId);
         const restaurantData = result.data;
 
