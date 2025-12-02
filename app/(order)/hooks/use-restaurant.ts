@@ -11,19 +11,16 @@ export function useRestaurant(restaurantId: string) {
   useEffect(() => {
     const fetchRestaurant = async () => {
       try {
-        console.log(restaurantId);
         const result = await ApiGetRestaurantPwa(restaurantId);
+        if (result.status >= 400) throw new Error(result.response?.message || result.statusText);
+
         const restaurantData = result.data;
-
-        console.log(result);
-
         if (!restaurantData.isPublished) {
           window.location.replace("https://app.otter.id/");
           return;
         }
 
         setRestaurant(restaurantData);
-
         let allCategories = [...restaurantData.menuCategoryId];
 
         const recommendedItems = [

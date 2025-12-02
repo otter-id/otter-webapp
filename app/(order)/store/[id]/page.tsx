@@ -13,6 +13,7 @@ interface PageProps {
 export async function generateMetadata({ params }: PageProps): Promise<Metadata> {
   const { id } = await params;
   const result = await ApiGetRestaurantInfo(id);
+  if (result.status >= 400) throw new Error(result.response?.message || result.statusText);
   const restaurantData = result.data;
 
   // Default metadata jika restaurant tidak ditemukan
