@@ -1,38 +1,35 @@
 "use server";
-import { GenAuth } from "@/utils/server";
+import { GenAuth, ResponServer } from "@/utils/server";
 
 const API_URL = process.env.API_URL;
 
 export const ApiGetRestaurantPwa = async (restaurantId: string) => {
   try {
     const { token, store } = await GenAuth.token();
-    const response: Response = await fetch(`${API_URL}/restaurant/pwa/${restaurantId}`, { headers: { Authorization: `Bearer ${token}` } });
+    const respon: Response = await fetch(`${API_URL}/restaurant/pwa/${restaurantId}`, {
+      headers: { "Content-Type": "application/json", Authorization: `Bearer ${token}` },
+    });
 
-    console.log(`${API_URL}/restaurant/pwa/${restaurantId}`);
-    console.log({ headers: { Authorization: `Bearer ${token}` } });
+    if (respon.status >= 400) return await ResponServer(respon);
+    else await GenAuth.store({ value: store });
 
-    const result = await response.json();
-    console.log(result);
-    await GenAuth.store({ value: store });
-    if (!response.ok) return { error: result.message || "Failed to fetch restaurant data" };
-
+    const result = await respon.json();
     return result;
   } catch (error: any) {
-    return { error: error.message || "An unexpected error occurred" };
+    return { status: 500, message: error.message };
   }
 };
 
 export const ApiGetRestaurantInfo = async (restaurantId: string) => {
   try {
-    const response = await fetch(`${API_URL}/restaurant/info/${restaurantId}`, { next: { revalidate: 60 } });
-    if (!response.ok) return { error: "Failed to fetch restaurant info" };
+    const respon = await fetch(`${API_URL}/restaurant/info/${restaurantId}`, { next: { revalidate: 60 } });
+    if (respon.status >= 400) return await ResponServer(respon);
 
-    const result = await response.json();
-    console.log(result);
-    if (!result.data.isPublished) return { error: "Restaurant is not published" };
+    const result = await respon.json();
+    if (!result.data.isPublished) return { code: 400, error: "Restaurant is not published" };
 
     return result;
   } catch (error: any) {
-    return { error: error.message || "An unexpected error occurred" };
+    return { status: 500, message: error.message };
   }
 };
