@@ -1,21 +1,16 @@
 "use client";
 
-import { useState, useEffect, Suspense } from "react";
-import { useRouter, useSearchParams } from "next/navigation";
+import { AlertTriangle, ArrowLeft, Check, Loader2, Phone, QrCode, User, X } from "lucide-react";
 import Image from "next/image";
-import { ArrowLeft, QrCode, User, Phone, Check, FileText, Loader2, AlertTriangle, X } from "lucide-react";
-import { Button } from "@/components/ui/button";
-import { Separator } from "@/components/ui/separator";
-import { formatPrice } from "@/utils/client";
-import { PaymentMethodDrawer } from "@/components/payment/payment-method-drawer";
-import { QrisPayment } from "@/components/payment/qris-payment";
-import { Stepper } from "@/components/ui/stepper";
-import { PhoneInput } from "@/components/payment/phone-input";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
-import { CartItem, CartTotals, CartRestourant } from "@/app/(order)/hooks/use-cart";
-import { PaymentSkeleton } from "@/components/payment/skeletons/payment-skeleton";
+import { useRouter, useSearchParams } from "next/navigation";
+import { Suspense, useEffect, useState } from "react";
 import { toast } from "sonner";
+import type { CartItem, CartRestourant, CartTotals } from "@/app/(order)/hooks/use-cart";
+import { ApiCheckPaymentStatus, ApiCheckStock, ApiGenerateQris, ApiPlaceOrder } from "@/app/api";
+import { PaymentMethodDrawer } from "@/components/payment/payment-method-drawer";
+import { PhoneInput } from "@/components/payment/phone-input";
+import { QrisPayment } from "@/components/payment/qris-payment";
+import { PaymentSkeleton } from "@/components/payment/skeletons/payment-skeleton";
 import {
   AlertDialog,
   AlertDialogAction,
@@ -25,7 +20,12 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
-import { ApiGenerateQris, ApiCheckStock, ApiPlaceOrder, ApiCheckPaymentStatus } from "@/app/api";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { Separator } from "@/components/ui/separator";
+import { Stepper } from "@/components/ui/stepper";
+import { formatPrice } from "@/utils/client";
 
 interface PaymentState {
   restaurantId: string | null;
@@ -58,7 +58,7 @@ interface PaymentState {
 function PaymentPageContent() {
   const router = useRouter();
   const searchParams = useSearchParams();
-  const restaurantId = searchParams.get('id');
+  const restaurantId = searchParams.get("id");
 
   const [state, setState] = useState<PaymentState>({
     restaurantId: null,
@@ -159,7 +159,7 @@ function PaymentPageContent() {
   }, [restaurantId]);
 
   const updateState = (updates: Partial<PaymentState>) => {
-    setState(prevState => {
+    setState((prevState) => {
       const newState = { ...prevState, ...updates };
       if (newState.restaurantId) {
         localStorage.setItem(`payment-${newState.restaurantId}`, JSON.stringify(newState));
@@ -170,9 +170,9 @@ function PaymentPageContent() {
 
   const calculateItemTotal = (item: CartItem) => {
     const itemPrice = item.discountPrice ?? item.price;
-    const optionsPrice = Object.values(item.selectedOptions || {}).flat().reduce(
-      (sum, opt) => sum + (opt.discountPrice ?? opt.price), 0
-    );
+    const optionsPrice = Object.values(item.selectedOptions || {})
+      .flat()
+      .reduce((sum, opt) => sum + (opt.discountPrice ?? opt.price), 0);
     return (itemPrice + optionsPrice) * item.quantity;
   };
 
@@ -181,7 +181,11 @@ function PaymentPageContent() {
     router.back();
   };
 
-  const checkStock = async (): Promise<{ hasOutOfStock: boolean; outOfStockMenus: string[]; outOfStockMenuOptions: { categoryName: string; name: string; menuName: string }[] }> => {
+  const checkStock = async (): Promise<{
+    hasOutOfStock: boolean;
+    outOfStockMenus: string[];
+    outOfStockMenuOptions: { categoryName: string; name: string; menuName: string }[];
+  }> => {
     try {
       const result = await ApiCheckStock(state.restaurantId!);
 
@@ -220,7 +224,7 @@ function PaymentPageContent() {
             const isOptionOutOfStock = outOfStockOptionIds.some((outOption: { $id: string }) => outOption.$id === option.$id);
             if (isOptionOutOfStock) {
               const existingOption = outOfStockMenuOptions.find(
-                (opt) => opt.categoryName === option.categoryName && opt.name === option.name && opt.menuName === cartItem.name
+                (opt) => opt.categoryName === option.categoryName && opt.name === option.name && opt.menuName === cartItem.name,
               );
               if (!existingOption) {
                 outOfStockMenuOptions.push({
@@ -240,10 +244,10 @@ function PaymentPageContent() {
         outOfStockMenuOptions,
       };
     } catch (error) {
-      console.error('Error checking stock:', error);
+      console.error("Error checking stock:", error);
       toast("Gagal mengecek stok", {
         description: "Terjadi kesalahan saat mengecek ketersediaan stok.",
-        icon: <AlertTriangle className="h-4 w-4 text-red-500" />
+        icon: <AlertTriangle className="h-4 w-4 text-red-500" />,
       });
       return { hasOutOfStock: false, outOfStockMenus: [], outOfStockMenuOptions: [] };
     }
@@ -276,11 +280,13 @@ function PaymentPageContent() {
       restaurantId: state.restaurantId,
       name: state.name,
       phone: state.phone,
-      orderMenus: state.cart.map(item => ({
+      orderMenus: state.cart.map((item) => ({
         menuId: item.$id,
         quantity: item.quantity,
         notes: item.note || "",
-        options: Object.values(item.selectedOptions || {}).flat().map(opt => ({ menuOptionId: opt.$id })),
+        options: Object.values(item.selectedOptions || {})
+          .flat()
+          .map((opt) => ({ menuOptionId: opt.$id })),
       })),
     };
     try {
@@ -324,13 +330,16 @@ function PaymentPageContent() {
           const cartString = localStorage.getItem("otter-cart");
           if (cartString) {
             const allCarts: CartRestourant[] = JSON.parse(cartString);
-            const updatedCarts = allCarts.filter(cart => cart.$id !== state.restaurantId);
+            const updatedCarts = allCarts.filter((cart) => cart.$id !== state.restaurantId);
             localStorage.setItem("otter-cart", JSON.stringify(updatedCarts));
           }
         }
         window.location.replace(`https://app.otter.id/receipt?id=${state.qrisData?.reference_id}`);
       } else {
-        toast("Payment is unpaid", { description: "Your payment has not been confirmed yet.", icon: <AlertTriangle className="h-4 w-4 text-yellow-500" /> });
+        toast("Payment is unpaid", {
+          description: "Your payment has not been confirmed yet.",
+          icon: <AlertTriangle className="h-4 w-4 text-yellow-500" />,
+        });
       }
     } catch (error) {
       toast("Error Checking Status", { description: (error as Error).message, icon: <AlertTriangle className="h-4 w-4 text-red-500" /> });
@@ -376,7 +385,13 @@ function PaymentPageContent() {
                         <div>
                           <h3 className="font-medium">{item.name}</h3>
                           <div className="text-xs text-muted-foreground mt-1 space-y-0.5">
-                            {Object.values(item.selectedOptions).flat().map((opt) => (<div key={opt.$id}>{opt.categoryName}: {opt.name}</div>))}
+                            {Object.values(item.selectedOptions)
+                              .flat()
+                              .map((opt) => (
+                                <div key={opt.$id}>
+                                  {opt.categoryName}: {opt.name}
+                                </div>
+                              ))}
                           </div>
                         </div>
                         <div className="text-right">
@@ -390,34 +405,79 @@ function PaymentPageContent() {
               </div>
               <Separator className="my-4" />
               <div className="space-y-2 text-sm">
-                <div className="flex justify-between"><span className="text-muted-foreground">Subtotal</span><span>{formatPrice(state.totals.subtotal)}</span></div>
-                <div className="flex justify-between"><span className="text-muted-foreground">Tax ({state.totals.taxPercentage}%)</span><span>{formatPrice(state.totals.tax)}</span></div>
-                <div className="flex justify-between"><span className="text-muted-foreground">Service Fee ({state.totals.servicePercentage}%)</span><span>{formatPrice(state.totals.serviceFee)}</span></div>
+                <div className="flex justify-between">
+                  <span className="text-muted-foreground">Subtotal</span>
+                  <span>{formatPrice(state.totals.subtotal)}</span>
+                </div>
+                <div className="flex justify-between">
+                  <span className="text-muted-foreground">Tax ({state.totals.taxPercentage}%)</span>
+                  <span>{formatPrice(state.totals.tax)}</span>
+                </div>
+                <div className="flex justify-between">
+                  <span className="text-muted-foreground">Service Fee ({state.totals.servicePercentage}%)</span>
+                  <span>{formatPrice(state.totals.serviceFee)}</span>
+                </div>
                 <Separator className="my-3" />
-                <div className="flex justify-between text-base font-medium"><span>Total</span><span>{formatPrice(state.totals.total)}</span></div>
+                <div className="flex justify-between text-base font-medium">
+                  <span>Total</span>
+                  <span>{formatPrice(state.totals.total)}</span>
+                </div>
               </div>
             </div>
             <div className="px-4 py-4 bg-gray-50 border-t">
               <h2 className="text-base font-semibold mb-4">Customer Details</h2>
               <div className="space-y-4">
                 <div className="space-y-2">
-                  <Label htmlFor="name" className="flex items-center gap-2"><User className="h-4 w-4" /><span>Full Name</span></Label>
-                  <Input id="name" placeholder="Enter your full name" value={state.name} onChange={(e) => updateState({ name: e.target.value })} disabled={state.orderSubmitted} />
+                  <Label htmlFor="name" className="flex items-center gap-2">
+                    <User className="h-4 w-4" />
+                    <span>Full Name</span>
+                  </Label>
+                  <Input
+                    id="name"
+                    placeholder="Enter your full name"
+                    value={state.name}
+                    onChange={(e) => updateState({ name: e.target.value })}
+                    disabled={state.orderSubmitted}
+                  />
                 </div>
                 <div className="space-y-2">
-                  <Label htmlFor="phone" className="flex items-center gap-2"><Phone className="h-4 w-4" /><span>Phone Number</span></Label>
-                  <PhoneInput value={state.phone} onChange={(val, isValid) => updateState({ phone: val, isPhoneValid: isValid })} disabled={state.orderSubmitted} />
+                  <Label htmlFor="phone" className="flex items-center gap-2">
+                    <Phone className="h-4 w-4" />
+                    <span>Phone Number</span>
+                  </Label>
+                  <PhoneInput
+                    value={state.phone}
+                    onChange={(val, isValid) => updateState({ phone: val, isPhoneValid: isValid })}
+                    disabled={state.orderSubmitted}
+                  />
                 </div>
               </div>
             </div>
             <div className="px-4 py-4 bg-white border-t">
               <h2 className="text-base font-semibold mb-3">Payment Method</h2>
-              <div className="bg-white rounded-lg border p-4 flex items-center justify-between cursor-pointer" onClick={() => !state.orderSubmitted && setIsMethodDrawerOpen(true)}>
+              <div
+                className="bg-white rounded-lg border p-4 flex items-center justify-between cursor-pointer"
+                onClick={() => !state.orderSubmitted && setIsMethodDrawerOpen(true)}
+              >
                 <div className="flex items-center gap-3">
-                  <div className="w-10 h-10 rounded-md bg-black flex items-center justify-center"><QrCode className="h-5 w-5 text-white" /></div>
-                  <div><div className="font-medium">{selectedMethod}</div><div className="text-xs text-muted-foreground">Scan QR code to pay</div></div>
+                  <div className="w-10 h-10 rounded-md bg-black flex items-center justify-center">
+                    <QrCode className="h-5 w-5 text-white" />
+                  </div>
+                  <div>
+                    <div className="font-medium">{selectedMethod}</div>
+                    <div className="text-xs text-muted-foreground">Scan QR code to pay</div>
+                  </div>
                 </div>
-                <Button variant="ghost" className="text-sm text-muted-foreground h-auto py-1 px-2" onClick={(e) => { e.stopPropagation(); if (!state.orderSubmitted) setIsMethodDrawerOpen(true); }}>Change</Button>
+                <Button
+                  variant="ghost"
+                  className="text-sm text-muted-foreground h-auto py-1 px-2"
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    if (!state.orderSubmitted) setIsMethodDrawerOpen(true);
+                  }}
+                >
+                  Change
+                </Button>
               </div>
             </div>
           </>
@@ -443,13 +503,29 @@ function PaymentPageContent() {
         )}
         <div className="px-4 py-5 bg-white border-t sticky bottom-0">
           {state.currentStep === 0 && (
-            <Button className="w-full h-12 bg-black hover:bg-black/90" onClick={handleContinue} disabled={!state.name || !state.isPhoneValid || isSubmitting || state.orderSubmitted}>
-              {isSubmitting ? (<><Loader2 className="mr-2 h-4 w-4 animate-spin" /> Please wait...</>) : `Continue to Payment • ${formatPrice(state.totals.total)}`}
+            <Button
+              className="w-full h-12 bg-black hover:bg-black/90"
+              onClick={handleContinue}
+              disabled={!state.name || !state.isPhoneValid || isSubmitting || state.orderSubmitted}
+            >
+              {isSubmitting ? (
+                <>
+                  <Loader2 className="mr-2 h-4 w-4 animate-spin" /> Please wait...
+                </>
+              ) : (
+                `Continue to Payment • ${formatPrice(state.totals.total)}`
+              )}
             </Button>
           )}
           {state.currentStep === 1 && (
             <Button className="w-full h-12 bg-black hover:bg-black/90" onClick={handleCheckPaymentStatus} disabled={isCheckingStatus}>
-              {isCheckingStatus ? (<><Loader2 className="mr-2 h-4 w-4 animate-spin" /> Checking Status...</>) : "Check Payment Status"}
+              {isCheckingStatus ? (
+                <>
+                  <Loader2 className="mr-2 h-4 w-4 animate-spin" /> Checking Status...
+                </>
+              ) : (
+                "Check Payment Status"
+              )}
             </Button>
           )}
         </div>
@@ -466,7 +542,9 @@ function PaymentPageContent() {
                   <p className="font-medium text-foreground">Menu berikut stoknya habis:</p>
                   <ul className="mt-2 space-y-1 mb-3">
                     {outOfStockDialog.menus.map((menu, index) => (
-                      <li key={index} className="text-foreground">• {menu}</li>
+                      <li key={index} className="text-foreground">
+                        • {menu}
+                      </li>
                     ))}
                   </ul>
                 </>
@@ -476,7 +554,9 @@ function PaymentPageContent() {
                   <p className="font-medium text-foreground">Opsi Menu berikut stoknya habis:</p>
                   <ul className="mt-2 space-y-1 mb-3">
                     {outOfStockDialog.menuOptions.map((option, index) => (
-                      <li key={index} className="text-foreground">• {option.categoryName}: {option.name} ({option.menuName})</li>
+                      <li key={index} className="text-foreground">
+                        • {option.categoryName}: {option.name} ({option.menuName})
+                      </li>
                     ))}
                   </ul>
                 </>
@@ -485,10 +565,12 @@ function PaymentPageContent() {
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
-            <AlertDialogAction onClick={() => {
-              setOutOfStockDialog({ isOpen: false, menus: [], menuOptions: [] });
-              router.push(`/store/${state.restaurantId}`);
-            }}>
+            <AlertDialogAction
+              onClick={() => {
+                setOutOfStockDialog({ isOpen: false, menus: [], menuOptions: [] });
+                router.push(`/store/${state.restaurantId}`);
+              }}
+            >
               Kembali ke Menu
             </AlertDialogAction>
           </AlertDialogFooter>

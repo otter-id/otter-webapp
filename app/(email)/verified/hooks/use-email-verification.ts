@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useEffect, useState } from "react";
 import { ApiVerifyEmail } from "@/app/api";
 // import { User } from "@/types/user";
 

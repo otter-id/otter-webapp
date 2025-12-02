@@ -1,10 +1,10 @@
 "use client";
 
 import { CheckCircle } from "lucide-react";
-import { Card, CardContent, CardHeader } from "@/components/ui/card";
 import { useSearchParams } from "next/navigation";
-import { useEmailVerification } from "./hooks/use-email-verification";
 import { Suspense } from "react";
+import { Card, CardContent, CardHeader } from "@/components/ui/card";
+import { useEmailVerification } from "./hooks/use-email-verification";
 
 function VerificationContent() {
   const searchParams = useSearchParams();
@@ -21,10 +21,7 @@ function VerificationContent() {
           <h1 className="text-2xl font-bold text-center">Email Verified!</h1>
         </CardHeader>
         <CardContent className="text-center px-6 pb-10">
-          <p className="text-muted-foreground">
-            Your email has been successfully verified. You can now access all
-            features of your account.
-          </p>
+          <p className="text-muted-foreground">Your email has been successfully verified. You can now access all features of your account.</p>
         </CardContent>
       </Card>
     </div>

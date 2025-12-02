@@ -1,12 +1,11 @@
 // components/payment/qris-payment.tsx
 "use client";
 
-import { useState, useEffect } from "react";
-import { Button } from "@/components/ui/button";
-import { Separator } from "@/components/ui/separator";
 import { RefreshCw } from "lucide-react";
-import { formatPrice } from "@/utils/client";
+import { useEffect, useState } from "react";
 import QRCode from "react-qr-code";
+import { Separator } from "@/components/ui/separator";
+import { formatPrice } from "@/utils/client";
 
 interface QrisPaymentProps {
   amount: number;
@@ -16,13 +15,7 @@ interface QrisPaymentProps {
   generateQris: () => void;
 }
 
-export function QrisPayment({
-  amount,
-  qrString,
-  expiresAt,
-  isLoading,
-  generateQris,
-}: QrisPaymentProps) {
+export function QrisPayment({ amount, qrString, expiresAt, isLoading, generateQris }: QrisPaymentProps) {
   const [timeLeft, setTimeLeft] = useState(0);
   const [hasTriggeredRegeneration, setHasTriggeredRegeneration] = useState(false);
 
@@ -74,14 +67,7 @@ export function QrisPayment({
       <div className="bg-white border rounded-lg p-5 space-y-4">
         <div className="relative aspect-square max-w-[240px] mx-auto bg-white p-4 rounded-lg">
           {/* Selalu render QR code jika qrString ada, bahkan saat loading */}
-          {qrString && (
-            <QRCode
-              value={qrString}
-              size={256}
-              style={{ height: "auto", maxWidth: "100%", width: "100%" }}
-              viewBox={`0 0 256 256`}
-            />
-          )}
+          {qrString && <QRCode value={qrString} size={256} style={{ height: "auto", maxWidth: "100%", width: "100%" }} viewBox={`0 0 256 256`} />}
 
           {/* Tampilkan placeholder jika QR tidak ada & tidak sedang loading (kasus error) */}
           {!qrString && !isLoading && (
@@ -110,9 +96,7 @@ export function QrisPayment({
         <div className="flex items-center justify-center text-center">
           <div>
             <div className="text-sm text-muted-foreground">Expires in</div>
-            <div className={`font-medium ${timeLeft <= 10 ? 'text-red-600 animate-pulse' : ''}`}>
-              {formatTime(timeLeft)}
-            </div>
+            <div className={`font-medium ${timeLeft <= 10 ? "text-red-600 animate-pulse" : ""}`}>{formatTime(timeLeft)}</div>
           </div>
         </div>
       </div>

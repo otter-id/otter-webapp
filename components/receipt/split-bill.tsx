@@ -1,23 +1,17 @@
 "use client";
 
-import { Card, CardContent } from "@/components/ui/card";
+import { motion } from "framer-motion";
+import { ChevronLeft, ChevronRight, X } from "lucide-react";
+import type { useSplitBill } from "@/app/receipt/hooks/use-split-bill";
+import { cardVariants } from "@/app/receipt/utils/animations";
+import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
+import { Card, CardContent } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Separator } from "@/components/ui/separator";
-import { ChevronLeft, ChevronRight, X } from "lucide-react";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
-import { motion } from "framer-motion";
-import { cardVariants } from "@/app/receipt/utils/animations";
-import { ReceiptData } from "@/types/receipt";
-import { useSplitBill } from "@/app/receipt/hooks/use-split-bill";
-import { Badge } from "@/components/ui/badge";
+import type { ReceiptData } from "@/types/receipt";
 
 const MotionCard = motion(Card);
 
@@ -48,9 +42,7 @@ export function SplitBill({ data, onClose, splitBillState }: SplitBillProps) {
       case 1:
         return (
           <div className="space-y-4">
-            <h2 className="text-lg font-semibold">
-              How many people are splitting the bill?
-            </h2>
+            <h2 className="text-lg font-semibold">How many people are splitting the bill?</h2>
             <div className="flex items-center space-x-2">
               <Label htmlFor="numberOfPeople" className="text-black">
                 Number of People
@@ -61,9 +53,7 @@ export function SplitBill({ data, onClose, splitBillState }: SplitBillProps) {
                   variant="outline-otter"
                   size="icon"
                   className="h-8 w-8 rounded-r-none"
-                  onClick={() =>
-                    setNumberOfPeople((prev) => Math.max(2, prev - 1))
-                  }
+                  onClick={() => setNumberOfPeople((prev) => Math.max(2, prev - 1))}
                 >
                   -
                 </Button>
@@ -91,37 +81,23 @@ export function SplitBill({ data, onClose, splitBillState }: SplitBillProps) {
       case 2:
         return (
           <div className="space-y-4">
-            <h2 className="text-lg font-semibold">
-              Enter the names of the people splitting the bill
-            </h2>
+            <h2 className="text-lg font-semibold">Enter the names of the people splitting the bill</h2>
             {Array.from({ length: numberOfPeople }).map((_, index) => (
               <div key={index}>
                 <Label htmlFor={`person${index}`} className="text-black">
                   Person {index + 1}
                 </Label>
-                <Input
-                  id={`person${index}`}
-                  value={people[index] || ""}
-                  onChange={(e) =>
-                    handlePersonNameChange(index, e.target.value)
-                  }
-                />
+                <Input id={`person${index}`} value={people[index] || ""} onChange={(e) => handlePersonNameChange(index, e.target.value)} />
               </div>
             ))}
-            {duplicateNameError && (
-              <p className="text-red-500 text-sm">{duplicateNameError}</p>
-            )}
+            {duplicateNameError && <p className="text-red-500 text-sm">{duplicateNameError}</p>}
           </div>
         );
       case 3:
         return (
           <div className="space-y-4">
-            <h2 className="text-lg font-semibold -mb-3">
-              Assign items to people
-            </h2>
-            <p className="text-sm text-muted-foreground">
-              You can select multiple people per item
-            </p>
+            <h2 className="text-lg font-semibold -mb-3">Assign items to people</h2>
+            <p className="text-sm text-muted-foreground">You can select multiple people per item</p>
             <Separator className="my-2" />
             {data.items.flatMap((item, itemIndex) =>
               Array.from({ length: item.quantity }, (_, index) => {
@@ -134,53 +110,33 @@ export function SplitBill({ data, onClose, splitBillState }: SplitBillProps) {
                     <span className="text-black font-medium">
                       {item.name}
                       {item.modifiers.length > 0 && (
-                        <span className="text-sm text-muted-foreground ml-2">
-                          (
-                          {item.modifiers
-                            .map((mod) => mod.name)
-                            .join(", ")}
-                          )
-                        </span>
+                        <span className="text-sm text-muted-foreground ml-2">({item.modifiers.map((mod) => mod.name).join(", ")})</span>
                       )}
                     </span>
                     <div className="space-y-2">
                       <div className="flex flex-wrap gap-2">
                         {selectedPeople.map((person) => (
-                          <Badge
-                            key={person}
-                            variant="secondary"
-                            className="flex items-center gap-1"
-                          >
+                          <Badge key={person} variant="secondary" className="flex items-center gap-1">
                             {person}
                             <X
                               className="h-3 w-3 cursor-pointer"
                               onClick={() =>
                                 handleItemAssignment(
                                   assignmentKey,
-                                  selectedPeople.filter((p) => p !== person)
+                                  selectedPeople.filter((p) => p !== person),
                                 )
                               }
                             />
                           </Badge>
                         ))}
                       </div>
-                      <Select
-                        onValueChange={(value) =>
-                          handleItemAssignment(assignmentKey, [
-                            ...selectedPeople,
-                            value,
-                          ])
-                        }
-                        value=""
-                      >
+                      <Select onValueChange={(value) => handleItemAssignment(assignmentKey, [...selectedPeople, value])} value="">
                         <SelectTrigger className="w-full border-yellow-400">
                           <SelectValue placeholder="Add person" />
                         </SelectTrigger>
                         <SelectContent>
                           {people
-                            .filter(
-                              (person) => !selectedPeople.includes(person)
-                            )
+                            .filter((person) => !selectedPeople.includes(person))
                             .map((person, idx) => (
                               <SelectItem key={idx} value={person}>
                                 {person}
@@ -191,11 +147,9 @@ export function SplitBill({ data, onClose, splitBillState }: SplitBillProps) {
                     </div>
                   </div>
                 );
-              })
+              }),
             )}
-            {itemAssignmentError && (
-              <p className="text-red-500 text-sm">{itemAssignmentError}</p>
-            )}
+            {itemAssignmentError && <p className="text-red-500 text-sm">{itemAssignmentError}</p>}
           </div>
         );
       case 4:
@@ -214,8 +168,7 @@ export function SplitBill({ data, onClose, splitBillState }: SplitBillProps) {
               <span>Rp {data.total.toLocaleString()}</span>
             </div>
             <p className="text-sm text-muted-foreground mt-4">
-              Note: The taxes and fees are calculated proportionally based on
-              each person&apos;s order amount.
+              Note: The taxes and fees are calculated proportionally based on each person&apos;s order amount.
             </p>
           </div>
         );
@@ -248,15 +201,10 @@ export function SplitBill({ data, onClose, splitBillState }: SplitBillProps) {
               variant="otter"
               onClick={handleNextStep}
               disabled={
-                (splitBillStep === 2 &&
-                  (duplicateNameError !== null ||
-                    people.some((name) => name.trim() === ""))) ||
+                (splitBillStep === 2 && (duplicateNameError !== null || people.some((name) => name.trim() === ""))) ||
                 (splitBillStep === 3 &&
-                  (Object.keys(itemAssignments).length !==
-                    data.items.reduce((sum, item) => sum + item.quantity, 0) ||
-                    Object.values(itemAssignments).some(
-                      (assignments) => assignments.length === 0
-                    )))
+                  (Object.keys(itemAssignments).length !== data.items.reduce((sum, item) => sum + item.quantity, 0) ||
+                    Object.values(itemAssignments).some((assignments) => assignments.length === 0)))
               }
             >
               {splitBillStep === 3 ? "Calculate" : "Next"}

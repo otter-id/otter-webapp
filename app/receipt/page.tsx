@@ -1,34 +1,30 @@
 "use client";
 
-import { Suspense } from "react";
-import { useSearchParams } from "next/navigation";
 import { motion } from "framer-motion";
-import { useReceiptData } from "./hooks/use-receipt-data";
-import { useSplitBill } from "./hooks/use-split-bill";
-import { containerVariants } from "./utils/animations";
+import { useSearchParams } from "next/navigation";
+import { Suspense } from "react";
 import { ErrorState } from "@/components/receipt/error-state";
-import { ReceiptHeader } from "@/components/receipt/receipt-header";
-import { ReceiptActions } from "@/components/receipt/receipt-actions";
-import { PickupInfo } from "@/components/receipt/pickup-info";
+import { Footer } from "@/components/receipt/footer";
 import { OrderDetails } from "@/components/receipt/order-details";
 import { OrderSummary } from "@/components/receipt/order-summary";
 import { PointsCard } from "@/components/receipt/points-card";
-import { SplitBill } from "@/components/receipt/split-bill";
-import { RestaurantFeedback } from "@/components/receipt/restaurant-feedback";
-import { Footer } from "@/components/receipt/footer";
-import { UnpaidWarning } from "@/components/receipt/unpaid-warning";
+import { ReceiptActions } from "@/components/receipt/receipt-actions";
+import { ReceiptHeader } from "@/components/receipt/receipt-header";
 import { RefundedWarning } from "@/components/receipt/refunded-warning";
-
-// Skeleton components
-import { ReceiptHeaderSkeleton } from "@/components/receipt/skeletons/receipt-header-skeleton";
-import { ReceiptActionsSkeleton } from "@/components/receipt/skeletons/receipt-actions-skeleton";
-import { PickupInfoSkeleton } from "@/components/receipt/skeletons/pickup-info-skeleton";
 import { OrderDetailsSkeleton } from "@/components/receipt/skeletons/order-details-skeleton";
 import { OrderSummarySkeleton } from "@/components/receipt/skeletons/order-summary-skeleton";
 import { PointsCardSkeleton } from "@/components/receipt/skeletons/points-card-skeleton";
+import { ReceiptActionsSkeleton } from "@/components/receipt/skeletons/receipt-actions-skeleton";
 
+// Skeleton components
+import { ReceiptHeaderSkeleton } from "@/components/receipt/skeletons/receipt-header-skeleton";
+import { SplitBill } from "@/components/receipt/split-bill";
+import { UnpaidWarning } from "@/components/receipt/unpaid-warning";
 // Temporary data for development
 import { fakeReceiptData } from "@/utils/client";
+import { useReceiptData } from "./hooks/use-receipt-data";
+import { useSplitBill } from "./hooks/use-split-bill";
+import { containerVariants } from "./utils/animations";
 
 const ReceiptContent = () => {
   const searchParams = useSearchParams();
@@ -57,19 +53,10 @@ const ReceiptContent = () => {
   if (splitBillState.splitBillStep > 0) {
     return (
       <div className="min-h-screen bg-gradient-to-b from-orange-50 to-white py-4 px-4 max-w-md mx-auto">
-        <motion.div
-          variants={containerVariants}
-          initial="hidden"
-          animate="visible"
-          className="space-y-4"
-        >
+        <motion.div variants={containerVariants} initial="hidden" animate="visible" className="space-y-4">
           {data.status === "UNPAID" && <UnpaidWarning />}
           <ReceiptHeader data={data} />
-          <SplitBill
-            data={data}
-            onClose={splitBillState.handleCancelSplitBill}
-            splitBillState={splitBillState}
-          />
+          <SplitBill data={data} onClose={splitBillState.handleCancelSplitBill} splitBillState={splitBillState} />
           <Footer />
         </motion.div>
       </div>
@@ -79,12 +66,7 @@ const ReceiptContent = () => {
   // Otherwise show the main receipt content
   return (
     <div className="min-h-screen bg-gradient-to-b from-orange-50 to-white py-4 px-4 max-w-md mx-auto">
-      <motion.div
-        variants={containerVariants}
-        initial="hidden"
-        animate="visible"
-        className="space-y-4"
-      >
+      <motion.div variants={containerVariants} initial="hidden" animate="visible" className="space-y-4">
         {isLoading ? (
           <>
             <ReceiptHeaderSkeleton />
@@ -104,10 +86,7 @@ const ReceiptContent = () => {
             {/* <RestaurantFeedback data={data} /> */}
             {/* <PickupInfo data={data} /> */}
             <OrderDetails data={data} />
-            <OrderSummary
-              data={data}
-              onSplitBill={splitBillState.handleSplitBill}
-            />
+            <OrderSummary data={data} onSplitBill={splitBillState.handleSplitBill} />
             <PointsCard data={data} />
             <Footer />
           </>

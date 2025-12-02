@@ -1,13 +1,14 @@
 "use client";
 
 import { format } from "date-fns";
-import Image from "next/image";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Badge } from "@/components/ui/badge";
 import { motion } from "framer-motion";
+import Image from "next/image";
 import { cardVariants } from "@/app/receipt/utils/animations";
-import { ReceiptData } from "@/types/receipt";
 import OrderStepper from "@/components/receipt/order-stepper";
+import { Badge } from "@/components/ui/badge";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import type { ReceiptData } from "@/types/receipt";
+
 const MotionCard = motion.create(Card);
 
 interface ReceiptHeaderProps {
@@ -32,34 +33,22 @@ export function ReceiptHeader({ data }: ReceiptHeaderProps) {
         />
         <div>
           <CardTitle className="text-xl">{data.restaurantName}</CardTitle>
-          <p className="text-sm text-muted-foreground">
-            {data.restaurantAddress}
-          </p>
+          <p className="text-sm text-muted-foreground">{data.restaurantAddress}</p>
         </div>
       </CardHeader>
       <CardContent>
         <div className="text-center py-4">
-          <p className="text-5xl font-bold mb-1 text-[#F2C94C]">
-            #{data.orderNumber}
-          </p>
+          <p className="text-5xl font-bold mb-1 text-[#F2C94C]">#{data.orderNumber}</p>
           <Badge
             variant={data.status === "PAID" ? "default" : "secondary"}
-            className={`mb-2 ${data.status === "PAID"
-              ? "bg-green-500 hover:bg-green-600 text-white"
-              : ""
-              }`}
+            className={`mb-2 ${data.status === "PAID" ? "bg-green-500 hover:bg-green-600 text-white" : ""}`}
           >
             {data.status}
           </Badge>
           <p className="text-2xl font-semibold mb-2">{data.firstName}</p>
-          <p className="text-sm text-muted-foreground">
-            {format(orderDate, "d MMM yyyy | HH:mm")}
-          </p>
+          <p className="text-sm text-muted-foreground">{format(orderDate, "d MMM yyyy | HH:mm")}</p>
         </div>
-        <OrderStepper
-          orderStatus={data.orderStatus}
-          paymentStatus={data.status}
-        />
+        <OrderStepper orderStatus={data.orderStatus} paymentStatus={data.status} />
       </CardContent>
     </MotionCard>
   );

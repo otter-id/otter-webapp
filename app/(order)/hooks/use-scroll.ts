@@ -1,17 +1,11 @@
 "use client";
 
-import { useCallback, useRef, useEffect } from "react";
-import { MenuCategory } from "@/types/restaurant";
+import { useCallback, useEffect, useRef } from "react";
 
-export function useScrollSync(options: {
-  onScroll?: (categoryId: string) => void;
-  headerOffset?: number;
-}) {
+export function useScrollSync(options: { onScroll?: (categoryId: string) => void; headerOffset?: number }) {
   const { onScroll, headerOffset = 145 } = options;
   const categoryRefs = useRef<Record<string, HTMLDivElement | null>>({});
-  const categoryButtonsRef = useRef<Record<string, HTMLButtonElement | null>>(
-    {}
-  );
+  const categoryButtonsRef = useRef<Record<string, HTMLButtonElement | null>>({});
   const scrollContainerRef = useRef<HTMLDivElement>(null);
   const timeoutRef = useRef<NodeJS.Timeout>();
 
@@ -19,8 +13,7 @@ export function useScrollSync(options: {
     const button = categoryButtonsRef.current[categoryId];
     if (button && scrollContainerRef.current) {
       const container = scrollContainerRef.current;
-      const scrollLeft =
-        button.offsetLeft - (container.clientWidth - button.clientWidth) / 2;
+      const scrollLeft = button.offsetLeft - (container.clientWidth - button.clientWidth) / 2;
       container.scrollTo({ left: scrollLeft, behavior: "smooth" });
     }
   }, []);
@@ -29,9 +22,7 @@ export function useScrollSync(options: {
     if (!onScroll) return;
 
     const handleScroll = () => {
-      for (const [categoryId, element] of Object.entries(
-        categoryRefs.current
-      )) {
+      for (const [categoryId, element] of Object.entries(categoryRefs.current)) {
         if (element) {
           const titleElement = element.querySelector("h2");
           if (titleElement) {

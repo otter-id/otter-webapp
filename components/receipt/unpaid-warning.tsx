@@ -1,6 +1,5 @@
 import { AlertCircle } from "lucide-react";
-import { Alert, AlertDescription } from "@/components/ui/alert";
-import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 export function UnpaidWarning() {
   return (
     <Card className="mb-4 border-red-500 border-2">
@@ -10,9 +9,7 @@ export function UnpaidWarning() {
           <CardTitle className="text-center font-bold ">UNPAID ORDER</CardTitle>
         </span>
       </CardHeader>
-      <CardContent className="text-center">
-        Your have not paid for this order, please pay at cashier.
-      </CardContent>
+      <CardContent className="text-center">Your have not paid for this order, please pay at cashier.</CardContent>
     </Card>
   );
 }

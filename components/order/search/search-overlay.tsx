@@ -1,16 +1,14 @@
 "use client";
 
-import { useState, useEffect } from "react";
-import type { MenuItem } from "@/types/restaurant";
-import { Input } from "@/components/ui/input";
-import { Button } from "@/components/ui/button";
-import { X, SearchIcon, ChevronLeft } from "lucide-react";
-import { motion, AnimatePresence } from "framer-motion";
+import { AnimatePresence, motion } from "framer-motion";
+import { ChevronLeft, SearchIcon, X } from "lucide-react";
+import { useEffect, useState } from "react";
 import { MenuItem as MenuItemComponent } from "@/components/order/menu/menu-item";
-import { highlightText } from "@/utils/client";
-import { cn } from "@/utils/client";
-
-import { SearchResult, GroupedResults } from "@/types/search";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import type { MenuItem } from "@/types/restaurant";
+import type { GroupedResults, SearchResult } from "@/types/search";
+import { cn, highlightText } from "@/utils/client";
 
 interface SearchOverlayProps {
   menuItems: MenuItem[];
@@ -22,14 +20,7 @@ interface SearchOverlayProps {
   getItemQuantityInCart: (itemId: string) => number;
 }
 
-export function SearchOverlay({
-  menuItems,
-  onItemClick,
-  isOpen,
-  onOpenChange,
-  className,
-  getItemQuantityInCart,
-}: SearchOverlayProps) {
+export function SearchOverlay({ menuItems, onItemClick, isOpen, onOpenChange, className, getItemQuantityInCart }: SearchOverlayProps) {
   const [searchQuery, setSearchQuery] = useState("");
 
   // Reset search when closing
@@ -69,9 +60,7 @@ export function SearchOverlay({
     const results: GroupedResults = {};
 
     // Hilangkan duplikasi item berdasarkan $id sebelum melakukan pencarian
-    const uniqueMenuItems = Array.from(
-      new Map(menuItems.map((item) => [item.$id, item])).values()
-    );
+    const uniqueMenuItems = Array.from(new Map(menuItems.map((item) => [item.$id, item])).values());
     // --- AKHIR PERBAIKAN ---
 
     const itemsByCategory: Record<string, MenuItem[]> = {};
@@ -92,14 +81,9 @@ export function SearchOverlay({
         const descMatch = item.description.toLowerCase().includes(query);
 
         if (nameMatch || descMatch) {
-          const result: SearchResult = {
+          const _result: SearchResult = {
             ...item,
-            matchedOn:
-              nameMatch && descMatch
-                ? "both"
-                : nameMatch
-                  ? "name"
-                  : "description",
+            matchedOn: nameMatch && descMatch ? "both" : nameMatch ? "name" : "description",
           };
           return true;
         }
@@ -124,14 +108,9 @@ export function SearchOverlay({
       {/* Search Trigger */}
       <div className={cn("bg-white", className)}>
         <div className="px-4 py-3">
-          <div
-            className="flex items-center gap-2 rounded-lg border bg-background p-2 py-3 cursor-pointer"
-            onClick={() => onOpenChange(true)}
-          >
+          <div className="flex items-center gap-2 rounded-lg border bg-background p-2 py-3 cursor-pointer" onClick={() => onOpenChange(true)}>
             <SearchIcon className="w-5 h-5 text-muted-foreground flex-shrink-0" />
-            <span className="text-muted-foreground text-base">
-              Search menu...
-            </span>
+            <span className="text-muted-foreground text-base">Search menu...</span>
           </div>
         </div>
       </div>
@@ -160,12 +139,7 @@ export function SearchOverlay({
                 {/* Sticky Search Header */}
                 <div className="sticky top-0 z-10 border-b bg-white/80 backdrop-blur-xl">
                   <div className="px-4 py-3 flex items-center gap-3">
-                    <Button
-                      variant="ghost"
-                      size="icon"
-                      className="h-10 w-10 rounded-full flex-shrink-0"
-                      onClick={() => onOpenChange(false)}
-                    >
+                    <Button variant="ghost" size="icon" className="h-10 w-10 rounded-full flex-shrink-0" onClick={() => onOpenChange(false)}>
                       <ChevronLeft className="h-4 w-4" />
                     </Button>
                     <div className="flex-1 flex items-center gap-2 rounded-md border bg-background p-2">
@@ -179,12 +153,7 @@ export function SearchOverlay({
                         autoFocus
                       />
                       {searchQuery && (
-                        <Button
-                          variant="ghost"
-                          size="icon"
-                          className="h-5 w-5 p-0 hover:bg-transparent"
-                          onClick={() => setSearchQuery("")}
-                        >
+                        <Button variant="ghost" size="icon" className="h-5 w-5 p-0 hover:bg-transparent" onClick={() => setSearchQuery("")}>
                           <X className="h-4 w-4 text-muted-foreground" />
                         </Button>
                       )}
@@ -197,57 +166,43 @@ export function SearchOverlay({
                   <div className="p-4">
                     {searchQuery.trim() ? (
                       <div className="space-y-6">
-                        {Object.entries(getSearchResults()).map(
-                          ([category, items]) => (
-                            <div key={category}>
-                              <h3 className="text-sm font-medium text-muted-foreground mb-3">
-                                {category}
-                              </h3>
-                              <div className="space-y-4">
-                                {items.map((item, index) => (
-                                  <motion.div
-                                    key={`search-result-${item.$id}-${index}`}
-                                    layout
-                                    initial={{ opacity: 0 }}
-                                    animate={{ opacity: 1 }}
-                                    transition={{ duration: 0.3 }}
-                                    onClick={() => handleItemClick(item)}
-                                    className="cursor-pointer"
-                                  >
-                                    <MenuItemComponent
-                                      item={{
-                                        ...item,
-                                        name: highlightText(
-                                          item.name,
-                                          searchQuery
-                                        ) as string,
-                                        description: highlightText(
-                                          item.description,
-                                          searchQuery
-                                        ) as string,
-                                      }}
-                                      onItemClick={() => handleItemClick(item)}
-                                      quantity={getItemQuantityInCart(item.$id)}
-                                    />
-                                  </motion.div>
-                                ))}
-                              </div>
+                        {Object.entries(getSearchResults()).map(([category, items]) => (
+                          <div key={category}>
+                            <h3 className="text-sm font-medium text-muted-foreground mb-3">{category}</h3>
+                            <div className="space-y-4">
+                              {items.map((item, index) => (
+                                <motion.div
+                                  key={`search-result-${item.$id}-${index}`}
+                                  layout
+                                  initial={{ opacity: 0 }}
+                                  animate={{ opacity: 1 }}
+                                  transition={{ duration: 0.3 }}
+                                  onClick={() => handleItemClick(item)}
+                                  className="cursor-pointer"
+                                >
+                                  <MenuItemComponent
+                                    item={{
+                                      ...item,
+                                      name: highlightText(item.name, searchQuery) as string,
+                                      description: highlightText(item.description, searchQuery) as string,
+                                    }}
+                                    onItemClick={() => handleItemClick(item)}
+                                    quantity={getItemQuantityInCart(item.$id)}
+                                  />
+                                </motion.div>
+                              ))}
                             </div>
-                          )
-                        )}
+                          </div>
+                        ))}
                         {Object.keys(getSearchResults()).length === 0 && (
                           <div className="text-center py-8">
-                            <p className="text-muted-foreground">
-                              No items found for "{searchQuery}"
-                            </p>
+                            <p className="text-muted-foreground">No items found for "{searchQuery}"</p>
                           </div>
                         )}
                       </div>
                     ) : (
                       <div className="text-center py-8">
-                        <p className="text-muted-foreground">
-                          Start typing to search menu items
-                        </p>
+                        <p className="text-muted-foreground">Start typing to search menu items</p>
                       </div>
                     )}
                   </div>

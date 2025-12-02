@@ -1,12 +1,12 @@
 "use client";
 
+import { motion } from "framer-motion";
+import { Users } from "lucide-react";
+import { cardVariants } from "@/app/receipt/utils/animations";
+import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Separator } from "@/components/ui/separator";
-import { Button } from "@/components/ui/button";
-import { Users } from "lucide-react";
-import { motion } from "framer-motion";
-import { cardVariants } from "@/app/receipt/utils/animations";
-import { ReceiptData } from "@/types/receipt";
+import type { ReceiptData } from "@/types/receipt";
 
 const MotionCard = motion(Card);
 

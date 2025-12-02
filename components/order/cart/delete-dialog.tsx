@@ -1,4 +1,4 @@
-import { AlertTriangle } from "lucide-react"
+import { AlertTriangle } from "lucide-react";
 import {
   AlertDialog,
   AlertDialogAction,
@@ -8,14 +8,14 @@ import {
   AlertDialogFooter,
   AlertDialogHeader,
   AlertDialogTitle,
-} from "@/components/ui/alert-dialog"
-import type { CartItem } from "@/types/cart"
+} from "@/components/ui/alert-dialog";
+import type { CartItem } from "@/types/cart";
 
 interface DeleteConfirmationProps {
-  isOpen: boolean
-  onOpenChange: (open: boolean) => void
-  item: CartItem | null
-  onConfirm: (item: CartItem) => void
+  isOpen: boolean;
+  onOpenChange: (open: boolean) => void;
+  item: CartItem | null;
+  onConfirm: (item: CartItem) => void;
 }
 
 export function DeleteConfirmation({ isOpen, onOpenChange, item, onConfirm }: DeleteConfirmationProps) {
@@ -27,17 +27,15 @@ export function DeleteConfirmation({ isOpen, onOpenChange, item, onConfirm }: De
             <AlertTriangle className="w-6 h-6 text-red-600" />
           </div>
           <AlertDialogTitle className="text-center">Remove Item</AlertDialogTitle>
-          <AlertDialogDescription className="text-center">
-            Are you sure you want to remove this item from your cart?
-          </AlertDialogDescription>
+          <AlertDialogDescription className="text-center">Are you sure you want to remove this item from your cart?</AlertDialogDescription>
         </AlertDialogHeader>
         <AlertDialogFooter className="flex-col space-y-2 sm:space-y-0">
           <AlertDialogAction
             onClick={() => {
               if (item) {
-                onConfirm(item)
+                onConfirm(item);
               }
-              onOpenChange(false)
+              onOpenChange(false);
             }}
             className="w-full bg-red-500 hover:bg-red-600 text-white rounded-full"
           >
@@ -52,6 +50,5 @@ export function DeleteConfirmation({ isOpen, onOpenChange, item, onConfirm }: De
         </AlertDialogFooter>
       </AlertDialogContent>
     </AlertDialog>
-  )
+  );
 }
-

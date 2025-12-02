@@ -1,28 +1,28 @@
 "use client";
 
-import { useState, useEffect } from "react";
-import { RestaurantHeader } from "@/components/order/header/restaurant-header";
+import { AlertTriangle, Check, X } from "lucide-react";
+import { useEffect, useState } from "react";
+import { toast } from "sonner";
+import { useCart } from "@/app/(order)/hooks/use-cart";
+import { useRestaurant } from "@/app/(order)/hooks/use-restaurant";
+import { useScrollSync } from "@/app/(order)/hooks/use-scroll";
+import { CartDrawer } from "@/components/order/cart/cart-drawer";
+import { DeleteConfirmation } from "@/components/order/cart/delete-dialog";
 import { StickyFooter } from "@/components/order/cart/sticky-footer";
+import { RestaurantHeader } from "@/components/order/header/restaurant-header";
+import { ItemDrawer } from "@/components/order/item/item-drawer";
 import { CategoryNav } from "@/components/order/menu/category-nav";
 import { MenuItem } from "@/components/order/menu/menu-item";
-import { CartDrawer } from "@/components/order/cart/cart-drawer";
-import { ItemDrawer } from "@/components/order/item/item-drawer";
-import { useCart } from "@/app/(order)/hooks/use-cart";
-import { useScrollSync } from "@/app/(order)/hooks/use-scroll";
-import { useRestaurant } from "@/app/(order)/hooks/use-restaurant";
-import { DeleteConfirmation } from "@/components/order/cart/delete-dialog";
-import { MenuItem as MenuItemType } from "@/types/restaurant";
-import { toast } from "sonner";
-import { Check, X, AlertTriangle } from "lucide-react";
 import { SearchOverlay } from "@/components/order/search/search-overlay";
-import { Button } from "@/components/ui/button";
-import { RestaurantHeaderSkeleton } from "@/components/order/skeletons/restaurant-header-skeleton";
-import { SearchOverlaySkeleton } from "@/components/order/skeletons/search-overlay-skeleton";
 import { CategoryNavSkeleton } from "@/components/order/skeletons/category-nav-skeleton";
 // import { CartSkeleton } from "@/components/order/skeletons/CartSkeleton";
 import { MenuItemSkeleton } from "@/components/order/skeletons/menu-item-skeleton";
+import { RestaurantHeaderSkeleton } from "@/components/order/skeletons/restaurant-header-skeleton";
+import { SearchOverlaySkeleton } from "@/components/order/skeletons/search-overlay-skeleton";
 import { StickyFooterSkeleton } from "@/components/order/skeletons/sticky-footer-skeleton";
+import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
+import type { MenuItem as MenuItemType } from "@/types/restaurant";
 
 interface FoodOrderingClientProps {
   storeId: string;
@@ -70,12 +70,7 @@ export function FoodOrderingClient({ storeId }: FoodOrderingClientProps) {
     }
   };
 
-  const {
-    categoryRefs,
-    categoryButtonsRef,
-    scrollContainerRef,
-    scrollCategoryIntoView,
-  } = useScrollSync({
+  const { categoryRefs, categoryButtonsRef, scrollContainerRef, scrollCategoryIntoView } = useScrollSync({
     onScroll: (categoryId) => {
       setSelectedCategoryId(categoryId);
       scrollCategoryIntoView(categoryId);
@@ -111,9 +106,7 @@ export function FoodOrderingClient({ storeId }: FoodOrderingClientProps) {
   const handleEditCartItem = (item: any) => {
     // Find the original menu item
     for (const category of menuCategories) {
-      const menuItem = category.menuId.find(
-        (menuItem) => menuItem.$id === item.$id
-      );
+      const menuItem = category.menuId.find((menuItem) => menuItem.$id === item.$id);
       if (menuItem) {
         setSelectedItem(menuItem);
         setEditingCartItem(item);
@@ -184,9 +177,7 @@ export function FoodOrderingClient({ storeId }: FoodOrderingClientProps) {
       <div className="min-h-screen flex items-center justify-center bg-gray-50">
         <div className="max-w-sm mx-auto text-center p-6 bg-white rounded-lg shadow-lg">
           <AlertTriangle className="h-12 w-12 text-red-500 mx-auto mb-4" />
-          <h3 className="text-lg font-semibold text-gray-900 mb-2">
-            Something went wrong
-          </h3>
+          <h3 className="text-lg font-semibold text-gray-900 mb-2">Something went wrong</h3>
           <p className="text-gray-600 mb-6">{error}</p>
           <Button onClick={() => window.location.reload()} className="w-full">
             Try again
@@ -253,12 +244,8 @@ export function FoodOrderingClient({ storeId }: FoodOrderingClientProps) {
               <div className="space-y-4">
                 {category.menuId.map((item, index) => {
                   // Create a unique key for items in the Popular category
-                  const isPopularCategory =
-                    category.name === "Popular" ||
-                    category.$id === "popular-category";
-                  const itemKey = isPopularCategory
-                    ? `popular-${item.$id}-${index}`
-                    : item.$id;
+                  const isPopularCategory = category.name === "Popular" || category.$id === "popular-category";
+                  const itemKey = isPopularCategory ? `popular-${item.$id}-${index}` : item.$id;
 
                   return (
                     <MenuItem
@@ -276,11 +263,7 @@ export function FoodOrderingClient({ storeId }: FoodOrderingClientProps) {
         </div>
       </div>
 
-      <StickyFooter
-        cartItemCount={cartItemCount}
-        cartTotal={calculateCartTotals().total}
-        onCartClick={() => setIsCartOpen(true)}
-      />
+      <StickyFooter cartItemCount={cartItemCount} cartTotal={calculateCartTotals().total} onCartClick={() => setIsCartOpen(true)} />
 
       <ItemDrawer
         isOpen={isItemDrawerOpen}
@@ -338,4 +321,3 @@ export function FoodOrderingClient({ storeId }: FoodOrderingClientProps) {
     </div>
   );
 }
-

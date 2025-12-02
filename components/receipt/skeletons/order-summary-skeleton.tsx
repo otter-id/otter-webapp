@@ -1,6 +1,6 @@
+import { skeletonClass } from "@/app/receipt/utils/animations";
 import { Card, CardContent } from "@/components/ui/card";
 import { Separator } from "@/components/ui/separator";
-import { skeletonClass } from "@/app/receipt/utils/animations";
 
 export function OrderSummarySkeleton() {
   return (

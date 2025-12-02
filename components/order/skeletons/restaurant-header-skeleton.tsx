@@ -10,12 +10,7 @@ export function RestaurantHeaderSkeleton() {
       <Skeleton className="h-48 w-full" />
 
       {/* Skeleton untuk Floating Card */}
-      <motion.div
-        className="relative mx-4 -mt-24"
-        initial={{ opacity: 1, y: 0 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ duration: 0.5 }}
-      >
+      <motion.div className="relative mx-4 -mt-24" initial={{ opacity: 1, y: 0 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.5 }}>
         <div className="bg-white rounded-xl shadow-lg p-6 space-y-4">
           {/* Skeleton untuk Info Restoran */}
           <div className="flex items-start gap-4">

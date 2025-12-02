@@ -61,7 +61,7 @@ export function PaymentSkeleton() {
             <Skeleton className="h-[72px] w-full rounded-lg" />
           </div>
         </>
-        
+
         {/* Skeleton untuk Footer Button */}
         <div className="px-4 py-5 bg-white border-t">
           <Skeleton className="h-12 w-full" />

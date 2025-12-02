@@ -1,8 +1,8 @@
 // useCart
 "use client";
 
-import { JSX, useState, useCallback, useEffect, useMemo } from "react";
-import { MenuItem, MenuOption, Restaurant } from "@/types/restaurant";
+import { type JSX, useCallback, useEffect, useMemo, useState } from "react";
+import type { MenuItem, MenuOption, Restaurant } from "@/types/restaurant";
 
 // Interface tidak perlu diubah
 interface ExtendedMenuItem extends Omit<MenuItem, "name" | "description"> {
@@ -64,28 +64,16 @@ export function useCart(restaurant: Restaurant | null) {
     }
   }, [cart]);
 
-  const currentCartItems = useMemo(
-    () => cart.find((r) => r.$id === restaurant?.$id)?.item || [],
-    [cart, restaurant]
-  );
+  const currentCartItems = useMemo(() => cart.find((r) => r.$id === restaurant?.$id)?.item || [], [cart, restaurant]);
 
-  const cartItemCount = currentCartItems.reduce(
-    (sum, item) => sum + item.quantity,
-    0
-  );
+  const cartItemCount = currentCartItems.reduce((sum, item) => sum + item.quantity, 0);
 
   const calculateCartTotals = useCallback((): CartTotals => {
     const subtotal = currentCartItems.reduce((sum, item) => {
       const optionsPrice = item.selectedOptions
         ? Object.values(item.selectedOptions).reduce((optionSum, options) => {
-          return (
-            optionSum +
-            options.reduce(
-              (total, option) => total + (option.discountPrice ?? option.price),
-              0
-            )
-          );
-        }, 0)
+            return optionSum + options.reduce((total, option) => total + (option.discountPrice ?? option.price), 0);
+          }, 0)
         : 0;
 
       return sum + ((item.discountPrice ?? item.price) + optionsPrice) * item.quantity;
@@ -114,8 +102,8 @@ export function useCart(restaurant: Restaurant | null) {
       .flat()
       .map((opt) => opt.$id)
       .sort()
-      .join(',');
-    return `${item.$id}|${optionIds}|note:${item.note || ''}`;
+      .join(",");
+    return `${item.$id}|${optionIds}|note:${item.note || ""}`;
   };
 
   const addToCart = useCallback(
@@ -131,9 +119,7 @@ export function useCart(restaurant: Restaurant | null) {
       const newItemSignature = generateItemSignature(safeNewItem);
 
       setCart((prevCart) => {
-        const restaurantIndex = prevCart.findIndex(
-          (r) => r.$id === restaurant.$id
-        );
+        const restaurantIndex = prevCart.findIndex((r) => r.$id === restaurant.$id);
 
         // Kasus 1: Restoran belum ada di keranjang, buat entri baru.
         if (restaurantIndex === -1) {
@@ -149,9 +135,7 @@ export function useCart(restaurant: Restaurant | null) {
         const targetRestaurant = { ...updatedCart[restaurantIndex] };
         const existingItems = [...(targetRestaurant.item || [])];
 
-        const existingItemIndex = existingItems.findIndex(
-          (item) => generateItemSignature(item) === newItemSignature
-        );
+        const existingItemIndex = existingItems.findIndex((item) => generateItemSignature(item) === newItemSignature);
 
         // Kasus 2a: Ditemukan item yang identik, update kuantitasnya.
         if (existingItemIndex > -1) {
@@ -169,7 +153,7 @@ export function useCart(restaurant: Restaurant | null) {
         return updatedCart;
       });
     },
-    [restaurant]
+    [restaurant],
   );
 
   const updateCartItem = useCallback(
@@ -188,11 +172,7 @@ export function useCart(restaurant: Restaurant | null) {
           if (r.$id === restaurant.$id) {
             const originalItems = r.item || [];
 
-            const mergeTarget = originalItems.find(
-              (item) =>
-                item !== editingCartItem &&
-                generateItemSignature(item) === updatedSignature
-            );
+            const mergeTarget = originalItems.find((item) => item !== editingCartItem && generateItemSignature(item) === updatedSignature);
 
             let newItems;
             if (mergeTarget) {
@@ -200,15 +180,9 @@ export function useCart(restaurant: Restaurant | null) {
 
               newItems = originalItems
                 .filter((item) => item !== editingCartItem)
-                .map((item) =>
-                  item === mergeTarget
-                    ? { ...item, quantity: newQuantity }
-                    : item
-                );
+                .map((item) => (item === mergeTarget ? { ...item, quantity: newQuantity } : item));
             } else {
-              newItems = originalItems.map((item) =>
-                item === editingCartItem ? safeUpdatedItem : item
-              );
+              newItems = originalItems.map((item) => (item === editingCartItem ? safeUpdatedItem : item));
             }
             return { ...r, item: newItems };
           }
@@ -218,7 +192,7 @@ export function useCart(restaurant: Restaurant | null) {
 
       setEditingCartItem(null);
     },
-    [editingCartItem, restaurant]
+    [editingCartItem, restaurant],
   );
 
   const updateItemQuantity = useCallback(
@@ -230,16 +204,14 @@ export function useCart(restaurant: Restaurant | null) {
           if (r.$id === restaurant.$id) {
             return {
               ...r,
-              item: r.item?.map((cartItem) =>
-                cartItem === item ? { ...cartItem, quantity } : cartItem
-              ),
+              item: r.item?.map((cartItem) => (cartItem === item ? { ...cartItem, quantity } : cartItem)),
             };
           }
           return r;
-        })
+        }),
       );
     },
-    [restaurant]
+    [restaurant],
   );
 
   const removeItem = useCallback(
@@ -257,16 +229,16 @@ export function useCart(restaurant: Restaurant | null) {
             }
             return r;
           })
-          .filter((r) => r.item && r.item.length > 0)
+          .filter((r) => r.item && r.item.length > 0),
       );
     },
-    [restaurant]
+    [restaurant],
   );
 
   const createCartItemFromMenuItem = (
     menuItem: MenuItem | ExtendedMenuItem,
     selectedOptions: { [categoryId: string]: MenuOption[] },
-    note: string = ""
+    note: string = "",
   ): CartItem => {
     const formattedOptions: CartItem["selectedOptions"] = {};
     Object.entries(selectedOptions).forEach(([categoryId, options]) => {
@@ -285,9 +257,8 @@ export function useCart(restaurant: Restaurant | null) {
     } else {
       try {
         const stringName = String(menuItem.name);
-        itemName =
-          stringName === "[object Object]" ? "Menu Item" : stringName;
-      } catch (e) {
+        itemName = stringName === "[object Object]" ? "Menu Item" : stringName;
+      } catch (_e) {
         itemName = "Menu Item";
       }
     }
@@ -306,9 +277,7 @@ export function useCart(restaurant: Restaurant | null) {
 
   const clearCart = useCallback(() => {
     if (!restaurant) return;
-    setCart((prevCart) =>
-      prevCart.filter((r) => r.$id !== restaurant.$id)
-    );
+    setCart((prevCart) => prevCart.filter((r) => r.$id !== restaurant.$id));
     setEditingCartItem(null);
   }, [restaurant]);
 

@@ -1,29 +1,20 @@
 // components/order/cart/cart-drawer.tsx
 "use client";
 
+import { Check, RefreshCw, X } from "lucide-react";
+import { useRouter } from "next/navigation";
+import { type JSX, useEffect, useState } from "react";
+import { toast } from "sonner";
 import type { CartItem as CartItemType } from "@/app/(order)/hooks/use-cart";
-import {
-  Drawer,
-  DrawerContent,
-  DrawerFooter,
-  DrawerHeader,
-  DrawerTitle,
-} from "@/components/ui/drawer";
-import { JSX } from "react";
 import { Button } from "@/components/ui/button";
+import { Drawer, DrawerContent, DrawerFooter, DrawerHeader, DrawerTitle } from "@/components/ui/drawer";
 import { Separator } from "@/components/ui/separator";
-import { X, RefreshCw } from "lucide-react";
+import type { MenuItem, Restaurant } from "@/types/restaurant";
 import { CartItem } from "./cart-item";
 import { CartTotals } from "./cart-total";
-import { UpsellModal } from "./upsell-modal";
 import { LocationConfirmationDialog } from "./location-confirmation-dialog";
-import { useState, useEffect } from "react";
-import { toast } from "sonner";
-import { Check } from "lucide-react";
-import type { MenuItem, Restaurant } from "@/types/restaurant";
-import { StartOverDialog } from "./start-over-dialog";
 import { RestoClosedDialog } from "./resto-closed-dialog";
-import { useRouter } from "next/navigation";
+import { StartOverDialog } from "./start-over-dialog";
 
 interface ExtendedMenuItem extends Omit<MenuItem, "name" | "description"> {
   name: string | JSX.Element;
@@ -64,11 +55,10 @@ export function CartDrawer({
   onClearCart,
 }: CartDrawerProps) {
   const router = useRouter();
-  const [isUpsellOpen, setIsUpsellOpen] = useState(false);
+  const [_isUpsellOpen, setIsUpsellOpen] = useState(false);
   const [isLocationConfirmOpen, setIsLocationConfirmOpen] = useState(false);
   const [isStartOverDialogOpen, setIsStartOverDialogOpen] = useState(false);
-  const [isRestoClosedDialogOpen, setIsRestoClosedDialogOpen] =
-    useState(false);
+  const [isRestoClosedDialogOpen, setIsRestoClosedDialogOpen] = useState(false);
 
   useEffect(() => {
     if (isOpen && restaurant && !restaurant.isOpen) {
@@ -98,10 +88,7 @@ export function CartDrawer({
       qrisData: null,
     };
 
-    localStorage.setItem(
-      `payment-${restaurant.$id}`,
-      JSON.stringify(initialPaymentState)
-    );
+    localStorage.setItem(`payment-${restaurant.$id}`, JSON.stringify(initialPaymentState));
     router.push(`/payment?id=${restaurant?.$id}`);
   };
 
@@ -117,12 +104,12 @@ export function CartDrawer({
     onOpenChange(false);
   };
 
-  const handleUpsellContinue = () => {
+  const _handleUpsellContinue = () => {
     setIsUpsellOpen(false);
     proceedToPayment();
   };
 
-  const handleAddRecommendedItem = (item: MenuItem | ExtendedMenuItem) => {
+  const _handleAddRecommendedItem = (item: MenuItem | ExtendedMenuItem) => {
     if (onAddItem) {
       onAddItem(item);
       const itemName = typeof item.name === "string" ? item.name : "Item";
@@ -157,12 +144,7 @@ export function CartDrawer({
           <DrawerHeader className="px-4 py-3 border-b flex-shrink-0">
             <div className="flex items-center justify-between">
               <DrawerTitle>Your Cart</DrawerTitle>
-              <Button
-                variant="ghost"
-                size="icon"
-                className="rounded-full h-8 w-8"
-                onClick={() => onOpenChange(false)}
-              >
+              <Button variant="ghost" size="icon" className="rounded-full h-8 w-8" onClick={() => onOpenChange(false)}>
                 <X className="h-4 w-4" />
               </Button>
             </div>
@@ -176,9 +158,7 @@ export function CartDrawer({
                     <div key={`${item.$id}-${index}`} className="space-y-3">
                       <CartItem
                         item={item}
-                        onQuantityChange={(quantity) =>
-                          onUpdateQuantity(item, quantity)
-                        }
+                        onQuantityChange={(quantity) => onUpdateQuantity(item, quantity)}
                         onEdit={() => onEditItem(item)}
                         onDelete={() => handleDeleteItem(item)}
                       />
@@ -190,11 +170,7 @@ export function CartDrawer({
                 <Separator />
 
                 <div className="px-4 py-4">
-                  <CartTotals
-                    totals={cartTotals}
-                    isFeesExpanded={isFeesExpanded}
-                    onFeesExpandedChange={onFeesExpandedChange}
-                  />
+                  <CartTotals totals={cartTotals} isFeesExpanded={isFeesExpanded} onFeesExpandedChange={onFeesExpandedChange} />
                 </div>
               </div>
             ) : (
@@ -206,25 +182,13 @@ export function CartDrawer({
 
           {cart.length > 0 && (
             <DrawerFooter className="px-4 py-4 border-t space-y-3 flex-shrink-0">
-              <Button
-                className="w-full h-12 bg-black hover:bg-black/90"
-                onClick={handleContinueToPayment}
-                disabled={!restaurant?.isOpen}
-              >
+              <Button className="w-full h-12 bg-black hover:bg-black/90" onClick={handleContinueToPayment} disabled={!restaurant?.isOpen}>
                 Continue to Payment
               </Button>
-              <Button
-                variant="outline"
-                className="w-full"
-                onClick={handleContinueShopping}
-              >
+              <Button variant="outline" className="w-full" onClick={handleContinueShopping}>
                 Continue Shopping
               </Button>
-              <Button
-                variant="destructive-outline"
-                className="w-full text-red-500 hover:text-red-600 hover:bg-red-50"
-                onClick={handleStartOver}
-              >
+              <Button variant="destructive-outline" className="w-full text-red-500 hover:text-red-600 hover:bg-red-50" onClick={handleStartOver}>
                 <RefreshCw className="h-4 w-4 mr-2" />
                 Start Over
               </Button>
@@ -233,11 +197,7 @@ export function CartDrawer({
         </DrawerContent>
       </Drawer>
 
-      <RestoClosedDialog
-        isOpen={isRestoClosedDialogOpen}
-        onOpenChange={setIsRestoClosedDialogOpen}
-        onConfirm={() => { }}
-      />
+      <RestoClosedDialog isOpen={isRestoClosedDialogOpen} onOpenChange={setIsRestoClosedDialogOpen} onConfirm={() => {}} />
 
       <LocationConfirmationDialog
         isOpen={isLocationConfirmOpen}
@@ -246,11 +206,7 @@ export function CartDrawer({
         onConfirm={handleLocationConfirm}
       />
 
-      <StartOverDialog
-        isOpen={isStartOverDialogOpen}
-        onOpenChange={setIsStartOverDialogOpen}
-        onConfirm={confirmStartOver}
-      />
+      <StartOverDialog isOpen={isStartOverDialogOpen} onOpenChange={setIsStartOverDialogOpen} onConfirm={confirmStartOver} />
     </>
   );
 }

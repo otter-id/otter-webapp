@@ -1,5 +1,5 @@
-import { Card, CardContent, CardHeader } from "@/components/ui/card";
 import { skeletonClass } from "@/app/receipt/utils/animations";
+import { Card, CardContent, CardHeader } from "@/components/ui/card";
 
 export function PickupInfoSkeleton() {
   return (

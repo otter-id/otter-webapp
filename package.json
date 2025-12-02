@@ -6,7 +6,7 @@
     "dev": "next dev",
     "build": "next build",
     "start": "next start",
-    "clean": ""
+    "clean": "npx biome check --write"
   },
   "dependencies": {
     "@emotion/is-prop-valid": "latest",
@@ -67,6 +67,7 @@
     "zod": "^3.24.1"
   },
   "devDependencies": {
+    "@biomejs/biome": "2.3.8",
     "@types/node": "^22",
     "@types/qrcode": "^1.5.6",
     "@types/react": "19.2.7",

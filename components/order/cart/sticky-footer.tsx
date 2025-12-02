@@ -1,8 +1,8 @@
 "use client";
 
-import { useState, useEffect } from "react";
-import { Button } from "@/components/ui/button";
 import { ShoppingBag } from "lucide-react";
+import { useEffect, useState } from "react";
+import { Button } from "@/components/ui/button";
 import { formatPrice } from "@/utils/client";
 
 interface StickyFooterProps {
@@ -11,11 +11,7 @@ interface StickyFooterProps {
   onCartClick: () => void;
 }
 
-export function StickyFooter({
-  cartItemCount,
-  cartTotal,
-  onCartClick,
-}: StickyFooterProps) {
+export function StickyFooter({ cartItemCount, cartTotal, onCartClick }: StickyFooterProps) {
   const [mounted, setMounted] = useState(false);
 
   useEffect(() => {
@@ -31,11 +27,7 @@ export function StickyFooter({
       <div className="px-4 py-3">
         <div className="transition-all duration-300">
           {cartItemCount > 0 ? (
-            <Button
-              variant="default"
-              className="w-full h-12 bg-black hover:bg-black/90"
-              onClick={onCartClick}
-            >
+            <Button variant="default" className="w-full h-12 bg-black hover:bg-black/90" onClick={onCartClick}>
               <div className="flex items-center gap-2">
                 <ShoppingBag className="h-5 w-5" />
                 <span className="font-medium">View Cart</span>
@@ -45,11 +37,7 @@ export function StickyFooter({
               </div>
             </Button>
           ) : (
-            <Button
-              variant="outline"
-              disabled
-              className="w-full h-12 opacity-70"
-            >
+            <Button variant="outline" disabled className="w-full h-12 opacity-70">
               <div className="flex items-center gap-2">
                 <ShoppingBag className="h-5 w-5" />
                 <span className="font-medium">No items in cart</span>

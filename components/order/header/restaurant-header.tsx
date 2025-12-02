@@ -1,16 +1,11 @@
 "use client";
 
-import Image from "next/image";
-import { MapPin, Clock } from "lucide-react";
 import { motion } from "framer-motion";
-import { Button } from "@/components/ui/button";
-import {
-  Dialog,
-  DialogContent,
-  DialogHeader,
-  DialogTitle,
-} from "@/components/ui/dialog";
+import { Clock, MapPin } from "lucide-react";
+import Image from "next/image";
 import { useEffect, useState } from "react";
+import { Button } from "@/components/ui/button";
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Separator } from "@/components/ui/separator";
 
 interface RestaurantHeaderProps {
@@ -53,7 +48,7 @@ export function RestaurantHeader({
     lat: number;
     lng: number;
   } | null>(null);
-  const [geoError, setGeoError] = useState<string | null>(null);
+  const [_geoError, setGeoError] = useState<string | null>(null);
 
   useEffect(() => {
     if (!("geolocation" in navigator)) {
@@ -75,27 +70,17 @@ export function RestaurantHeader({
         enableHighAccuracy: true,
         timeout: 8000,
         maximumAge: 1000 * 60 * 5,
-      }
+      },
     );
   }, []);
 
   const deg2rad = (deg: number) => deg * (Math.PI / 180);
 
-  const getDistanceFromLatLonInKm = (
-    lat1: number,
-    lon1: number,
-    lat2: number,
-    lon2: number
-  ) => {
+  const getDistanceFromLatLonInKm = (lat1: number, lon1: number, lat2: number, lon2: number) => {
     const R = 6371; // km
     const dLat = deg2rad(lat2 - lat1);
     const dLon = deg2rad(lon2 - lon1);
-    const a =
-      Math.sin(dLat / 2) * Math.sin(dLat / 2) +
-      Math.cos(deg2rad(lat1)) *
-      Math.cos(deg2rad(lat2)) *
-      Math.sin(dLon / 2) *
-      Math.sin(dLon / 2);
+    const a = Math.sin(dLat / 2) * Math.sin(dLat / 2) + Math.cos(deg2rad(lat1)) * Math.cos(deg2rad(lat2)) * Math.sin(dLon / 2) * Math.sin(dLon / 2);
     const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
     return R * c;
   };
@@ -109,12 +94,7 @@ export function RestaurantHeader({
 
   let distanceText = "See on map";
   if (userPosition) {
-    const distanceKm = getDistanceFromLatLonInKm(
-      userPosition.lat,
-      userPosition.lng,
-      restaurantLat,
-      restaurantLng
-    );
+    const distanceKm = getDistanceFromLatLonInKm(userPosition.lat, userPosition.lng, restaurantLat, restaurantLng);
     distanceText = formatDistance(distanceKm);
   }
 
@@ -141,7 +121,7 @@ export function RestaurantHeader({
         hour12: true,
         timeZone: timeZone,
       });
-    } catch (error) {
+    } catch (_error) {
       return "";
     }
   };
@@ -156,15 +136,7 @@ export function RestaurantHeader({
     Sunday: "SUN",
   };
 
-  const daysOfWeek = [
-    "Monday",
-    "Tuesday",
-    "Wednesday",
-    "Thursday",
-    "Friday",
-    "Saturday",
-    "Sunday",
-  ];
+  const daysOfWeek = ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday", "Sunday"];
 
   // ini buat dialog
   const openingHours = daysOfWeek.map((day) => {
@@ -230,12 +202,7 @@ export function RestaurantHeader({
         </div>
 
         {/* Floating Card */}
-        <motion.div
-          className="relative mx-4 -mt-24"
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.5 }}
-        >
+        <motion.div className="relative mx-4 -mt-24" initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.5 }}>
           <div className="bg-white rounded-xl shadow-lg p-6 space-y-4">
             {/* Restaurant Info */}
             <div className="flex items-start gap-4">
@@ -275,22 +242,13 @@ export function RestaurantHeader({
             <div className="grid gap-3">
               <div className="flex items-center justify-between">
                 <div className="flex items-center gap-2">
-                  <div
-                    className={`w-2 h-2 rounded-full ${isOpen
-                      ? "bg-green-500 animate-pulse"
-                      : "bg-red-500"
-                      }`}
-                  />
-                  <span className="font-medium">
-                    {isOpen ? "Open Now" : "Closed"}
-                  </span>
+                  <div className={`w-2 h-2 rounded-full ${isOpen ? "bg-green-500 animate-pulse" : "bg-red-500"}`} />
+                  <span className="font-medium">{isOpen ? "Open Now" : "Closed"}</span>
                   {/* bullet */}
                   {closesAtText && (
                     <>
                       <div className="w-1 h-1 rounded-full bg-muted-foreground/30" />
-                      <span className="text-muted-foreground">
-                        {closesAtText}
-                      </span>
+                      <span className="text-muted-foreground">{closesAtText}</span>
                     </>
                   )}
                 </div>
@@ -306,30 +264,18 @@ export function RestaurantHeader({
                   <Clock className="w-4 h-4 text-muted-foreground" />
                   <div className="flex items-center gap-1">
                     <span>{waitTime} mins</span>
-                    <div
-                      className={`w-2 h-2 rounded-full ${waitTimeStatus.color}`}
-                    />
-                    <span className="text-muted-foreground">
-                      {waitTimeStatus.label} wait
-                    </span>
+                    <div className={`w-2 h-2 rounded-full ${waitTimeStatus.color}`} />
+                    <span className="text-muted-foreground">{waitTimeStatus.label} wait</span>
                   </div>
                 </div>
               </div>
 
               {/* Actions */}
               <div className="flex gap-2 pt-2">
-                <Button
-                  variant="outline"
-                  className="flex-1 h-9"
-                  onClick={() => window.open(googleMapsUrl, "_blank")}
-                >
+                <Button variant="outline" className="flex-1 h-9" onClick={() => window.open(googleMapsUrl, "_blank")}>
                   Open in Google Maps
                 </Button>
-                <Button
-                  variant="outline"
-                  className="flex-1 h-9"
-                  onClick={() => setShowHours(true)}
-                >
+                <Button variant="outline" className="flex-1 h-9" onClick={() => setShowHours(true)}>
                   See Hours
                 </Button>
               </div>
@@ -351,30 +297,14 @@ export function RestaurantHeader({
             {openingHours.map((schedule, index) => (
               <div key={schedule.day}>
                 <div className="flex justify-between items-start">
-                  <span
-                    className={
-                      schedule.day === currentDay
-                        ? "font-black"
-                        : "text-muted-foreground"
-                    }
-                  >
-                    {schedule.day}
-                  </span>
-                  <div
-                    className={
-                      schedule.day === currentDay
-                        ? "font-black text-left"
-                        : "text-muted-foreground text-left"
-                    }
-                  >
+                  <span className={schedule.day === currentDay ? "font-black" : "text-muted-foreground"}>{schedule.day}</span>
+                  <div className={schedule.day === currentDay ? "font-black text-left" : "text-muted-foreground text-left"}>
                     {schedule.hours.map((timeSlot, i) => (
                       <div key={i}>{timeSlot}</div>
                     ))}
                   </div>
                 </div>
-                {index < openingHours.length - 1 && (
-                  <Separator className="mt-3" />
-                )}
+                {index < openingHours.length - 1 && <Separator className="mt-3" />}
               </div>
             ))}
           </div>

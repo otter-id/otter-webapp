@@ -1,16 +1,10 @@
 "use client";
 
-import { Button } from "@/components/ui/button";
-import {
-  Drawer,
-  DrawerClose,
-  DrawerContent,
-  DrawerHeader,
-  DrawerTitle,
-} from "@/components/ui/drawer";
-import { Menu, X, Sparkles } from "lucide-react";
-import { useState } from "react";
+import { Menu, Sparkles, X } from "lucide-react";
 import type { RefObject } from "react";
+import { useState } from "react";
+import { Button } from "@/components/ui/button";
+import { Drawer, DrawerClose, DrawerContent, DrawerHeader, DrawerTitle } from "@/components/ui/drawer";
 import { cn } from "@/utils/client";
 
 interface Category {
@@ -28,16 +22,7 @@ interface CategoryNavProps {
 }
 
 // Define the button variant types
-type ButtonVariant =
-  | "default"
-  | "destructive"
-  | "outline"
-  | "secondary"
-  | "ghost"
-  | "link"
-  | "destructive-outline"
-  | "otter"
-  | "outline-otter";
+type ButtonVariant = "default" | "destructive" | "outline" | "secondary" | "ghost" | "link" | "destructive-outline" | "otter" | "outline-otter";
 
 export function CategoryNav({
   categories,
@@ -62,12 +47,7 @@ export function CategoryNav({
   return (
     <div className={cn("bg-white", className)}>
       <div className="flex items-center gap-2 py-3">
-        <Button
-          variant="ghost"
-          size="icon"
-          className="flex-shrink-0 ml-3"
-          onClick={() => setIsOpen(true)}
-        >
+        <Button variant="ghost" size="icon" className="flex-shrink-0 ml-3" onClick={() => setIsOpen(true)}>
           <Menu className="h-4 w-4" />
         </Button>
 
@@ -86,13 +66,7 @@ export function CategoryNav({
               const isSelected = category.id === selectedCategoryId;
 
               // Determine the variant based on whether it's popular and selected
-              const variant: ButtonVariant = isPopular
-                ? isSelected
-                  ? "default"
-                  : "ghost"
-                : isSelected
-                  ? "default"
-                  : "outline";
+              const variant: ButtonVariant = isPopular ? (isSelected ? "default" : "ghost") : isSelected ? "default" : "outline";
 
               return (
                 <Button
@@ -103,15 +77,10 @@ export function CategoryNav({
                     }
                   }}
                   variant={variant}
-                  className={cn(
-                    "flex-shrink-0 rounded-md",
-                    isPopular && "popular-category-button"
-                  )}
+                  className={cn("flex-shrink-0 rounded-md", isPopular && "popular-category-button")}
                   onClick={() => onCategorySelect(category.id)}
                 >
-                  {isPopular && (
-                    <Sparkles className="h-3 w-3 mr-1 text-yellow-400" />
-                  )}
+                  {isPopular && <Sparkles className="h-3 w-3 mr-1 text-yellow-400" />}
                   {category.name}
                   {isPopular && <span className="popular-glow-effect"></span>}
                 </Button>
@@ -126,11 +95,7 @@ export function CategoryNav({
               <DrawerHeader className="px-4 py-3 border-b flex items-center justify-between">
                 <DrawerTitle>Categories</DrawerTitle>
                 <DrawerClose asChild>
-                  <Button
-                    variant="ghost"
-                    size="icon"
-                    className="rounded-full h-8 w-8"
-                  >
+                  <Button variant="ghost" size="icon" className="rounded-full h-8 w-8">
                     <X className="h-4 w-4" />
                   </Button>
                 </DrawerClose>
@@ -142,31 +107,18 @@ export function CategoryNav({
                   const isSelected = category.id === selectedCategoryId;
 
                   // Determine the variant based on whether it's popular and selected
-                  const variant: ButtonVariant = isPopular
-                    ? isSelected
-                      ? "default"
-                      : "ghost"
-                    : isSelected
-                      ? "default"
-                      : "outline";
+                  const variant: ButtonVariant = isPopular ? (isSelected ? "default" : "ghost") : isSelected ? "default" : "outline";
 
                   return (
                     <Button
                       key={category.id}
                       variant={variant}
-                      className={cn(
-                        "w-full rounded-md",
-                        isPopular && "popular-category-button"
-                      )}
+                      className={cn("w-full rounded-md", isPopular && "popular-category-button")}
                       onClick={() => handleCategoryClick(category.id)}
                     >
-                      {isPopular && (
-                        <Sparkles className="h-3 w-3 mr-1 text-yellow-400" />
-                      )}
+                      {isPopular && <Sparkles className="h-3 w-3 mr-1 text-yellow-400" />}
                       {category.name}
-                      {isPopular && (
-                        <span className="popular-glow-effect"></span>
-                      )}
+                      {isPopular && <span className="popular-glow-effect"></span>}
                     </Button>
                   );
                 })}

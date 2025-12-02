@@ -1,14 +1,14 @@
-import type { CartTotals as CartTotalsType } from "@/types/cart"
-import { Button } from "@/components/ui/button"
-import { Separator } from "@/components/ui/separator"
-import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible"
-import { ChevronDown, ChevronUp } from "lucide-react"
-import { formatPrice } from "@/utils/client"
+import { ChevronDown, ChevronUp } from "lucide-react";
+import { Button } from "@/components/ui/button";
+import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
+import { Separator } from "@/components/ui/separator";
+import type { CartTotals as CartTotalsType } from "@/types/cart";
+import { formatPrice } from "@/utils/client";
 
 interface CartTotalsProps {
-  totals: CartTotalsType
-  isFeesExpanded: boolean
-  onFeesExpandedChange: (expanded: boolean) => void
+  totals: CartTotalsType;
+  isFeesExpanded: boolean;
+  onFeesExpandedChange: (expanded: boolean) => void;
 }
 
 export function CartTotals({ totals, isFeesExpanded, onFeesExpandedChange }: CartTotalsProps) {
@@ -25,11 +25,7 @@ export function CartTotals({ totals, isFeesExpanded, onFeesExpandedChange }: Car
               <span className="text-muted-foreground">Taxes & Fees</span>
               <div className="flex items-center gap-2">
                 <span>{formatPrice(totals.tax + totals.serviceFee)}</span>
-                {isFeesExpanded ? (
-                  <ChevronUp className="h-4 w-4 text-muted-foreground" />
-                ) : (
-                  <ChevronDown className="h-4 w-4 text-muted-foreground" />
-                )}
+                {isFeesExpanded ? <ChevronUp className="h-4 w-4 text-muted-foreground" /> : <ChevronDown className="h-4 w-4 text-muted-foreground" />}
               </div>
             </Button>
           </CollapsibleTrigger>
@@ -51,6 +47,5 @@ export function CartTotals({ totals, isFeesExpanded, onFeesExpandedChange }: Car
         <span>{formatPrice(totals.total)}</span>
       </div>
     </div>
-  )
+  );
 }
-

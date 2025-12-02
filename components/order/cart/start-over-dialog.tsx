@@ -16,11 +16,7 @@ interface StartOverDialogProps {
   onConfirm: () => void;
 }
 
-export function StartOverDialog({
-  isOpen,
-  onOpenChange,
-  onConfirm,
-}: StartOverDialogProps) {
+export function StartOverDialog({ isOpen, onOpenChange, onConfirm }: StartOverDialogProps) {
   return (
     <AlertDialog open={isOpen} onOpenChange={onOpenChange}>
       <AlertDialogContent className="max-w-[320px] rounded-lg bg-gradient-to-b from-red-50 to-white">
@@ -28,12 +24,8 @@ export function StartOverDialog({
           <div className="mx-auto w-12 h-12 rounded-full bg-red-100 flex items-center justify-center">
             <AlertTriangle className="w-6 h-6 text-red-600" />
           </div>
-          <AlertDialogTitle className="text-center">
-            Start Over
-          </AlertDialogTitle>
-          <AlertDialogDescription className="text-center">
-            Are you sure you want to start over?
-          </AlertDialogDescription>
+          <AlertDialogTitle className="text-center">Start Over</AlertDialogTitle>
+          <AlertDialogDescription className="text-center">Are you sure you want to start over?</AlertDialogDescription>
         </AlertDialogHeader>
         <AlertDialogFooter className="flex-col space-y-2 sm:space-y-0">
           <AlertDialogAction

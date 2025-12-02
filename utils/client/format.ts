@@ -1,4 +1,4 @@
-import { JSX } from "react";
+import type { JSX } from "react";
 
 export function formatPrice(price: number): string {
   return price
@@ -18,11 +18,7 @@ export function formatPrice(price: number): string {
  * @param maxLines Maximum number of lines to show (default: 3)
  * @returns Formatted text with line breaks
  */
-export function formatTextForPlaceholder(
-  text: string | JSX.Element | null | undefined,
-  maxWordsPerLine: number = 2,
-  maxLines: number = 3
-): string {
+export function formatTextForPlaceholder(text: string | JSX.Element | null | undefined, maxWordsPerLine: number = 2, maxLines: number = 3): string {
   // Handle null, undefined, or JSX elements
   if (!text) return "";
 
@@ -36,7 +32,7 @@ export function formatTextForPlaceholder(
         return "Menu Item"; // Default fallback for JSX elements
       }
       text = stringText;
-    } catch (e) {
+    } catch (_e) {
       return "Menu Item"; // Default fallback if conversion fails
     }
   }
@@ -46,18 +42,14 @@ export function formatTextForPlaceholder(
 
   // Group words into lines
   const lines: string[] = [];
-  for (
-    let i = 0;
-    i < words.length && lines.length < maxLines;
-    i += maxWordsPerLine
-  ) {
+  for (let i = 0; i < words.length && lines.length < maxLines; i += maxWordsPerLine) {
     const lineWords = words.slice(i, i + maxWordsPerLine);
     lines.push(lineWords.join(" "));
   }
 
   // If there are more words than we can show, add ellipsis to the last line
   if (words.length > maxWordsPerLine * maxLines) {
-    lines[lines.length - 1] = lines[lines.length - 1] + "...";
+    lines[lines.length - 1] = `${lines[lines.length - 1]}...`;
   }
 
   return lines.join("\n");

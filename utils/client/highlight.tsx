@@ -1,9 +1,6 @@
-import { JSX } from "react";
+import type { JSX } from "react";
 
-export function highlightText(
-  text: string,
-  query: string
-): JSX.Element | string {
+export function highlightText(text: string, query: string): JSX.Element | string {
   if (!query.trim()) return text;
 
   const escapedQuery = query.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
@@ -15,15 +12,12 @@ export function highlightText(
     <>
       {parts.map((part, i) =>
         part.toLowerCase() === query.toLowerCase() ? (
-          <mark
-            key={i}
-            className="bg-yellow-200 dark:bg-yellow-900/50 rounded px-0.5"
-          >
+          <mark key={i} className="bg-yellow-200 dark:bg-yellow-900/50 rounded px-0.5">
             {part}
           </mark>
         ) : (
           part
-        )
+        ),
       )}
     </>
   );

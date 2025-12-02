@@ -1,7 +1,6 @@
-import { useState, useEffect } from "react";
-import axios from "axios";
+import { useEffect, useState } from "react";
 import { ApiGetReceiptData } from "@/app/api";
-import { ReceiptData } from "@/types/receipt";
+import type { ReceiptData } from "@/types/receipt";
 
 export const useReceiptData = (orderId: string | null, storeId: string | null) => {
   const [receiptData, setReceiptData] = useState<ReceiptData | null>(null);

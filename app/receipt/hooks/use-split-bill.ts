@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { ReceiptData } from "@/types/receipt";
+import type { ReceiptData } from "@/types/receipt";
 
 export const useSplitBill = (data: ReceiptData["data"]) => {
   const [splitBillStep, setSplitBillStep] = useState(0);
@@ -11,12 +11,8 @@ export const useSplitBill = (data: ReceiptData["data"]) => {
   const [splitBillResult, setSplitBillResult] = useState<{
     [key: string]: number;
   }>({});
-  const [duplicateNameError, setDuplicateNameError] = useState<string | null>(
-    null
-  );
-  const [itemAssignmentError, setItemAssignmentError] = useState<string | null>(
-    null
-  );
+  const [duplicateNameError, setDuplicateNameError] = useState<string | null>(null);
+  const [itemAssignmentError, setItemAssignmentError] = useState<string | null>(null);
 
   const handleSplitBill = () => {
     setSplitBillStep(1);
@@ -50,24 +46,13 @@ export const useSplitBill = (data: ReceiptData["data"]) => {
       setDuplicateNameError(null);
       setSplitBillStep(3);
     } else if (splitBillStep === 3) {
-      const totalItems = data.items.reduce(
-        (sum, item) => sum + item.quantity,
-        0
-      );
+      const totalItems = data.items.reduce((sum, item) => sum + item.quantity, 0);
       if (Object.keys(itemAssignments).length !== totalItems) {
-        setItemAssignmentError(
-          "All items must be assigned to at least one person."
-        );
+        setItemAssignmentError("All items must be assigned to at least one person.");
         return;
       }
-      if (
-        Object.values(itemAssignments).some(
-          (assignments) => assignments.length === 0
-        )
-      ) {
-        setItemAssignmentError(
-          "All items must be assigned to at least one person."
-        );
+      if (Object.values(itemAssignments).some((assignments) => assignments.length === 0)) {
+        setItemAssignmentError("All items must be assigned to at least one person.");
         return;
       }
       setItemAssignmentError(null);
@@ -108,9 +93,7 @@ export const useSplitBill = (data: ReceiptData["data"]) => {
         const assignmentKey = `${item.name}-${itemIndex}-${i}`;
         const assignedPeople = itemAssignments[assignmentKey] || [];
         if (assignedPeople.length > 0) {
-          const itemTotal =
-            item.price +
-            item.modifiers.reduce((sum, mod) => sum + mod.price, 0);
+          const itemTotal = item.price + item.modifiers.reduce((sum, mod) => sum + mod.price, 0);
           const splitAmount = itemTotal / assignedPeople.length;
           assignedPeople.forEach((person) => {
             result[person] += splitAmount;
@@ -119,10 +102,7 @@ export const useSplitBill = (data: ReceiptData["data"]) => {
       }
     });
 
-    const totalAssigned = Object.values(result).reduce(
-      (sum, value) => sum + value,
-      0
-    );
+    const totalAssigned = Object.values(result).reduce((sum, value) => sum + value, 0);
 
     const taxRatio = (data.taxesAndFees + data.service) / totalAssigned;
     Object.keys(result).forEach((person) => {

@@ -1,4 +1,4 @@
-import { ReceiptData } from "@/types/receipt";
+import type { ReceiptData } from "@/types/receipt";
 
 export const fakeReceiptData: ReceiptData = {
   data: {
@@ -6,8 +6,7 @@ export const fakeReceiptData: ReceiptData = {
     service: 100,
     orderStatus: "ONGOING",
     restaurantName: "Sharetea",
-    restaurantLogo:
-      "https://franchise.sharetea.com.au/wp-content/uploads/2021/08/cropped-Favicon.png",
+    restaurantLogo: "https://franchise.sharetea.com.au/wp-content/uploads/2021/08/cropped-Favicon.png",
     restaurantAddress: "Mal Taman Anggrek",
     emoji: "🧋",
     orderDateTime: "2025-01-10T21:14:53.020+00:00",
@@ -19,8 +18,7 @@ export const fakeReceiptData: ReceiptData = {
         quantity: 1,
         price: 26000,
         notes: "",
-        image:
-          "https://www.texanerin.com/content/uploads/2023/05/matcha-with-boba-image-1200.jpg",
+        image: "https://www.texanerin.com/content/uploads/2023/05/matcha-with-boba-image-1200.jpg",
         modifiers: [
           {
             name: "Ice Level: Less Ice",
@@ -45,8 +43,7 @@ export const fakeReceiptData: ReceiptData = {
         quantity: 1,
         price: 26000,
         notes: "",
-        image:
-          "https://www.texanerin.com/content/uploads/2023/05/matcha-with-boba-image-1200.jpg",
+        image: "https://www.texanerin.com/content/uploads/2023/05/matcha-with-boba-image-1200.jpg",
         modifiers: [
           {
             name: "Ice Level: Less Ice",
@@ -71,8 +68,7 @@ export const fakeReceiptData: ReceiptData = {
         quantity: 1,
         price: 26000,
         notes: "",
-        image:
-          "https://www.texanerin.com/content/uploads/2023/05/matcha-with-boba-image-1200.jpg",
+        image: "https://www.texanerin.com/content/uploads/2023/05/matcha-with-boba-image-1200.jpg",
         modifiers: [
           {
             name: "Ice Level: Less Ice",
@@ -99,9 +95,7 @@ export const fakeReceiptData: ReceiptData = {
     pointsEarned: 1,
     paymentMethod: "QR_CODE",
     phoneNumber: "0215658406",
-    pickupInstructions:
-      "Please show your number on your device to one of the team members for pickup. Thank you",
-    googleMapsUrl:
-      "https://www.google.com/maps/place/Sharetea/@-6.221919,106.828125,15z/data=!4m2!3m1!1s0x2e69f199e229c78f:0x2e69f199e229c78f",
+    pickupInstructions: "Please show your number on your device to one of the team members for pickup. Thank you",
+    googleMapsUrl: "https://www.google.com/maps/place/Sharetea/@-6.221919,106.828125,15z/data=!4m2!3m1!1s0x2e69f199e229c78f:0x2e69f199e229c78f",
   },
 };

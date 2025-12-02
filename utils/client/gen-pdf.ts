@@ -1,12 +1,9 @@
-import jsPDF from "jspdf";
 import { format } from "date-fns";
-import { ReceiptData } from "@/types/receipt";
+import jsPDF from "jspdf";
 import QRCode from "qrcode";
+import type { ReceiptData } from "@/types/receipt";
 
-export async function genReceiptPDF(
-  data: ReceiptData["data"],
-  orderId: string
-) {
+export async function genReceiptPDF(data: ReceiptData["data"], orderId: string) {
   const doc = new jsPDF();
   const pageWidth = doc.internal.pageSize.width;
   const pageHeight = doc.internal.pageSize.height;
@@ -14,7 +11,7 @@ export async function genReceiptPDF(
   //   const contentWidth = pageWidth - 2 * margin;
   let yPos = margin;
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
-  let currentPage = 1;
+  let _currentPage = 1;
 
   // Add watermark based on status
   doc.saveGraphicsState();
@@ -22,9 +19,7 @@ export async function genReceiptPDF(
   doc.setFontSize(60);
   doc.setTextColor(200, 200, 200);
   const watermarkText = data.status === "UNPAID" ? "UNPAID" : "PAID";
-  const watermarkWidth =
-    (doc.getStringUnitWidth(watermarkText) * doc.getFontSize()) /
-    doc.internal.scaleFactor;
+  const watermarkWidth = (doc.getStringUnitWidth(watermarkText) * doc.getFontSize()) / doc.internal.scaleFactor;
   const watermarkHeight = doc.getFontSize() / doc.internal.scaleFactor;
   const x = (pageWidth - watermarkWidth) / 2;
   const y = (pageHeight - watermarkHeight) / 2;
@@ -35,7 +30,7 @@ export async function genReceiptPDF(
   const checkNewPage = (heightNeeded: number) => {
     if (yPos + heightNeeded > pageHeight - margin * 2) {
       doc.addPage();
-      currentPage++;
+      _currentPage++;
       yPos = margin;
       return true;
     }
@@ -44,17 +39,13 @@ export async function genReceiptPDF(
 
   // Helper function for right-aligned text
   const addRightAlignedText = (text: string, y: number, xOffset = 0) => {
-    const textWidth =
-      (doc.getStringUnitWidth(text) * doc.getFontSize()) /
-      doc.internal.scaleFactor;
+    const textWidth = (doc.getStringUnitWidth(text) * doc.getFontSize()) / doc.internal.scaleFactor;
     doc.text(text, pageWidth - margin - textWidth - xOffset, y);
   };
 
   // Helper function for centered text
   const addCenteredText = (text: string, y: number) => {
-    const textWidth =
-      (doc.getStringUnitWidth(text) * doc.getFontSize()) /
-      doc.internal.scaleFactor;
+    const textWidth = (doc.getStringUnitWidth(text) * doc.getFontSize()) / doc.internal.scaleFactor;
     doc.text(text, (pageWidth - textWidth) / 2, y);
   };
 
@@ -137,11 +128,7 @@ export async function genReceiptPDF(
   doc.setFontSize(12);
   doc.text(`Order #${data.orderNumber}`, margin, yPos + 10);
   doc.text(`Customer: ${data.firstName}`, margin, yPos + 15);
-  doc.text(
-    `Order Date: ${format(new Date(data.orderDateTime), "PPpp")}`,
-    margin,
-    yPos + 20
-  );
+  doc.text(`Order Date: ${format(new Date(data.orderDateTime), "PPpp")}`, margin, yPos + 20);
   yPos += 30;
 
   addHorizontalLine(yPos);
@@ -230,11 +217,7 @@ export async function genReceiptPDF(
     doc.setPage(i);
     const footerY = pageHeight - margin;
     doc.setFontSize(9);
-    doc.text(
-      `Generated on: ${format(new Date(), "PPpp")}`,
-      margin,
-      footerY - 10
-    );
+    doc.text(`Generated on: ${format(new Date(), "PPpp")}`, margin, footerY - 10);
     doc.setFontSize(8);
     doc.text("Powered by Otter", margin, footerY - 5);
     doc.text("www.otter.id", margin, footerY);

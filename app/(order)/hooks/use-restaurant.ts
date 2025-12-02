@@ -1,12 +1,6 @@
-import { useState, useEffect } from "react";
-import {
-  Restaurant,
-  MenuCategory,
-  MenuItem,
-  RestaurantData,
-} from "@/types/restaurant";
-
+import { useEffect, useState } from "react";
 import { ApiGetRestaurantPwa } from "@/app/api";
+import type { MenuCategory, MenuItem, Restaurant } from "@/types/restaurant";
 
 export function useRestaurant(restaurantId: string) {
   const [loading, setLoading] = useState(true);
@@ -30,12 +24,8 @@ export function useRestaurant(restaurantId: string) {
         let allCategories = [...restaurantData.menuCategoryId];
 
         const recommendedItems = [
-          ...restaurantData.menuCategoryId.flatMap((category: any) =>
-            category.menuId.filter((item: any) => item.isRecommended)
-          ),
-          ...restaurantData.menuUncategory.filter(
-            (item: any) => item.isRecommended
-          ),
+          ...restaurantData.menuCategoryId.flatMap((category: any) => category.menuId.filter((item: any) => item.isRecommended)),
+          ...restaurantData.menuUncategory.filter((item: any) => item.isRecommended),
         ];
         if (recommendedItems.length) {
           const popularCategory = {

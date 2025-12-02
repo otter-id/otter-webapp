@@ -1,33 +1,20 @@
 "use client";
 
-import { useState, useEffect, useRef } from "react";
+import { AlertTriangle, Check, Info, Minus, Plus, X } from "lucide-react";
 import Image from "next/image";
-import { X, Minus, Plus, AlertTriangle, Check, Info } from "lucide-react";
-import { MenuItem, MenuOption } from "@/types/restaurant";
-import { CartItem } from "@/app/(order)/hooks/use-cart";
-import {
-  Drawer,
-  DrawerContent,
-  DrawerFooter,
-  DrawerHeader,
-  DrawerTitle,
-} from "@/components/ui/drawer";
-import { Button } from "@/components/ui/button";
-import { Separator } from "@/components/ui/separator";
-import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
-import { Checkbox } from "@/components/ui/checkbox";
-import { Label } from "@/components/ui/label";
+import { type JSX, useEffect, useRef, useState } from "react";
+import type { CartItem } from "@/app/(order)/hooks/use-cart";
 import { Badge } from "@/components/ui/badge";
-import { formatPrice, formatTextForPlaceholder } from "@/utils/client";
+import { Button } from "@/components/ui/button";
+import { Checkbox } from "@/components/ui/checkbox";
+import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import { Drawer, DrawerContent, DrawerFooter, DrawerHeader, DrawerTitle } from "@/components/ui/drawer";
+import { Label } from "@/components/ui/label";
+import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
+import { Separator } from "@/components/ui/separator";
 import { Textarea } from "@/components/ui/textarea";
-import {
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogHeader,
-  DialogTitle,
-} from "@/components/ui/dialog";
-import { JSX } from "react";
+import type { MenuItem, MenuOption } from "@/types/restaurant";
+import { formatPrice, formatTextForPlaceholder } from "@/utils/client";
 
 // Extended MenuItem type to handle JSX elements
 interface ExtendedMenuItem extends Omit<MenuItem, "name" | "description"> {
@@ -45,7 +32,7 @@ interface ItemDrawerProps {
   createCartItemFromMenuItem: (
     menuItem: MenuItem | ExtendedMenuItem,
     selectedOptions: { [categoryId: string]: MenuOption[] },
-    note?: string
+    note?: string,
   ) => CartItem;
 }
 
@@ -75,13 +62,7 @@ export function ItemDrawer({
     isRadio: boolean;
   } | null>(null);
 
-  const openInfo = (
-    title: string,
-    description: string,
-    categoryId: string,
-    option: MenuOption,
-    isRadio: boolean
-  ) => {
+  const openInfo = (title: string, description: string, categoryId: string, option: MenuOption, isRadio: boolean) => {
     setPendingInfo({ title, description, categoryId, option, isRadio });
     setInfoOpen(true);
   };
@@ -124,32 +105,27 @@ export function ItemDrawer({
       if (editingCartItem) {
         const options: { [categoryId: string]: MenuOption[] } = {};
 
-        Object.entries(editingCartItem.selectedOptions).forEach(
-          ([categoryId, cartOptions]) => {
-            const category = selectedItem.menuOptionCategory.find(
-              (cat) => cat.$id === categoryId
-            );
-            if (category) {
-              options[categoryId] = cartOptions.map((cartOption) => {
-                const originalOption = category.menuOptionId.find(
-                  (opt) => opt.$id === cartOption.$id
-                );
-                return (
-                  originalOption || ({
-                    $id: cartOption.$id,
-                    name: cartOption.name,
-                    price: cartOption.price,
-                    discountPrice: cartOption.discountPrice,
-                    description: null,
-                    isInStock: true,
-                    index: null,
-                    outstock: null,
-                  } as MenuOption)
-                );
-              });
-            }
+        Object.entries(editingCartItem.selectedOptions).forEach(([categoryId, cartOptions]) => {
+          const category = selectedItem.menuOptionCategory.find((cat) => cat.$id === categoryId);
+          if (category) {
+            options[categoryId] = cartOptions.map((cartOption) => {
+              const originalOption = category.menuOptionId.find((opt) => opt.$id === cartOption.$id);
+              return (
+                originalOption ||
+                ({
+                  $id: cartOption.$id,
+                  name: cartOption.name,
+                  price: cartOption.price,
+                  discountPrice: cartOption.discountPrice,
+                  description: null,
+                  isInStock: true,
+                  index: null,
+                  outstock: null,
+                } as MenuOption)
+              );
+            });
           }
-        );
+        });
 
         setSelectedOptions(options);
       } else {
@@ -158,11 +134,7 @@ export function ItemDrawer({
     }
   }, [selectedItem, editingCartItem]);
 
-  const handleOptionChange = (
-    categoryId: string,
-    option: MenuOption,
-    isRadio: boolean
-  ) => {
+  const handleOptionChange = (categoryId: string, option: MenuOption, isRadio: boolean) => {
     setSelectedOptions((prev) => {
       const newOptions = { ...prev };
 
@@ -172,22 +144,16 @@ export function ItemDrawer({
         if (!newOptions[categoryId]) {
           newOptions[categoryId] = [option];
         } else {
-          const existingIndex = newOptions[categoryId].findIndex(
-            (opt) => opt.$id === option.$id
-          );
+          const existingIndex = newOptions[categoryId].findIndex((opt) => opt.$id === option.$id);
 
           if (existingIndex >= 0) {
-            newOptions[categoryId] = newOptions[categoryId].filter(
-              (_, i) => i !== existingIndex
-            );
+            newOptions[categoryId] = newOptions[categoryId].filter((_, i) => i !== existingIndex);
             if (newOptions[categoryId].length === 0) {
               delete newOptions[categoryId];
             }
           } else {
             if (selectedItem) {
-              const category = selectedItem.menuOptionCategory.find(
-                (cat) => cat.$id === categoryId
-              );
+              const category = selectedItem.menuOptionCategory.find((cat) => cat.$id === categoryId);
               if (category) {
                 if (category.maxAmount === 1) {
                   newOptions[categoryId] = [option];
@@ -211,9 +177,7 @@ export function ItemDrawer({
   };
 
   const isOptionSelected = (categoryId: string, optionId: string): boolean => {
-    return !!selectedOptions[categoryId]?.some(
-      (option) => option.$id === optionId
-    );
+    return !!selectedOptions[categoryId]?.some((option) => option.$id === optionId);
   };
 
   const calculateTotalPrice = (): number => {
@@ -249,9 +213,7 @@ export function ItemDrawer({
   const isMaxReached = (categoryId: string): boolean => {
     if (!selectedItem) return false;
 
-    const category = selectedItem.menuOptionCategory.find(
-      (cat) => cat.$id === categoryId
-    );
+    const category = selectedItem.menuOptionCategory.find((cat) => cat.$id === categoryId);
 
     if (!category) return false;
 
@@ -262,11 +224,7 @@ export function ItemDrawer({
   const handleSubmit = () => {
     if (!selectedItem) return;
 
-    const cartItem = createCartItemFromMenuItem(
-      selectedItem,
-      selectedOptions,
-      note
-    );
+    const cartItem = createCartItemFromMenuItem(selectedItem, selectedOptions, note);
     cartItem.quantity = quantity;
 
     if (editingCartItem) {
@@ -306,20 +264,11 @@ export function ItemDrawer({
           transition: "max-height 0.25s ease-in-out",
         }}
       >
-        <div
-          className="h-full overflow-y-auto"
-          ref={scrollRef}
-          onScroll={handleScroll}
-        >
+        <div className="h-full overflow-y-auto" ref={scrollRef} onScroll={handleScroll}>
           <DrawerHeader className="px-4 py-3 border-b sticky top-0 bg-white z-10">
             <div className="flex items-center justify-between">
               <DrawerTitle>Customize Order</DrawerTitle>
-              <Button
-                variant="ghost"
-                size="icon"
-                className="rounded-full h-8 w-8"
-                onClick={() => onOpenChange(false)}
-              >
+              <Button variant="ghost" size="icon" className="rounded-full h-8 w-8" onClick={() => onOpenChange(false)}>
                 <X className="h-4 w-4" />
               </Button>
             </div>
@@ -334,11 +283,7 @@ export function ItemDrawer({
                       onDragStart={(event) => event.preventDefault()}
                       onContextMenu={(e) => e.preventDefault()}
                       src={selectedItem.image}
-                      alt={
-                        typeof selectedItem.name === "string"
-                          ? selectedItem.name
-                          : "Menu item"
-                      }
+                      alt={typeof selectedItem.name === "string" ? selectedItem.name : "Menu item"}
                       fill
                       className="object-cover"
                       onError={() => setImageError(true)}
@@ -353,22 +298,14 @@ export function ItemDrawer({
                 </div>
                 <div>
                   <h2 className="text-xl font-bold">{selectedItem.name}</h2>
-                  <p className="text-muted-foreground mt-1">
-                    {selectedItem.description}
-                  </p>
+                  <p className="text-muted-foreground mt-1">{selectedItem.description}</p>
                   <div className="flex flex-col items-start">
                     {!selectedItem.discountPrice ? (
-                      <p className="font-bold">
-                        {formatPrice(selectedItem.price)}
-                      </p>
+                      <p className="font-bold">{formatPrice(selectedItem.price)}</p>
                     ) : (
                       <>
-                        <p className="text-sm text-muted-foreground line-through">
-                          {formatPrice(selectedItem.price)}
-                        </p>
-                        <p className="font-bold">
-                          {formatPrice(selectedItem.discountPrice)}
-                        </p>
+                        <p className="text-sm text-muted-foreground line-through">{formatPrice(selectedItem.price)}</p>
+                        <p className="font-bold">{formatPrice(selectedItem.discountPrice)}</p>
                       </>
                     )}
                   </div>
@@ -389,15 +326,8 @@ export function ItemDrawer({
                   >
                     <Minus className="h-4 w-4" />
                   </Button>
-                  <span className="font-medium text-lg w-8 text-center">
-                    {quantity}
-                  </span>
-                  <Button
-                    variant="outline"
-                    size="icon"
-                    className="h-8 w-8 rounded-full"
-                    onClick={() => setQuantity((q) => q + 1)}
-                  >
+                  <span className="font-medium text-lg w-8 text-center">{quantity}</span>
+                  <Button variant="outline" size="icon" className="h-8 w-8 rounded-full" onClick={() => setQuantity((q) => q + 1)}>
                     <Plus className="h-4 w-4" />
                   </Button>
                 </div>
@@ -424,12 +354,7 @@ export function ItemDrawer({
                     <div className="flex items-center justify-between">
                       <div>
                         <h3 className="font-semibold">
-                          {category.name}{" "}
-                          {requirementText && (
-                            <span className="text-sm font-normal text-muted-foreground">
-                              {requirementText}
-                            </span>
-                          )}
+                          {category.name} {requirementText && <span className="text-sm font-normal text-muted-foreground">{requirementText}</span>}
                         </h3>
                       </div>
                       <div className="flex items-center gap-2">
@@ -458,9 +383,7 @@ export function ItemDrawer({
                       <RadioGroup
                         value={selectedOptions[category.$id]?.[0]?.$id || ""}
                         onValueChange={(value) => {
-                          const option = category.menuOptionId.find(
-                            (opt) => opt.$id === value
-                          );
+                          const option = category.menuOptionId.find((opt) => opt.$id === value);
                           if (option) {
                             const isOutOfStock = (() => {
                               if (!option.outstock) return false;
@@ -487,45 +410,23 @@ export function ItemDrawer({
                             return (
                               <div
                                 key={option.$id}
-                                className={`flex items-center justify-between py-2 px-3 border rounded-md transition-colors ${!isOutOfStock
-                                  ? "cursor-pointer hover:bg-accent"
-                                  : "cursor-not-allowed opacity-60"
-                                  }`}
+                                className={`flex items-center justify-between py-2 px-3 border rounded-md transition-colors ${
+                                  !isOutOfStock ? "cursor-pointer hover:bg-accent" : "cursor-not-allowed opacity-60"
+                                }`}
                                 onClick={() => {
                                   if (isOutOfStock) return;
 
-                                  const foundOption =
-                                    category.menuOptionId.find(
-                                      (opt) => opt.$id === option.$id
-                                    );
+                                  const foundOption = category.menuOptionId.find((opt) => opt.$id === option.$id);
                                   if (foundOption) {
-                                    handleOptionChange(
-                                      category.$id,
-                                      foundOption,
-                                      true
-                                    );
+                                    handleOptionChange(category.$id, foundOption, true);
                                   }
                                 }}
                               >
                                 <div className="flex items-center gap-3">
-                                  <RadioGroupItem
-                                    value={option.$id}
-                                    id={option.$id}
-                                    disabled={isOutOfStock}
-                                  />
-                                  <Label
-                                    htmlFor={option.$id}
-                                    className={`${!isOutOfStock
-                                      ? "cursor-pointer"
-                                      : "cursor-not-allowed text-gray-400"
-                                      }`}
-                                  >
+                                  <RadioGroupItem value={option.$id} id={option.$id} disabled={isOutOfStock} />
+                                  <Label htmlFor={option.$id} className={`${!isOutOfStock ? "cursor-pointer" : "cursor-not-allowed text-gray-400"}`}>
                                     {option.name}
-                                    {isOutOfStock && (
-                                      <span className="ml-2 text-xs text-red-500">
-                                        (Out of Stock)
-                                      </span>
-                                    )}
+                                    {isOutOfStock && <span className="ml-2 text-xs text-red-500">(Out of Stock)</span>}
                                   </Label>
                                   {option.description && (
                                     <Button
@@ -536,13 +437,7 @@ export function ItemDrawer({
                                       onClick={(e) => {
                                         e.preventDefault();
                                         e.stopPropagation();
-                                        openInfo(
-                                          `${option.name}`,
-                                          option.description as string,
-                                          category.$id,
-                                          option,
-                                          false
-                                        );
+                                        openInfo(`${option.name}`, option.description as string, category.$id, option, false);
                                       }}
                                       aria-label="Lihat deskripsi opsi"
                                     >
@@ -551,11 +446,7 @@ export function ItemDrawer({
                                   )}
                                 </div>
 
-                                {option.price > 0 && (
-                                  <span className="text-sm font-medium">
-                                    +{formatPrice(option.price)}
-                                  </span>
-                                )}
+                                {option.price > 0 && <span className="text-sm font-medium">+{formatPrice(option.price)}</span>}
                               </div>
                             );
                           })}
@@ -565,10 +456,7 @@ export function ItemDrawer({
                       <div className="space-y-2">
                         {category.menuOptionId.map((option) => {
                           const maxReached = isMaxReached(category.$id);
-                          const isSelected = isOptionSelected(
-                            category.$id,
-                            option.$id
-                          );
+                          const isSelected = isOptionSelected(category.$id, option.$id);
                           const isOutOfStock = (() => {
                             if (!option.outstock) return false;
                             const outStockDate = new Date(option.outstock);
@@ -576,61 +464,38 @@ export function ItemDrawer({
                             return outStockDate > currentDate;
                           })();
 
-                          const canClick =
-                            !isOutOfStock &&
-                            (category.maxAmount === 1 ||
-                              !maxReached ||
-                              isSelected);
+                          const canClick = !isOutOfStock && (category.maxAmount === 1 || !maxReached || isSelected);
 
                           return (
                             <div
                               key={option.$id}
-                              className={`flex items-center justify-between py-2 px-3 border rounded-md transition-colors ${(!maxReached || isSelected) && !isOutOfStock
-                                ? "cursor-pointer hover:bg-accent"
-                                : "cursor-not-allowed opacity-60"
-                                }`}
+                              className={`flex items-center justify-between py-2 px-3 border rounded-md transition-colors ${
+                                (!maxReached || isSelected) && !isOutOfStock ? "cursor-pointer hover:bg-accent" : "cursor-not-allowed opacity-60"
+                              }`}
                               onClick={() => {
-                                if (
-                                  (!maxReached || isSelected) &&
-                                  !isOutOfStock
-                                ) {
-                                  handleOptionChange(
-                                    category.$id,
-                                    option,
-                                    false
-                                  );
+                                if ((!maxReached || isSelected) && !isOutOfStock) {
+                                  handleOptionChange(category.$id, option, false);
                                 }
                               }}
                             >
                               <Label
                                 htmlFor={option.$id}
-                                className={`flex items-center gap-3 flex-1 ${(!maxReached || isSelected) && !isOutOfStock
-                                  ? "cursor-pointer"
-                                  : "cursor-not-allowed"
-                                  }`}
+                                className={`flex items-center gap-3 flex-1 ${
+                                  (!maxReached || isSelected) && !isOutOfStock ? "cursor-pointer" : "cursor-not-allowed"
+                                }`}
                                 onClick={(e) => e.stopPropagation()}
                               >
                                 <Checkbox
                                   id={option.$id}
                                   checked={isSelected}
                                   onCheckedChange={() => {
-                                    if (
-                                      (!maxReached || isSelected) &&
-                                      !isOutOfStock
-                                    ) {
-                                      handleOptionChange(
-                                        category.$id,
-                                        option,
-                                        false
-                                      );
+                                    if ((!maxReached || isSelected) && !isOutOfStock) {
+                                      handleOptionChange(category.$id, option, false);
                                     }
                                   }}
                                   disabled={!canClick}
                                 />
-                                <span className={`${(maxReached && !isSelected) || isOutOfStock
-                                  ? "text-gray-400"
-                                  : ""
-                                  }`}>
+                                <span className={`${(maxReached && !isSelected) || isOutOfStock ? "text-gray-400" : ""}`}>
                                   {option.name}
                                   {isOutOfStock && <span className="ml-2 text-xs text-red-500">(Out of Stock)</span>}
                                 </span>
@@ -643,13 +508,7 @@ export function ItemDrawer({
                                     onClick={(e) => {
                                       e.preventDefault();
                                       e.stopPropagation();
-                                      openInfo(
-                                        `${option.name}`,
-                                        option.description as string,
-                                        category.$id,
-                                        option,
-                                        false
-                                      );
+                                      openInfo(`${option.name}`, option.description as string, category.$id, option, false);
                                     }}
                                     aria-label="Lihat deskripsi opsi"
                                   >
@@ -658,11 +517,7 @@ export function ItemDrawer({
                                 )}
                               </Label>
 
-                              {option.price > 0 && (
-                                <span className="text-sm font-medium pl-2">
-                                  +{formatPrice(option.price)}
-                                </span>
-                              )}
+                              {option.price > 0 && <span className="text-sm font-medium pl-2">+{formatPrice(option.price)}</span>}
                             </div>
                           );
                         })}
@@ -685,15 +540,8 @@ export function ItemDrawer({
           )}
 
           <DrawerFooter className="border-t sticky bottom-0 bg-white z-10">
-            <Button
-              className="w-full"
-              size="lg"
-              onClick={handleSubmit}
-              disabled={!selectedItem || isRequiredOptionsMissing()}
-            >
-              {editingCartItem
-                ? `Update Item • ${formatPrice(calculateTotalPrice())}`
-                : `Add to Cart • ${formatPrice(calculateTotalPrice())}`}
+            <Button className="w-full" size="lg" onClick={handleSubmit} disabled={!selectedItem || isRequiredOptionsMissing()}>
+              {editingCartItem ? `Update Item • ${formatPrice(calculateTotalPrice())}` : `Add to Cart • ${formatPrice(calculateTotalPrice())}`}
             </Button>
           </DrawerFooter>
         </div>
@@ -704,19 +552,12 @@ export function ItemDrawer({
           <DialogHeader className="p-6 pb-4">
             <div className="flex flex-col items-center text-center gap-2">
               <DialogTitle>{pendingInfo?.title}</DialogTitle>
-              <DialogDescription className="whitespace-pre-wrap mt-2">
-                {pendingInfo?.description}
-              </DialogDescription>
+              <DialogDescription className="whitespace-pre-wrap mt-2">{pendingInfo?.description}</DialogDescription>
             </div>
           </DialogHeader>
 
           <div className="mt-2 flex flex-col gap-2">
-            <Button
-              type="button"
-              variant="outline"
-              onClick={() => setInfoOpen(false)}
-              aria-label="Kembali"
-            >
+            <Button type="button" variant="outline" onClick={() => setInfoOpen(false)} aria-label="Kembali">
               Back
             </Button>
 
@@ -724,20 +565,14 @@ export function ItemDrawer({
               if (!pendingInfo) return null;
 
               const selected = selectedOptions[pendingInfo.categoryId] || [];
-              const isAlreadySelected = selected.some(
-                (o) => o.$id === pendingInfo.option.$id
-              );
+              const isAlreadySelected = selected.some((o) => o.$id === pendingInfo.option.$id);
               if (isAlreadySelected) return null;
 
-              const isOut =
-                !!pendingInfo.option.outstock &&
-                new Date(pendingInfo.option.outstock) > new Date();
+              const isOut = !!pendingInfo.option.outstock && new Date(pendingInfo.option.outstock) > new Date();
 
               let disableSelect = isOut;
               if (!pendingInfo.isRadio) {
-                const category = selectedItem?.menuOptionCategory.find(
-                  (c) => c.$id === pendingInfo.categoryId
-                );
+                const _category = selectedItem?.menuOptionCategory.find((c) => c.$id === pendingInfo.categoryId);
               }
 
               return (
