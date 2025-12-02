@@ -10,13 +10,7 @@ import { MenuItem as MenuItemComponent } from "@/components/order/menu/menuItem"
 import { highlightText } from "@/utils/utils";
 import { cn } from "@/utils/utils";
 
-interface SearchResult extends MenuItem {
-  matchedOn: "name" | "description" | "both";
-}
-
-type GroupedResults = {
-  [category: string]: SearchResult[];
-};
+import { SearchResult, GroupedResults } from "@/types/search";
 
 interface SearchOverlayProps {
   menuItems: MenuItem[];

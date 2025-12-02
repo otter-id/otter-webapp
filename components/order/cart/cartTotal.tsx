@@ -1,4 +1,4 @@
-import type { CartTotals as CartTotalsType } from "@/utils/types"
+import type { CartTotals as CartTotalsType } from "@/types/cart"
 import { Button } from "@/components/ui/button"
 import { Separator } from "@/components/ui/separator"
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible"

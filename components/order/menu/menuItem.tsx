@@ -7,6 +7,7 @@ import { Button } from "@/components/ui/button";
 import { Plus, ShoppingCart } from "lucide-react";
 import { formatPrice, formatTextForPlaceholder } from "@/utils/utils";
 import { Badge } from "@/components/ui/badge";
+import { JSX } from "react";
 
 // Extend the MenuItemType to allow JSX.Element for name and description
 // This is needed for search results where text is highlighted
@@ -91,8 +92,8 @@ export function MenuItem({
           </div>
         ) : (
           <div className={`w-full h-full rounded-lg overflow-hidden border-2 flex items-center justify-center p-2 text-center ${itemInStock
-              ? "bg-yellow-50 border-yellow-100"
-              : "bg-gray-50 border-gray-100"
+            ? "bg-yellow-50 border-yellow-100"
+            : "bg-gray-50 border-gray-100"
             }`}>
             <span className={`font-medium text-sm whitespace-pre-line ${itemInStock ? "text-yellow-800" : "text-gray-500"
               }`}>
@@ -157,8 +158,8 @@ export function MenuItem({
             variant="default"
             disabled={!itemInStock}
             className={`mr-2 rounded-full h-7 w-7 flex-shrink-0 ${itemInStock
-                ? "bg-black hover:bg-black/90"
-                : "bg-gray-300 text-gray-500 cursor-not-allowed hover:bg-gray-300"
+              ? "bg-black hover:bg-black/90"
+              : "bg-gray-300 text-gray-500 cursor-not-allowed hover:bg-gray-300"
               }`}
           >
             <Plus className="h-4 w-4 transition-transform" />

@@ -14,6 +14,7 @@ import { formatPrice, formatTextForPlaceholder } from "@/utils/utils";
 import type { MenuItem } from "@/types/restaurant";
 import { motion } from "framer-motion";
 import { useState } from "react";
+import { JSX } from "react";
 
 // Extended MenuItem type to handle JSX elements
 interface ExtendedMenuItem extends Omit<MenuItem, "name" | "description"> {

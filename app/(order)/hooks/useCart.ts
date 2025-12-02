@@ -1,7 +1,7 @@
 // useCart
 "use client";
 
-import { useState, useCallback, useEffect, useMemo } from "react";
+import { JSX, useState, useCallback, useEffect, useMemo } from "react";
 import { MenuItem, MenuOption, Restaurant } from "@/types/restaurant";
 
 // Interface tidak perlu diubah

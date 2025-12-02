@@ -1,3 +1,4 @@
+import { JSX } from "react";
 import { type ClassValue, clsx } from "clsx";
 import { twMerge } from "tailwind-merge";
 
@@ -97,19 +98,14 @@ export function formatTextForPlaceholder(
   return lines.join("\n");
 }
 
-interface CartItem {
-  price: number;
-  quantity: number;
-  selectedModifiers?: { [key: string]: { price: number } };
-  extraToppings?: { price: number }[];
-}
+import { CartItem } from "@/types/cart";
 
 export function calculateItemTotal(item: CartItem): number {
   const modifierPrice = item.selectedModifiers
     ? Object.values(item.selectedModifiers).reduce(
-        (sum, mod) => sum + mod.price,
-        0
-      )
+      (sum, mod) => sum + mod.price,
+      0
+    )
     : 0;
   const toppingsPrice = item.extraToppings
     ? item.extraToppings.reduce((sum, topping) => sum + topping.price, 0)

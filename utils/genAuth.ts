@@ -1,6 +1,6 @@
 import { cookies } from "next/headers";
 import CryptoJS from "crypto-js";
-import { GenAuthSaveParam, GenAuthSyncReturn } from "./types";
+import { GenAuthSaveParam, GenAuthSyncReturn } from "@/types/auth";
 
 export const GenAuth = {
   token: async (): Promise<GenAuthSyncReturn> => {
