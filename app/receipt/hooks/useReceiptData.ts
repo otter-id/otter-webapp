@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import axios from "axios";
-import { Actions } from "@/app/actions";
+import { ApiGetReceiptData } from "@/app/api";
 import { ReceiptData } from "@/types/receipt";
 
 export const useReceiptData = (orderId: string | null, storeId: string | null) => {
@@ -17,7 +17,7 @@ export const useReceiptData = (orderId: string | null, storeId: string | null) =
       }
 
       try {
-        const result = await Actions.getReceiptData(orderId, storeId);
+        const result = await ApiGetReceiptData(orderId, storeId);
         setReceiptData(result);
         setError(null);
       } catch (err) {

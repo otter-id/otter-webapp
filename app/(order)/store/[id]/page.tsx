@@ -1,6 +1,6 @@
 import { Metadata } from "next";
 import { FoodOrderingClient } from "@/components/order/FoodOrderingClient";
-import { getRestaurantData } from "@/lib/getRestaurantData";
+import { ApiGetRestaurantInfo } from "@/app/api";
 
 interface PageProps {
   params: Promise<{ id: string }>;
@@ -14,8 +14,7 @@ export async function generateMetadata({
   params,
 }: PageProps): Promise<Metadata> {
   const { id } = await params;
-  const restaurant = await getRestaurantData(id);
-  // console.log({ restaurant })
+  const restaurant = await ApiGetRestaurantInfo(id);
 
   // Default metadata jika restaurant tidak ditemukan
   if (!restaurant) {

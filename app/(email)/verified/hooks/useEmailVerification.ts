@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { Actions } from "@/app/actions";
+import { ApiVerifyEmail } from "@/app/api";
 // import { User } from "@/types/user";
 
 export const useEmailVerification = (token: string | null) => {
@@ -16,7 +16,7 @@ export const useEmailVerification = (token: string | null) => {
       }
 
       try {
-        const result = await Actions.verifyEmail(token);
+        const result = await ApiVerifyEmail(token);
         setUser(result);
         setError(null);
       } catch (err) {

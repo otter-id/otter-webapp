@@ -1,5 +1,3 @@
-"use client";
-
 import { useState, useEffect } from "react";
 import {
   Restaurant,
@@ -8,7 +6,7 @@ import {
   RestaurantData,
 } from "@/types/restaurant";
 
-import { Actions } from "@/app/actions";
+import { ApiGetRestaurantPwa } from "@/app/api";
 
 export function useRestaurant(restaurantId: string) {
   const [loading, setLoading] = useState(true);
@@ -19,7 +17,7 @@ export function useRestaurant(restaurantId: string) {
   useEffect(() => {
     const fetchRestaurant = async () => {
       try {
-        const result = await Actions.getRestaurantPwa(restaurantId);
+        const result = await ApiGetRestaurantPwa(restaurantId);
         const restaurantData = result.data;
 
         if (!restaurantData.isPublished) {

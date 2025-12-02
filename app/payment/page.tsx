@@ -25,7 +25,7 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
-import { Actions } from "@/app/actions";
+import { ApiGenerateQris, ApiCheckStock, ApiPlaceOrder, ApiCheckPaymentStatus } from "@/app/api";
 
 interface PaymentState {
   restaurantId: string | null;
@@ -98,7 +98,7 @@ function PaymentPageContent() {
 
     setIsQrLoading(true);
     try {
-      const result = await Actions.generateQris(orderIdToUse, restIdToUse);
+      const result = await ApiGenerateQris(orderIdToUse, restIdToUse);
       updateState({ qrisData: result.data });
       return true;
     } catch (error) {
@@ -183,7 +183,7 @@ function PaymentPageContent() {
 
   const checkStock = async (): Promise<{ hasOutOfStock: boolean; outOfStockMenus: string[]; outOfStockMenuOptions: { categoryName: string; name: string; menuName: string }[] }> => {
     try {
-      const result = await Actions.checkStock(state.restaurantId!);
+      const result = await ApiCheckStock(state.restaurantId!);
 
       const now = new Date();
       const outOfStockMenus: string[] = [];
@@ -284,7 +284,7 @@ function PaymentPageContent() {
       })),
     };
     try {
-      const result = await Actions.placeOrder(orderBody);
+      const result = await ApiPlaceOrder(orderBody);
 
       const { orderId, restaurantId: restId, subtotal, tax, service, total } = result.data;
       updateState({
@@ -314,7 +314,7 @@ function PaymentPageContent() {
     }
     setIsCheckingStatus(true);
     try {
-      const result = await Actions.checkPaymentStatus(state.activeOrderId!);
+      const result = await ApiCheckPaymentStatus(state.activeOrderId!);
 
       if (result.data === true) {
         toast("Payment confirmed", { icon: <Check className="h-4 w-4 text-green-500" /> });
