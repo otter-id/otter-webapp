@@ -11,13 +11,13 @@ export function PickupInfoSkeleton() {
         {[1, 2, 3].map((i) => (
           <div key={i} className="flex items-center space-x-3">
             <div className={`${skeletonClass} h-5 w-5 rounded-md`} />
-            <div className="space-y-2 flex-1">
+            <div className="flex-1 space-y-2">
               <div className={`${skeletonClass} h-5 w-1/3 rounded-md`} />
               <div className={`${skeletonClass} h-4 w-2/3 rounded-md`} />
             </div>
           </div>
         ))}
-        <div className={`${skeletonClass} h-10 w-full rounded-md mt-4`} />
+        <div className={`${skeletonClass} mt-4 h-10 w-full rounded-md`} />
       </CardContent>
     </Card>
   );

@@ -17,11 +17,11 @@ export function PointsCard({ data }: PointsCardProps) {
       <CardContent className="py-6">
         <div className="flex items-center justify-between">
           <div className="space-y-1">
-            <h3 className="text-lg font-semibold text-yellow-700">Points Earned</h3>
-            <p className="text-sm text-yellow-600 font-medium">Keep collecting for rewards!</p>
+            <h3 className="font-semibold text-lg text-yellow-700">Points Earned</h3>
+            <p className="font-medium text-sm text-yellow-600">Keep collecting for rewards!</p>
           </div>
           <div className="flex items-center space-x-2">
-            <span className="text-3xl font-bold text-yellow-600">{data.pointsEarned}</span>
+            <span className="font-bold text-3xl text-yellow-600">{data.pointsEarned}</span>
             <span className="text-3xl">{data.emoji}</span>
           </div>
         </div>

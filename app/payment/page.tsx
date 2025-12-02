@@ -3,7 +3,7 @@
 import { AlertTriangle, ArrowLeft, Check, Loader2, Phone, QrCode, User, X } from "lucide-react";
 import Image from "next/image";
 import { useRouter, useSearchParams } from "next/navigation";
-import { Suspense, useEffect, useState } from "react";
+import { Suspense, useCallback, useEffect, useState } from "react";
 import { toast } from "sonner";
 import type { CartItem, CartRestourant, CartTotals } from "@/app/(order)/hooks/use-cart";
 import { ApiCheckPaymentStatus, ApiCheckStock, ApiGenerateQris, ApiPlaceOrder } from "@/app/api";
@@ -87,27 +87,37 @@ function PaymentPageContent() {
 
   const steps = ["Details", "Payment"];
 
-  const generateQris = async (orderId?: string, restId?: string) => {
-    const orderIdToUse = orderId || state.activeOrderId;
-    const restIdToUse = restId || state.restaurantId;
+  const updateState = useCallback((updates: Partial<PaymentState>) => {
+    setState((prevState) => {
+      const newState = { ...prevState, ...updates };
+      if (newState.restaurantId) {
+        localStorage.setItem(`payment-${newState.restaurantId}`, JSON.stringify(newState));
+      }
+      return newState;
+    });
+  }, []);
 
-    if (!orderIdToUse || !restIdToUse) {
-      toast("Error", { description: "Missing order or restaurant ID.", icon: <AlertTriangle className="h-4 w-4 text-red-500" /> });
-      return false;
-    }
+  const generateQris = useCallback(
+    async (orderId?: string, restId?: string) => {
+      if (!orderId || !restId) {
+        toast("Error", { description: "Missing order or restaurant ID.", icon: <AlertTriangle className="h-4 w-4 text-red-500" /> });
+        return false;
+      }
 
-    setIsQrLoading(true);
-    try {
-      const result = await ApiGenerateQris(orderIdToUse, restIdToUse);
-      updateState({ qrisData: result.data });
-      return true;
-    } catch (error) {
-      toast("QR Generation Failed", { description: (error as Error).message, icon: <AlertTriangle className="h-4 w-4 text-red-500" /> });
-      return false;
-    } finally {
-      setIsQrLoading(false);
-    }
-  };
+      setIsQrLoading(true);
+      try {
+        const result = await ApiGenerateQris(orderId, restId);
+        updateState({ qrisData: result.data });
+        return true;
+      } catch (error) {
+        toast("QR Generation Failed", { description: (error as Error).message, icon: <AlertTriangle className="h-4 w-4 text-red-500" /> });
+        return false;
+      } finally {
+        setIsQrLoading(false);
+      }
+    },
+    [updateState],
+  );
 
   useEffect(() => {
     const initializePaymentPage = async () => {
@@ -120,7 +130,7 @@ function PaymentPageContent() {
 
           // Check if QRIS exists and if it's expired
           if (savedState.qrisData && savedState.activeOrderId) {
-            const now = new Date().getTime();
+            const now = Date.now();
             const expiry = new Date(savedState.qrisData.expires_at).getTime();
 
             if (expiry <= now) {
@@ -156,23 +166,13 @@ function PaymentPageContent() {
     if (restaurantId) {
       initializePaymentPage();
     }
-  }, [restaurantId]);
+  }, [restaurantId, router.replace, generateQris]);
 
   useEffect(() => {
     if (state.currentStep === 1) {
       window.scrollTo({ top: 0, behavior: "smooth" });
     }
   }, [state.currentStep]);
-
-  const updateState = (updates: Partial<PaymentState>) => {
-    setState((prevState) => {
-      const newState = { ...prevState, ...updates };
-      if (newState.restaurantId) {
-        localStorage.setItem(`payment-${newState.restaurantId}`, JSON.stringify(newState));
-      }
-      return newState;
-    });
-  };
 
   const calculateItemTotal = (item: CartItem) => {
     const itemPrice = item.discountPrice ?? item.price;
@@ -193,7 +193,7 @@ function PaymentPageContent() {
     outOfStockMenuOptions: { categoryName: string; name: string; menuName: string }[];
   }> => {
     try {
-      const result = await ApiCheckStock(state.restaurantId!);
+      const result = await ApiCheckStock(state.restaurantId || "");
 
       const now = new Date();
       const outOfStockMenus: string[] = [];
@@ -326,7 +326,7 @@ function PaymentPageContent() {
     }
     setIsCheckingStatus(true);
     try {
-      const result = await ApiCheckPaymentStatus(state.activeOrderId!);
+      const result = await ApiCheckPaymentStatus(state.activeOrderId);
 
       if (result.data === true) {
         toast("Payment confirmed", { icon: <Check className="h-4 w-4 text-green-500" /> });
@@ -360,15 +360,15 @@ function PaymentPageContent() {
 
   return (
     <div className="min-h-screen bg-gray-50 pb-6">
-      <div className="max-w-md mx-auto bg-white shadow-sm">
-        <div className="sticky top-0 z-10 bg-white border-b">
-          <div className="px-4 py-3 flex items-center">
+      <div className="mx-auto max-w-md bg-white shadow-sm">
+        <div className="sticky top-0 z-10 border-b bg-white">
+          <div className="flex items-center px-4 py-3">
             <Button variant="ghost" size="icon" className="mr-2" onClick={handleGoBack} disabled={state.currentStep > 0}>
               <ArrowLeft className="h-5 w-5" />
             </Button>
-            <h1 className="text-lg font-bold">Checkout</h1>
+            <h1 className="font-bold text-lg">Checkout</h1>
           </div>
-          <div className="px-4 py-3 border-t overflow-hidden">
+          <div className="overflow-hidden border-t px-4 py-3">
             <Stepper steps={steps} currentStep={state.currentStep} className="max-w-full" />
           </div>
         </div>
@@ -376,21 +376,21 @@ function PaymentPageContent() {
         {state.currentStep === 0 && (
           <>
             <div className="px-4 py-5">
-              <div className="flex justify-between items-center mb-4">
-                <h2 className="text-base font-semibold">Order Summary</h2>
+              <div className="mb-4 flex items-center justify-between">
+                <h2 className="font-semibold text-base">Order Summary</h2>
                 {/* <span className="text-sm text-muted-foreground">Order #{state.orderNumber}</span> */}
               </div>
-              <div className="space-y-4 mb-6">
+              <div className="mb-6 space-y-4">
                 {state.cart.map((item, index) => (
                   <div key={`${item.$id}-${index}`} className="flex gap-3">
-                    <div className="relative w-16 h-16 flex-shrink-0 rounded-lg overflow-hidden bg-muted">
+                    <div className="relative h-16 w-16 flex-shrink-0 overflow-hidden rounded-lg bg-muted">
                       <Image src={item.image || "/placeholder.svg"} alt={item.name} fill className="object-cover" />
                     </div>
-                    <div className="flex-1 min-w-0">
+                    <div className="min-w-0 flex-1">
                       <div className="flex justify-between">
                         <div>
                           <h3 className="font-medium">{item.name}</h3>
-                          <div className="text-xs text-muted-foreground mt-1 space-y-0.5">
+                          <div className="mt-1 space-y-0.5 text-muted-foreground text-xs">
                             {Object.values(item.selectedOptions)
                               .flat()
                               .map((opt) => (
@@ -401,8 +401,8 @@ function PaymentPageContent() {
                           </div>
                         </div>
                         <div className="text-right">
-                          <div className="text-sm font-medium">{formatPrice(calculateItemTotal(item))}</div>
-                          <div className="text-xs text-muted-foreground mt-1">Qty: {item.quantity}</div>
+                          <div className="font-medium text-sm">{formatPrice(calculateItemTotal(item))}</div>
+                          <div className="mt-1 text-muted-foreground text-xs">Qty: {item.quantity}</div>
                         </div>
                       </div>
                     </div>
@@ -424,14 +424,14 @@ function PaymentPageContent() {
                   <span>{formatPrice(state.totals.serviceFee)}</span>
                 </div>
                 <Separator className="my-3" />
-                <div className="flex justify-between text-base font-medium">
+                <div className="flex justify-between font-medium text-base">
                   <span>Total</span>
                   <span>{formatPrice(state.totals.total)}</span>
                 </div>
               </div>
             </div>
-            <div className="px-4 py-4 bg-gray-50 border-t">
-              <h2 className="text-base font-semibold mb-4">Customer Details</h2>
+            <div className="border-t bg-gray-50 px-4 py-4">
+              <h2 className="mb-4 font-semibold text-base">Customer Details</h2>
               <div className="space-y-4">
                 <div className="space-y-2">
                   <Label htmlFor="name" className="flex items-center gap-2">
@@ -459,24 +459,24 @@ function PaymentPageContent() {
                 </div>
               </div>
             </div>
-            <div className="px-4 py-4 bg-white border-t">
-              <h2 className="text-base font-semibold mb-3">Payment Method</h2>
+            <div className="border-t bg-white px-4 py-4">
+              <h2 className="mb-3 font-semibold text-base">Payment Method</h2>
               <div
-                className="bg-white rounded-lg border p-4 flex items-center justify-between cursor-pointer"
+                className="flex cursor-pointer items-center justify-between rounded-lg border bg-white p-4"
                 onClick={() => !state.orderSubmitted && setIsMethodDrawerOpen(true)}
               >
                 <div className="flex items-center gap-3">
-                  <div className="w-10 h-10 rounded-md bg-black flex items-center justify-center">
+                  <div className="flex h-10 w-10 items-center justify-center rounded-md bg-black">
                     <QrCode className="h-5 w-5 text-white" />
                   </div>
                   <div>
                     <div className="font-medium">{selectedMethod}</div>
-                    <div className="text-xs text-muted-foreground">Scan QR code to pay</div>
+                    <div className="text-muted-foreground text-xs">Scan QR code to pay</div>
                   </div>
                 </div>
                 <Button
                   variant="ghost"
-                  className="text-sm text-muted-foreground h-auto py-1 px-2"
+                  className="h-auto px-2 py-1 text-muted-foreground text-sm"
                   onClick={(e) => {
                     e.stopPropagation();
                     if (!state.orderSubmitted) setIsMethodDrawerOpen(true);
@@ -491,8 +491,8 @@ function PaymentPageContent() {
         {state.currentStep === 1 && (
           <div className="px-4 py-5">
             <div className="mb-4">
-              <h2 className="text-lg font-semibold text-center">Pay with QRIS</h2>
-              <p className="text-sm text-muted-foreground text-center mt-1">Scan the QR code below to complete your payment</p>
+              <h2 className="text-center font-semibold text-lg">Pay with QRIS</h2>
+              <p className="mt-1 text-center text-muted-foreground text-sm">Scan the QR code below to complete your payment</p>
             </div>
             <QrisPayment
               amount={state.totals.total}
@@ -507,10 +507,10 @@ function PaymentPageContent() {
             />
           </div>
         )}
-        <div className="px-4 py-5 bg-white border-t sticky bottom-0">
+        <div className="sticky bottom-0 border-t bg-white px-4 py-5">
           {state.currentStep === 0 && (
             <Button
-              className="w-full h-12 bg-black hover:bg-black/90"
+              className="h-12 w-full bg-black hover:bg-black/90"
               onClick={handleContinue}
               disabled={!state.name || !state.isPhoneValid || isSubmitting || state.orderSubmitted}
             >
@@ -524,7 +524,7 @@ function PaymentPageContent() {
             </Button>
           )}
           {state.currentStep === 1 && (
-            <Button className="w-full h-12 bg-black hover:bg-black/90" onClick={handleCheckPaymentStatus} disabled={isCheckingStatus}>
+            <Button className="h-12 w-full bg-black hover:bg-black/90" onClick={handleCheckPaymentStatus} disabled={isCheckingStatus}>
               {isCheckingStatus ? (
                 <>
                   <Loader2 className="mr-2 h-4 w-4 animate-spin" /> Checking Status...
@@ -546,7 +546,7 @@ function PaymentPageContent() {
               {outOfStockDialog.menus.length > 0 && (
                 <>
                   <p className="font-medium text-foreground">Menu berikut stoknya habis:</p>
-                  <ul className="mt-2 space-y-1 mb-3">
+                  <ul className="mt-2 mb-3 space-y-1">
                     {outOfStockDialog.menus.map((menu, index) => (
                       <li key={index} className="text-foreground">
                         • {menu}
@@ -558,7 +558,7 @@ function PaymentPageContent() {
               {outOfStockDialog.menuOptions.length > 0 && (
                 <>
                   <p className="font-medium text-foreground">Opsi Menu berikut stoknya habis:</p>
-                  <ul className="mt-2 space-y-1 mb-3">
+                  <ul className="mt-2 mb-3 space-y-1">
                     {outOfStockDialog.menuOptions.map((option, index) => (
                       <li key={index} className="text-foreground">
                         • {option.categoryName}: {option.name} ({option.menuName})

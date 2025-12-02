@@ -36,7 +36,7 @@ export function OrderSummary({ data, onSplitBill }: OrderSummaryProps) {
           <span>Total</span>
           <span>Rp {data.total.toLocaleString()}</span>
         </div>
-        <Button variant="otter" className="w-full mt-4" onClick={onSplitBill}>
+        <Button variant="otter" className="mt-4 w-full" onClick={onSplitBill}>
           <Users className="h-4 w-4" />
           <span className="font-semibold text-black">Split Bill</span>
         </Button>

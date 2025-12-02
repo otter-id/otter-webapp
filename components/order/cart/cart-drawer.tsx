@@ -140,20 +140,20 @@ export function CartDrawer({
   return (
     <>
       <Drawer open={isOpen} onOpenChange={onOpenChange}>
-        <DrawerContent className="max-h-[85vh] p-0 max-w-md mx-auto rounded-t-[20px] flex flex-col">
-          <DrawerHeader className="px-4 py-3 border-b flex-shrink-0">
+        <DrawerContent className="mx-auto flex max-h-[85vh] max-w-md flex-col rounded-t-[20px] p-0">
+          <DrawerHeader className="flex-shrink-0 border-b px-4 py-3">
             <div className="flex items-center justify-between">
               <DrawerTitle>Your Cart</DrawerTitle>
-              <Button variant="ghost" size="icon" className="rounded-full h-8 w-8" onClick={() => onOpenChange(false)}>
+              <Button variant="ghost" size="icon" className="h-8 w-8 rounded-full" onClick={() => onOpenChange(false)}>
                 <X className="h-4 w-4" />
               </Button>
             </div>
           </DrawerHeader>
 
-          <div className="flex-1 overflow-y-auto min-h-0">
+          <div className="min-h-0 flex-1 overflow-y-auto">
             {cart.length > 0 ? (
               <div>
-                <div className="px-4 py-4 space-y-3">
+                <div className="space-y-3 px-4 py-4">
                   {cart.map((item, index) => (
                     <div key={`${item.$id}-${index}`} className="space-y-3">
                       <CartItem
@@ -174,22 +174,22 @@ export function CartDrawer({
                 </div>
               </div>
             ) : (
-              <div className="text-center py-8">
+              <div className="py-8 text-center">
                 <p className="text-muted-foreground">Your cart is empty</p>
               </div>
             )}
           </div>
 
           {cart.length > 0 && (
-            <DrawerFooter className="px-4 py-4 border-t space-y-3 flex-shrink-0">
-              <Button className="w-full h-12 bg-black hover:bg-black/90" onClick={handleContinueToPayment} disabled={!restaurant?.isOpen}>
+            <DrawerFooter className="flex-shrink-0 space-y-3 border-t px-4 py-4">
+              <Button className="h-12 w-full bg-black hover:bg-black/90" onClick={handleContinueToPayment} disabled={!restaurant?.isOpen}>
                 Continue to Payment
               </Button>
               <Button variant="outline" className="w-full" onClick={handleContinueShopping}>
                 Continue Shopping
               </Button>
-              <Button variant="destructive-outline" className="w-full text-red-500 hover:text-red-600 hover:bg-red-50" onClick={handleStartOver}>
-                <RefreshCw className="h-4 w-4 mr-2" />
+              <Button variant="destructive-outline" className="w-full text-red-500 hover:bg-red-50 hover:text-red-600" onClick={handleStartOver}>
+                <RefreshCw className="mr-2 h-4 w-4" />
                 Start Over
               </Button>
             </DrawerFooter>

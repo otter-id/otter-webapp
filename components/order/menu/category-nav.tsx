@@ -47,12 +47,12 @@ export function CategoryNav({
   return (
     <div className={cn("bg-white", className)}>
       <div className="flex items-center gap-2 py-3">
-        <Button variant="ghost" size="icon" className="flex-shrink-0 ml-3" onClick={() => setIsOpen(true)}>
+        <Button variant="ghost" size="icon" className="ml-3 flex-shrink-0" onClick={() => setIsOpen(true)}>
           <Menu className="h-4 w-4" />
         </Button>
 
         <div
-          className="overflow-x-auto flex-1 px-3 scroll-smooth scrollbar-none"
+          className="scrollbar-none flex-1 overflow-x-auto scroll-smooth px-3"
           ref={scrollContainerRef}
           style={{
             msOverflowStyle: "none",
@@ -60,7 +60,7 @@ export function CategoryNav({
             WebkitOverflowScrolling: "touch",
           }}
         >
-          <div className="flex gap-2 w-max">
+          <div className="flex w-max gap-2">
             {categories.map((category) => {
               const isPopular = isPopularCategory(category);
               const isSelected = category.id === selectedCategoryId;
@@ -80,7 +80,7 @@ export function CategoryNav({
                   className={cn("flex-shrink-0 rounded-md", isPopular && "popular-category-button")}
                   onClick={() => onCategorySelect(category.id)}
                 >
-                  {isPopular && <Sparkles className="h-3 w-3 mr-1 text-yellow-400" />}
+                  {isPopular && <Sparkles className="mr-1 h-3 w-3 text-yellow-400" />}
                   {category.name}
                   {isPopular && <span className="popular-glow-effect"></span>}
                 </Button>
@@ -90,18 +90,18 @@ export function CategoryNav({
         </div>
 
         <Drawer open={isOpen} onOpenChange={setIsOpen}>
-          <DrawerContent className="max-h-[85vh] p-0 max-w-md mx-auto rounded-t-[20px]">
+          <DrawerContent className="mx-auto max-h-[85vh] max-w-md rounded-t-[20px] p-0">
             <div>
-              <DrawerHeader className="px-4 py-3 border-b flex items-center justify-between">
+              <DrawerHeader className="flex items-center justify-between border-b px-4 py-3">
                 <DrawerTitle>Categories</DrawerTitle>
                 <DrawerClose asChild>
-                  <Button variant="ghost" size="icon" className="rounded-full h-8 w-8">
+                  <Button variant="ghost" size="icon" className="h-8 w-8 rounded-full">
                     <X className="h-4 w-4" />
                   </Button>
                 </DrawerClose>
               </DrawerHeader>
 
-              <div className=" p-3 space-y-2 overflow-y-auto max-h-[70vh] pb-6">
+              <div className="max-h-[70vh] space-y-2 overflow-y-auto p-3 pb-6">
                 {categories.map((category) => {
                   const isPopular = isPopularCategory(category);
                   const isSelected = category.id === selectedCategoryId;
@@ -116,7 +116,7 @@ export function CategoryNav({
                       className={cn("w-full rounded-md", isPopular && "popular-category-button")}
                       onClick={() => handleCategoryClick(category.id)}
                     >
-                      {isPopular && <Sparkles className="h-3 w-3 mr-1 text-yellow-400" />}
+                      {isPopular && <Sparkles className="mr-1 h-3 w-3 text-yellow-400" />}
                       {category.name}
                       {isPopular && <span className="popular-glow-effect"></span>}
                     </Button>

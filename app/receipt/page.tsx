@@ -52,7 +52,7 @@ const ReceiptContent = () => {
   // If split bill is active, show only the split bill UI
   if (splitBillState.splitBillStep > 0) {
     return (
-      <div className="min-h-screen bg-gradient-to-b from-orange-50 to-white py-4 px-4 max-w-md mx-auto">
+      <div className="mx-auto min-h-screen max-w-md bg-gradient-to-b from-orange-50 to-white px-4 py-4">
         <motion.div variants={containerVariants} initial="hidden" animate="visible" className="space-y-4">
           {data.status === "UNPAID" && <UnpaidWarning />}
           <ReceiptHeader data={data} />
@@ -65,7 +65,7 @@ const ReceiptContent = () => {
 
   // Otherwise show the main receipt content
   return (
-    <div className="min-h-screen bg-gradient-to-b from-orange-50 to-white py-4 px-4 max-w-md mx-auto">
+    <div className="mx-auto min-h-screen max-w-md bg-gradient-to-b from-orange-50 to-white px-4 py-4">
       <motion.div variants={containerVariants} initial="hidden" animate="visible" className="space-y-4">
         {isLoading ? (
           <>
@@ -80,7 +80,7 @@ const ReceiptContent = () => {
         ) : (
           <>
             {data.status === "UNPAID" && <UnpaidWarning />}
-            {data.orderStatus == "REFUNDED" && <RefundedWarning />}
+            {data.orderStatus === "REFUNDED" && <RefundedWarning />}
             <ReceiptHeader data={data} />
             <ReceiptActions data={data} orderId={orderId} />
             {/* <RestaurantFeedback data={data} /> */}

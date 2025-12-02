@@ -42,7 +42,7 @@ export function SplitBill({ data, onClose, splitBillState }: SplitBillProps) {
       case 1:
         return (
           <div className="space-y-4">
-            <h2 className="text-lg font-semibold">How many people are splitting the bill?</h2>
+            <h2 className="font-semibold text-lg">How many people are splitting the bill?</h2>
             <div className="flex items-center space-x-2">
               <Label htmlFor="numberOfPeople" className="text-black">
                 Number of People
@@ -63,7 +63,7 @@ export function SplitBill({ data, onClose, splitBillState }: SplitBillProps) {
                   inputMode="none"
                   value={numberOfPeople}
                   readOnly
-                  className="w-14 h-8 text-center rounded-none border-x-0 border-yellow-400 focus:ring-yellow-500 [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
+                  className="h-8 w-14 rounded-none border-yellow-400 border-x-0 text-center [appearance:textfield] focus:ring-yellow-500 [&::-webkit-inner-spin-button]:appearance-none [&::-webkit-outer-spin-button]:appearance-none"
                 />
                 <Button
                   type="button"
@@ -81,7 +81,7 @@ export function SplitBill({ data, onClose, splitBillState }: SplitBillProps) {
       case 2:
         return (
           <div className="space-y-4">
-            <h2 className="text-lg font-semibold">Enter the names of the people splitting the bill</h2>
+            <h2 className="font-semibold text-lg">Enter the names of the people splitting the bill</h2>
             {Array.from({ length: numberOfPeople }).map((_, index) => (
               <div key={index}>
                 <Label htmlFor={`person${index}`} className="text-black">
@@ -96,8 +96,8 @@ export function SplitBill({ data, onClose, splitBillState }: SplitBillProps) {
       case 3:
         return (
           <div className="space-y-4">
-            <h2 className="text-lg font-semibold -mb-3">Assign items to people</h2>
-            <p className="text-sm text-muted-foreground">You can select multiple people per item</p>
+            <h2 className="-mb-3 font-semibold text-lg">Assign items to people</h2>
+            <p className="text-muted-foreground text-sm">You can select multiple people per item</p>
             <Separator className="my-2" />
             {data.items.flatMap((item, itemIndex) =>
               Array.from({ length: item.quantity }, (_, index) => {
@@ -107,10 +107,10 @@ export function SplitBill({ data, onClose, splitBillState }: SplitBillProps) {
 
                 return (
                   <div key={uniqueKey} className="space-y-2">
-                    <span className="text-black font-medium">
+                    <span className="font-medium text-black">
                       {item.name}
                       {item.modifiers.length > 0 && (
-                        <span className="text-sm text-muted-foreground ml-2">({item.modifiers.map((mod) => mod.name).join(", ")})</span>
+                        <span className="ml-2 text-muted-foreground text-sm">({item.modifiers.map((mod) => mod.name).join(", ")})</span>
                       )}
                     </span>
                     <div className="space-y-2">
@@ -155,7 +155,7 @@ export function SplitBill({ data, onClose, splitBillState }: SplitBillProps) {
       case 4:
         return (
           <div className="space-y-4">
-            <h2 className="text-lg font-semibold">Split Bill Result</h2>
+            <h2 className="font-semibold text-lg">Split Bill Result</h2>
             {Object.entries(splitBillResult).map(([person, amount]) => (
               <div key={person} className="flex justify-between text-black">
                 <span>{person}</span>
@@ -167,7 +167,7 @@ export function SplitBill({ data, onClose, splitBillState }: SplitBillProps) {
               <span>Total</span>
               <span>Rp {data.total.toLocaleString()}</span>
             </div>
-            <p className="text-sm text-muted-foreground mt-4">
+            <p className="mt-4 text-muted-foreground text-sm">
               Note: The taxes and fees are calculated proportionally based on each person&apos;s order amount.
             </p>
           </div>
@@ -185,7 +185,7 @@ export function SplitBill({ data, onClose, splitBillState }: SplitBillProps) {
     <MotionCard variants={cardVariants} className="rounded-xl">
       <CardContent className="py-4">
         {renderContent()}
-        <div className="flex justify-between mt-4">
+        <div className="mt-4 flex justify-between">
           {splitBillStep === 1 ? (
             <Button onClick={onClose} variant="destructive-outline">
               Cancel

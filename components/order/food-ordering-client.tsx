@@ -146,17 +146,17 @@ export function FoodOrderingClient({ storeId }: FoodOrderingClientProps) {
   if (loading) {
     return (
       <div className="min-h-screen bg-gray-50 pb-[72px]">
-        <div className="max-w-md mx-auto bg-white shadow-sm">
+        <div className="mx-auto max-w-md bg-white shadow-sm">
           <RestaurantHeaderSkeleton />
           <div className="sticky top-0 z-20">
             <SearchOverlaySkeleton className="border-b shadow-sm" />
             <CategoryNavSkeleton className="border-b shadow-sm" />
           </div>
-          <div className="px-3 py-4 space-y-6">
+          <div className="space-y-6 px-3 py-4">
             {/* Mensimulasikan 2 blok kategori */}
             {[...Array(2)].map((_, categoryIndex) => (
               <div key={categoryIndex}>
-                <Skeleton className="h-6 w-1/3 mb-3" />
+                <Skeleton className="mb-3 h-6 w-1/3" />
                 <div className="space-y-4">
                   {/* Mensimulasikan 3 item menu per kategori */}
                   {[...Array(3)].map((_, itemIndex) => (
@@ -174,11 +174,11 @@ export function FoodOrderingClient({ storeId }: FoodOrderingClientProps) {
 
   if (error) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-gray-50">
-        <div className="max-w-sm mx-auto text-center p-6 bg-white rounded-lg shadow-lg">
-          <AlertTriangle className="h-12 w-12 text-red-500 mx-auto mb-4" />
-          <h3 className="text-lg font-semibold text-gray-900 mb-2">Something went wrong</h3>
-          <p className="text-gray-600 mb-6">{error}</p>
+      <div className="flex min-h-screen items-center justify-center bg-gray-50">
+        <div className="mx-auto max-w-sm rounded-lg bg-white p-6 text-center shadow-lg">
+          <AlertTriangle className="mx-auto mb-4 h-12 w-12 text-red-500" />
+          <h3 className="mb-2 font-semibold text-gray-900 text-lg">Something went wrong</h3>
+          <p className="mb-6 text-gray-600">{error}</p>
           <Button onClick={() => window.location.reload()} className="w-full">
             Try again
           </Button>
@@ -189,7 +189,7 @@ export function FoodOrderingClient({ storeId }: FoodOrderingClientProps) {
 
   return (
     <div className="min-h-screen bg-gray-50 pb-[72px]">
-      <div className="max-w-md mx-auto bg-white shadow-sm">
+      <div className="mx-auto max-w-md bg-white shadow-sm">
         <RestaurantHeader
           name={restaurant?.name || ""}
           logo={restaurant?.logo || ""}
@@ -228,7 +228,7 @@ export function FoodOrderingClient({ storeId }: FoodOrderingClientProps) {
           />
         </div>
 
-        <div className="px-3 py-4 space-y-6">
+        <div className="space-y-6 px-3 py-4">
           {menuCategories.map((category) => (
             <div
               key={category.$id}
@@ -240,7 +240,7 @@ export function FoodOrderingClient({ storeId }: FoodOrderingClientProps) {
               data-category={category.$id}
               className="scroll-mt-[145px]"
             >
-              <h2 className="text-lg font-bold mb-3">{category.name}</h2>
+              <h2 className="mb-3 font-bold text-lg">{category.name}</h2>
               <div className="space-y-4">
                 {category.menuId.map((item, index) => {
                   // Create a unique key for items in the Popular category

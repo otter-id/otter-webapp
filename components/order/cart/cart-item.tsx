@@ -26,7 +26,7 @@ export function CartItem({ item, onQuantityChange, onEdit, onDelete }: CartItemP
 
   return (
     <div className="flex items-start gap-3">
-      <div className="relative w-20 h-20 flex-shrink-0 rounded-lg overflow-hidden bg-muted">
+      <div className="relative h-20 w-20 flex-shrink-0 overflow-hidden rounded-lg bg-muted">
         <Image
           onDragStart={(event) => event.preventDefault()}
           onContextMenu={(e) => e.preventDefault()}
@@ -36,11 +36,11 @@ export function CartItem({ item, onQuantityChange, onEdit, onDelete }: CartItemP
           className="object-cover"
         />
       </div>
-      <div className="flex-1 min-w-0">
-        <div className="flex justify-between items-start gap-2">
+      <div className="min-w-0 flex-1">
+        <div className="flex items-start justify-between gap-2">
           <div>
             <h3 className="font-medium">{item.name}</h3>
-            <div className="mt-1 text-sm text-muted-foreground space-y-1">
+            <div className="mt-1 space-y-1 text-muted-foreground text-sm">
               {item.selectedOptions &&
                 Object.entries(item.selectedOptions).map(([categoryId, options]) =>
                   options.map((option) => (
@@ -50,16 +50,16 @@ export function CartItem({ item, onQuantityChange, onEdit, onDelete }: CartItemP
                     </div>
                   )),
                 )}
-              {item.note && <div className="mt-2 italic text-xs border-l-2 border-gray-200 pl-2">{item.note}</div>}
+              {item.note && <div className="mt-2 border-gray-200 border-l-2 pl-2 text-xs italic">{item.note}</div>}
             </div>
           </div>
-          <div className="text-sm space-y-1 text-right">
+          <div className="space-y-1 text-right text-sm">
             <div className="flex flex-col items-end">
               {!item.discountPrice ? (
                 <p className="font-bold">{formatPrice(item.price * item.quantity)}</p>
               ) : (
                 <>
-                  <p className="text-sm text-muted-foreground line-through">{formatPrice(item.price * item.quantity)}</p>
+                  <p className="text-muted-foreground text-sm line-through">{formatPrice(item.price * item.quantity)}</p>
                   <p className="font-bold">{formatPrice(item.discountPrice * item.quantity)}</p>
                 </>
               )}
@@ -67,7 +67,7 @@ export function CartItem({ item, onQuantityChange, onEdit, onDelete }: CartItemP
             <div className="font-medium">{formatPrice(calculateItemTotal(item))}</div>
           </div>
         </div>
-        <div className="flex items-center justify-between mt-3">
+        <div className="mt-3 flex items-center justify-between">
           <div className="flex items-center gap-2">
             <Button variant="outline" size="icon" className="h-8 w-8 rounded-full" onClick={() => onQuantityChange(item.quantity - 1)}>
               <Minus className="h-4 w-4" />

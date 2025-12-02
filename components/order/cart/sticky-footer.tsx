@@ -23,11 +23,11 @@ export function StickyFooter({ cartItemCount, cartTotal, onCartClick }: StickyFo
   }
 
   return (
-    <div className="fixed bottom-0 left-1/2 -translate-x-1/2 w-full max-w-md bg-white border-t">
+    <div className="-translate-x-1/2 fixed bottom-0 left-1/2 w-full max-w-md border-t bg-white">
       <div className="px-4 py-3">
         <div className="transition-all duration-300">
           {cartItemCount > 0 ? (
-            <Button variant="default" className="w-full h-12 bg-black hover:bg-black/90" onClick={onCartClick}>
+            <Button variant="default" className="h-12 w-full bg-black hover:bg-black/90" onClick={onCartClick}>
               <div className="flex items-center gap-2">
                 <ShoppingBag className="h-5 w-5" />
                 <span className="font-medium">View Cart</span>
@@ -37,7 +37,7 @@ export function StickyFooter({ cartItemCount, cartTotal, onCartClick }: StickyFo
               </div>
             </Button>
           ) : (
-            <Button variant="outline" disabled className="w-full h-12 opacity-70">
+            <Button variant="outline" disabled className="h-12 w-full opacity-70">
               <div className="flex items-center gap-2">
                 <ShoppingBag className="h-5 w-5" />
                 <span className="font-medium">No items in cart</span>

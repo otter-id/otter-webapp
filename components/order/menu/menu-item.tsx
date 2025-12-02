@@ -69,52 +69,52 @@ export function MenuItem({ item, onItemClick, quantity = 0, isInPopularCategory 
       }`}
       onClick={itemInStock ? onItemClick : undefined}
     >
-      <div className="relative w-32 h-32 flex-shrink-0">
+      <div className="relative h-32 w-32 flex-shrink-0">
         {item.image && !imageError ? (
-          <div className={`w-full h-full rounded-lg overflow-hidden ${itemInStock ? "bg-muted" : "bg-muted/50"}`}>
+          <div className={`h-full w-full overflow-hidden rounded-lg ${itemInStock ? "bg-muted" : "bg-muted/50"}`}>
             <Image
               onDragStart={(event) => event.preventDefault()}
               onContextMenu={(e) => e.preventDefault()}
               src={item.image}
               alt={typeof item.name === "string" ? item.name : "Menu item"}
               fill
-              className={`object-cover rounded-lg ${itemInStock ? "" : "grayscale"}`}
+              className={`rounded-lg object-cover ${itemInStock ? "" : "grayscale"}`}
               onError={() => setImageError(true)}
             />
           </div>
         ) : (
           <div
-            className={`w-full h-full rounded-lg overflow-hidden border-2 flex items-center justify-center p-2 text-center ${
-              itemInStock ? "bg-yellow-50 border-yellow-100" : "bg-gray-50 border-gray-100"
+            className={`flex h-full w-full items-center justify-center overflow-hidden rounded-lg border-2 p-2 text-center ${
+              itemInStock ? "border-yellow-100 bg-yellow-50" : "border-gray-100 bg-gray-50"
             }`}
           >
-            <span className={`font-medium text-sm whitespace-pre-line ${itemInStock ? "text-yellow-800" : "text-gray-500"}`}>
+            <span className={`whitespace-pre-line font-medium text-sm ${itemInStock ? "text-yellow-800" : "text-gray-500"}`}>
               {formatTextForPlaceholder(item.name)}
             </span>
           </div>
         )}
         {quantity > 0 && mounted && itemInStock && (
-          <div className="absolute -top-3 -right-3 h-8 min-w-[32px] px-2 flex items-center justify-center gap-1 bg-black text-white rounded-full">
-            <ShoppingCart className="w-3 h-3" />
+          <div className="-top-3 -right-3 absolute flex h-8 min-w-[32px] items-center justify-center gap-1 rounded-full bg-black px-2 text-white">
+            <ShoppingCart className="h-3 w-3" />
             <span>{quantity}</span>
           </div>
         )}
         {!itemInStock && (
-          <div className="absolute inset-0 flex items-center justify-center bg-black/20 rounded-lg">
-            <span className="bg-gray-800 text-white px-3 py-1 rounded-full text-xs font-medium">Out of Stock</span>
+          <div className="absolute inset-0 flex items-center justify-center rounded-lg bg-black/20">
+            <span className="rounded-full bg-gray-800 px-3 py-1 font-medium text-white text-xs">Out of Stock</span>
           </div>
         )}
       </div>
-      <div className="flex-1 min-w-0 py-2">
-        <div className="flex justify-between items-start gap-3">
-          <div className="space-y-1 flex-1 min-w-0">
+      <div className="min-w-0 flex-1 py-2">
+        <div className="flex items-start justify-between gap-3">
+          <div className="min-w-0 flex-1 space-y-1">
             <div className="flex items-center gap-2">
               <h3 className={`font-bold leading-tight ${itemInStock ? "" : "text-gray-500"}`}>{item.name}</h3>
               {item.isRecommended && !isInPopularCategory && itemInStock && (
-                <Badge className="bg-yellow-100 text-yellow-800 hover:bg-yellow-100 text-xs px-2 py-0.5 rounded-full font-normal">Popular</Badge>
+                <Badge className="rounded-full bg-yellow-100 px-2 py-0.5 font-normal text-xs text-yellow-800 hover:bg-yellow-100">Popular</Badge>
               )}
             </div>
-            <p className={`text-sm line-clamp-2 ${itemInStock ? "text-muted-foreground" : "text-gray-400"}`}>{item.description}</p>
+            <p className={`line-clamp-2 text-sm ${itemInStock ? "text-muted-foreground" : "text-gray-400"}`}>{item.description}</p>
             <div className="flex flex-col items-start">
               {!item.discountPrice ? (
                 <p className={`font-bold ${itemInStock ? "" : "text-gray-500"}`}>{formatPrice(item.price)}</p>
@@ -130,8 +130,8 @@ export function MenuItem({ item, onItemClick, quantity = 0, isInPopularCategory 
             size="icon"
             variant="default"
             disabled={!itemInStock}
-            className={`mr-2 rounded-full h-7 w-7 flex-shrink-0 ${
-              itemInStock ? "bg-black hover:bg-black/90" : "bg-gray-300 text-gray-500 cursor-not-allowed hover:bg-gray-300"
+            className={`mr-2 h-7 w-7 flex-shrink-0 rounded-full ${
+              itemInStock ? "bg-black hover:bg-black/90" : "cursor-not-allowed bg-gray-300 text-gray-500 hover:bg-gray-300"
             }`}
           >
             <Plus className="h-4 w-4 transition-transform" />

@@ -189,7 +189,7 @@ export function RestaurantHeader({
     <>
       <div className="relative pb-4">
         {/* Hero Image */}
-        <div className="h-48 relative bg-muted">
+        <div className="relative h-48 bg-muted">
           <Image
             onDragStart={(event) => event.preventDefault()}
             onContextMenu={(e) => e.preventDefault()}
@@ -202,11 +202,11 @@ export function RestaurantHeader({
         </div>
 
         {/* Floating Card */}
-        <motion.div className="relative mx-4 -mt-24" initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.5 }}>
-          <div className="bg-white rounded-xl shadow-lg p-6 space-y-4">
+        <motion.div className="-mt-24 relative mx-4" initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.5 }}>
+          <div className="space-y-4 rounded-xl bg-white p-6 shadow-lg">
             {/* Restaurant Info */}
             <div className="flex items-start gap-4">
-              <div className="w-20 h-20 rounded-full overflow-hidden bg-muted relative flex-shrink-0">
+              <div className="relative h-20 w-20 flex-shrink-0 overflow-hidden rounded-full bg-muted">
                 <Image
                   onDragStart={(event) => event.preventDefault()}
                   onContextMenu={(e) => e.preventDefault()}
@@ -216,10 +216,10 @@ export function RestaurantHeader({
                   className="object-cover"
                 />
               </div>
-              <div className="flex-1 min-w-0">
+              <div className="min-w-0 flex-1">
                 <div className="flex items-start justify-between gap-2">
                   <div className="pt-2">
-                    <h1 className="text-xl font-bold">{name}</h1>
+                    <h1 className="font-bold text-xl">{name}</h1>
                     <h1 className="text-muted-foreground">{location}</h1>
                     {/* <div className="flex items-center gap-1 mt-1 text-sm">
                       <div className="flex items-center">
@@ -242,12 +242,12 @@ export function RestaurantHeader({
             <div className="grid gap-3">
               <div className="flex items-center justify-between">
                 <div className="flex items-center gap-2">
-                  <div className={`w-2 h-2 rounded-full ${isOpen ? "bg-green-500 animate-pulse" : "bg-red-500"}`} />
+                  <div className={`h-2 w-2 rounded-full ${isOpen ? "animate-pulse bg-green-500" : "bg-red-500"}`} />
                   <span className="font-medium">{isOpen ? "Open Now" : "Closed"}</span>
                   {/* bullet */}
                   {closesAtText && (
                     <>
-                      <div className="w-1 h-1 rounded-full bg-muted-foreground/30" />
+                      <div className="h-1 w-1 rounded-full bg-muted-foreground/30" />
                       <span className="text-muted-foreground">{closesAtText}</span>
                     </>
                   )}
@@ -256,15 +256,15 @@ export function RestaurantHeader({
 
               <div className="flex items-center gap-3 text-sm">
                 <div className="flex items-center gap-1.5">
-                  <MapPin className="w-4 h-4 text-muted-foreground" />
+                  <MapPin className="h-4 w-4 text-muted-foreground" />
                   <span>{distanceText}</span>
                 </div>
-                <div className="w-1 h-1 rounded-full bg-muted-foreground/30" />
+                <div className="h-1 w-1 rounded-full bg-muted-foreground/30" />
                 <div className="flex items-center gap-1.5">
-                  <Clock className="w-4 h-4 text-muted-foreground" />
+                  <Clock className="h-4 w-4 text-muted-foreground" />
                   <div className="flex items-center gap-1">
                     <span>{waitTime} mins</span>
-                    <div className={`w-2 h-2 rounded-full ${waitTimeStatus.color}`} />
+                    <div className={`h-2 w-2 rounded-full ${waitTimeStatus.color}`} />
                     <span className="text-muted-foreground">{waitTimeStatus.label} wait</span>
                   </div>
                 </div>
@@ -272,10 +272,10 @@ export function RestaurantHeader({
 
               {/* Actions */}
               <div className="flex gap-2 pt-2">
-                <Button variant="outline" className="flex-1 h-9" onClick={() => window.open(googleMapsUrl, "_blank")}>
+                <Button variant="outline" className="h-9 flex-1" onClick={() => window.open(googleMapsUrl, "_blank")}>
                   Open in Google Maps
                 </Button>
-                <Button variant="outline" className="flex-1 h-9" onClick={() => setShowHours(true)}>
+                <Button variant="outline" className="h-9 flex-1" onClick={() => setShowHours(true)}>
                   See Hours
                 </Button>
               </div>
@@ -289,16 +289,16 @@ export function RestaurantHeader({
         <DialogContent className="max-w-sm">
           <DialogHeader>
             <DialogTitle className="flex items-center gap-2">
-              <Clock className="w-4 h-4" />
+              <Clock className="h-4 w-4" />
               Opening Hours
             </DialogTitle>
           </DialogHeader>
           <div className="space-y-3 pt-4">
             {openingHours.map((schedule, index) => (
               <div key={schedule.day}>
-                <div className="flex justify-between items-start">
+                <div className="flex items-start justify-between">
                   <span className={schedule.day === currentDay ? "font-black" : "text-muted-foreground"}>{schedule.day}</span>
-                  <div className={schedule.day === currentDay ? "font-black text-left" : "text-muted-foreground text-left"}>
+                  <div className={schedule.day === currentDay ? "text-left font-black" : "text-left text-muted-foreground"}>
                     {schedule.hours.map((timeSlot, i) => (
                       <div key={i}>{timeSlot}</div>
                     ))}

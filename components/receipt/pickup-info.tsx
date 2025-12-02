@@ -24,14 +24,14 @@ export function PickupInfo({ data }: PickupInfoProps) {
           <Store className="h-5 w-5 text-amber-400" />
           <div>
             <p className="font-bold">Store Location</p>
-            <p className="text-sm text-muted-foreground">{data.restaurantAddress}</p>
+            <p className="text-muted-foreground text-sm">{data.restaurantAddress}</p>
           </div>
         </div>
         <div className="flex items-center space-x-3">
           <Phone className="h-5 w-5 text-amber-400" />
           <div>
             <p className="font-bold">Store Phone</p>
-            <p className="text-sm text-muted-foreground">{data.phoneNumber}</p>
+            <p className="text-muted-foreground text-sm">{data.phoneNumber}</p>
           </div>
         </div>
         {data.pickupInstructions && (
@@ -39,7 +39,7 @@ export function PickupInfo({ data }: PickupInfoProps) {
             <Info className="h-8 w-8 text-amber-400" />
             <div>
               <p className="font-bold">Pickup Instructions</p>
-              <p className="text-sm text-muted-foreground">{data.pickupInstructions}</p>
+              <p className="text-muted-foreground text-sm">{data.pickupInstructions}</p>
             </div>
           </div>
         )}

@@ -7,13 +7,13 @@ interface ErrorStateProps {
 
 export function ErrorState({ error }: ErrorStateProps) {
   return (
-    <div className="min-h-screen bg-gradient-to-b from-amber-50 to-white py-4 px-4 max-w-md mx-auto flex items-center justify-center">
+    <div className="mx-auto flex min-h-screen max-w-md items-center justify-center bg-gradient-to-b from-amber-50 to-white px-4 py-4">
       <Card className="w-full border-amber-100">
-        <CardContent className="py-8 text-center space-y-4">
-          <div className="text-amber-600 mb-4">
-            <Info className="h-12 w-12 mx-auto" />
+        <CardContent className="space-y-4 py-8 text-center">
+          <div className="mb-4 text-amber-600">
+            <Info className="mx-auto h-12 w-12" />
           </div>
-          <h2 className="text-xl font-semibold text-gray-900">Hmm, something is not right</h2>
+          <h2 className="font-semibold text-gray-900 text-xl">Hmm, something is not right</h2>
           <p className="text-gray-500">Please check the order ID and try again.</p>
         </CardContent>
       </Card>
