@@ -25,7 +25,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Separator } from "@/components/ui/separator";
 import { Stepper } from "@/components/ui/stepper";
-import { ConstApp, formatPrice } from "@/utils/client";
+import { formatPrice } from "@/utils/client";
 
 interface PaymentState {
   restaurantId: string | null;
