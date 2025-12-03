@@ -63,7 +63,7 @@ const ReceiptContent = () => {
   if (splitBillState.splitBillStep > 0) {
     return (
       <div className="mx-auto min-h-screen max-w-md bg-gradient-to-b from-orange-50 to-white px-4 py-4">
-        <motion.div variants={containerVariants} initial="hidden" animate="visible" className="space-y-4">
+        <motion.div key="split-bill" variants={containerVariants} initial="hidden" animate="visible" className="space-y-4">
           {data.status === "UNPAID" && <UnpaidWarning />}
           <ReceiptHeader data={data} />
           <SplitBill data={data} onClose={splitBillState.handleCancelSplitBill} splitBillState={splitBillState} />
@@ -76,7 +76,7 @@ const ReceiptContent = () => {
   // Otherwise show the main receipt content
   return (
     <div className="mx-auto min-h-screen max-w-md bg-gradient-to-b from-orange-50 to-white px-4 py-4">
-      <motion.div variants={containerVariants} initial="hidden" animate="visible" className="space-y-4">
+      <motion.div key="receipt" variants={containerVariants} initial="hidden" animate="visible" className="space-y-4">
         {isLoading ? (
           <>
             <ReceiptHeaderSkeleton />

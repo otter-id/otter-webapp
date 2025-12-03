@@ -8,7 +8,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Separator } from "@/components/ui/separator";
 import type { ReceiptData } from "@/types/receipt";
 
-const MotionCard = motion(Card);
+const MotionCard = motion.create(Card);
 
 interface OrderDetailsProps {
   data: ReceiptData["data"];

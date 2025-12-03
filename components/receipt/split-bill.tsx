@@ -13,7 +13,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Separator } from "@/components/ui/separator";
 import type { ReceiptData } from "@/types/receipt";
 
-const MotionCard = motion(Card);
+const MotionCard = motion.create(Card);
 
 interface SplitBillProps {
   data: ReceiptData["data"];
