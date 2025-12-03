@@ -1,3 +1,5 @@
+"use server";
+
 import CryptoJS from "crypto-js";
 import { cookies } from "next/headers";
 import type { GenAuthSaveParam, GenAuthSyncReturn } from "@/types/auth";
@@ -10,11 +12,12 @@ export const GenAuth = {
     const token_init = process.env.ONE_TIME_INIT;
 
     if (!local_key || !local_secret || !token_secret || !token_init) {
-      throw new Error("Failed setup one time token");
+      console.log({ schema: "error env", local_key, local_secret, token_secret, token_init });
+      return { token: "", store: "" };
     }
 
-    const cookieStore = await cookies();
-    const local = cookieStore.get(local_key)?.value;
+    const cookie_store = await cookies();
+    const local = cookie_store.get(local_key)?.value;
     if (!local) {
       const token_cur = CryptoJS.AES.encrypt(token_init, token_secret).toString();
       const token_new = token_cur.substring(0, 125);
@@ -41,10 +44,15 @@ export const GenAuth = {
     const local_secret = process.env.COOKIE_AUTH_SECRET;
 
     if (!local_key || !local_secret) {
-      throw new Error("Failed setup one time token");
+      console.log({ schema: "error env", local_key, local_secret });
+      return;
     }
 
     console.log({ schema: "store", value: param.value });
     (await cookies()).set(local_key, param.value);
+
+    const cookie_store = await cookies();
+    const local = cookie_store.get(local_key)?.value;
+    console.log({ schema: "store", value: local });
   },
 };
