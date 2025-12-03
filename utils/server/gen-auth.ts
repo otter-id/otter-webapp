@@ -51,7 +51,7 @@ export const GenAuth = {
     (await cookies()).set(local_key, param.value);
 
     const cookie = await cookies();
-    const _local = cookie.get(local_key)?.value;
+    const local = cookie.get(local_key)?.value;
     // console.log({ schema: "store", value: local });
   },
 };

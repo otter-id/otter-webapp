@@ -17,12 +17,12 @@ export const useReceiptData = (orderId: string | null, storeId: string | null) =
 
       try {
         const result = await ApiGetReceiptData(orderId, storeId);
-        if (result.status >= 400) throw new Error(result.response?.message || result.statusText);
+        if (!result.ok) throw new Error(result.response?.message || result.statusText);
         setReceiptData(result);
         setError(null);
-      } catch (err) {
-        setError(err instanceof Error ? err.message : "An error occurred");
-        console.error("Error fetching receipt data:", err);
+      } catch (error) {
+        setError(error instanceof Error ? error.message : "An error occurred");
+        console.error("Error fetching receipt data:", error);
       } finally {
         setIsLoading(false);
       }

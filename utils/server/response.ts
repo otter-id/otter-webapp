@@ -1,5 +1,6 @@
-export const ResponServer = async (param: Response) => {
-  const { status, statusText, ok, url, type, headers } = param;
-  const response = await param.json();
-  return { response, status, statusText, ok, url, type, headers };
+export const Respon = {
+  server: (respon: Response, result: any) => {
+    const { status, statusText, ok, url, type, headers } = respon;
+    return Object.assign(result, { status, statusText, ok, url, type, headers });
+  },
 };

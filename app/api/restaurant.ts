@@ -1,5 +1,5 @@
 "use server";
-import { ConstApi, GenAuth, ResponServer } from "@/utils/server";
+import { ConstApi, GenAuth, Respon } from "@/utils/server";
 
 export const ApiGetRestaurantPwa = async (restaurantId: string) => {
   try {
@@ -8,11 +8,11 @@ export const ApiGetRestaurantPwa = async (restaurantId: string) => {
       headers: { "Content-Type": "application/json", Authorization: `Bearer ${token}` },
     });
 
-    if (respon.status >= 400) return await ResponServer(respon);
-    else await GenAuth.store({ value: store });
-
     const result = await respon.json();
-    return result;
+    if (result.error !== "OneTimeTokenInvalid") await GenAuth.store({ value: store });
+    // console.log({ respon, result });
+
+    return Respon.server(respon, result);
   } catch (error: any) {
     return { status: 500, message: error.message };
   }
@@ -21,12 +21,11 @@ export const ApiGetRestaurantPwa = async (restaurantId: string) => {
 export const ApiGetRestaurantInfo = async (restaurantId: string) => {
   try {
     const respon = await fetch(`${ConstApi.url}/restaurant/info/${restaurantId}`, { next: { revalidate: 60 } });
-    if (respon.status >= 400) return await ResponServer(respon);
-
     const result = await respon.json();
-    if (!result.data.isPublished) return { code: 400, error: "Restaurant is not published" };
+    // console.log({ respon, result });
 
-    return result;
+    if (!result.data.isPublished) return { code: 400, error: "Restaurant is not published" };
+    return Respon.server(respon, result);
   } catch (error: any) {
     return { status: 500, message: error.message };
   }
