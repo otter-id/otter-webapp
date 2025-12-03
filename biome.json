@@ -1,0 +1,124 @@
+{
+  "$schema": "https://biomejs.dev/schemas/2.3.8/schema.json",
+  "files": {
+    "includes": ["**", "!node_modules", "!.next", "!public", "!build"]
+  },
+  "vcs": {
+    "enabled": false,
+    "clientKind": "git",
+    "useIgnoreFile": false
+  },
+  "formatter": {
+    "enabled": true,
+    "lineWidth": 150,
+    "indentWidth": 2,
+    "indentStyle": "space"
+  },
+  "linter": {
+    "enabled": true,
+    "rules": {
+      "complexity": {
+        "useOptionalChain": {
+          "fix": "safe",
+          "level": "warn",
+          "options": {}
+        },
+        "useDateNow": {
+          "fix": "safe",
+          "level": "warn",
+          "options": {}
+        },
+        "noUselessFragments": {
+          "fix": "safe",
+          "level": "warn",
+          "options": {}
+        }
+      },
+      "correctness": {
+        "noUnusedImports": {
+          "fix": "safe",
+          "level": "warn",
+          "options": {}
+        },
+        "noUnusedVariables": {
+          "fix": "safe",
+          "level": "warn",
+          "options": {}
+        },
+        "useExhaustiveDependencies": {
+          "fix": "safe",
+          "level": "warn",
+          "options": {}
+        },
+        "noUnusedFunctionParameters": "off"
+      },
+      "nursery": {
+        "useSortedClasses": {
+          "fix": "safe",
+          "level": "warn"
+        }
+      },
+      "style": {
+        "useConst": "off",
+        "useTemplate": {
+          "fix": "safe",
+          "level": "warn",
+          "options": {}
+        },
+        "useNodejsImportProtocol": {
+          "fix": "safe",
+          "level": "warn",
+          "options": {}
+        },
+        "noNonNullAssertion": {
+          "fix": "safe",
+          "level": "warn",
+          "options": {}
+        }
+      },
+      "security": {
+        "noDangerouslySetInnerHtml": "error"
+      },
+      "suspicious": {
+        "noExplicitAny": "off",
+        "noRedeclare": "off",
+        "noGlobalIsNan": "off",
+        "noArrayIndexKey": "off",
+        "noImplicitAnyLet": "off",
+        "noAssignInExpressions": "off",
+        "useIterableCallbackReturn": "off",
+        "noDuplicateCustomProperties": "off",
+        "noUnknownAtRules": "off",
+        "noDoubleEquals": "off"
+      },
+      "a11y": {
+        "useAriaPropsForRole": "off",
+        "useSemanticElements": "off",
+        "useFocusableInteractive": "off",
+        "noStaticElementInteractions": "off",
+        "useKeyWithClickEvents": "off"
+      }
+    }
+  },
+  "javascript": {
+    "formatter": {
+      "quoteStyle": "double"
+    }
+  },
+  "css": {
+    "linter": {
+      "enabled": true
+    },
+    "parser": {
+      "tailwindDirectives": true
+    }
+  },
+  "assist": {
+    "enabled": true,
+    "actions": {
+      "source": {
+        "organizeImports": "on"
+      }
+    }
+  }
+}

@@ -48,8 +48,8 @@
     --ring: 212.7 26.8% 83.9%;
   }
 
-  /* Prevent pull-to-refresh and overscroll effects */ 
-   /* html {
+  /* Prevent pull-to-refresh and overscroll effects */
+  /* html {
     height: 100%;
     overflow: hidden;
   } */
@@ -94,17 +94,12 @@
     position: absolute;
     inset: 0;
     padding: 1.5px; /* Creates space for the border */
-    -webkit-mask: 
-      linear-gradient(#fff 0 0) content-box, 
+    -webkit-mask:
+      linear-gradient(#fff 0 0) content-box,
       linear-gradient(#fff 0 0);
     -webkit-mask-composite: xor;
     mask-composite: exclude;
-    background: linear-gradient(
-      90deg, 
-      #FFD700 0%, 
-      #FF69B4 50%, 
-      #FFD700 100%
-    ) border-box;
+    background: linear-gradient(90deg, #ffd700 0%, #ff69b4 50%, #ffd700 100%) border-box;
     background-size: 200% 100%;
     animation: border-animation 2s linear infinite;
   }

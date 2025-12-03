@@ -1,6 +1,6 @@
-import { Metadata } from "next";
-import { FoodOrderingClient } from "@/components/order/FoodOrderingClient";
-import { getRestaurantData } from "@/lib/getRestaurantData";
+import type { Metadata } from "next";
+import { ApiGetRestaurantInfo } from "@/app/api";
+import { FoodOrderingClient } from "@/components/order/food-ordering-client";
 
 interface PageProps {
   params: Promise<{ id: string }>;
@@ -10,14 +10,13 @@ interface PageProps {
  * Generate dynamic metadata untuk SEO dan OG tags
  * Metadata ini akan di-render di server-side untuk setiap store
  */
-export async function generateMetadata({
-  params,
-}: PageProps): Promise<Metadata> {
+export async function generateMetadata({ params }: PageProps): Promise<Metadata> {
   const { id } = await params;
-  const restaurant = await getRestaurantData(id);
+  const result = await ApiGetRestaurantInfo(id);
+  const restaurantData = result.data;
 
   // Default metadata jika restaurant tidak ditemukan
-  if (!restaurant) {
+  if (!restaurantData) {
     return {
       title: "Otter – Order Online",
       description: "Order food and drinks online with Otter",
@@ -42,9 +41,9 @@ export async function generateMetadata({
   }
 
   // Dynamic metadata berdasarkan data restaurant
-  const title = `${restaurant.name} – Order Online`;
+  const title = `${restaurantData.name} – Order Online`;
   const description = `Order online and track your order live. Powered by Otter`;
-  const imageUrl =  restaurant.image || restaurant.logo;
+  const imageUrl = restaurantData.image || restaurantData.logo;
 
   return {
     title,
@@ -57,7 +56,7 @@ export async function generateMetadata({
           url: imageUrl,
           width: 1200,
           height: 630,
-          alt: restaurant.name,
+          alt: restaurantData.name,
         },
       ],
       type: "website",
@@ -80,6 +79,7 @@ export async function generateMetadata({
 /**
  * Page component untuk store ordering
  * Ini adalah server component yang render client component
+ *
  */
 export default async function FoodOrderingPage({ params }: PageProps) {
   const { id } = await params;

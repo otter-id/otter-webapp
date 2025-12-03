@@ -1,12 +1,6 @@
 "use client";
-import {
-  Check,
-  Clock,
-  Package,
-  ShoppingBag,
-  BookmarkCheck,
-} from "lucide-react";
-import { cn } from "@/lib/utils";
+import { BookmarkCheck, Check, Clock, Package, ShoppingBag } from "lucide-react";
+import { cn } from "@/utils/client";
 
 interface OrderStepperProps {
   orderStatus?: string;
@@ -14,11 +8,7 @@ interface OrderStepperProps {
   className?: string;
 }
 
-export default function OrderStepper({
-  orderStatus = "ONGOING",
-  paymentStatus = "PAID",
-  className,
-}: OrderStepperProps) {
+export default function OrderStepper({ orderStatus = "ONGOING", paymentStatus = "PAID", className }: OrderStepperProps) {
   const steps = [
     {
       id: 1,
@@ -70,15 +60,14 @@ export default function OrderStepper({
   const currentStep = getCurrentStep();
 
   return (
-    <div className={cn("w-full max-w-3xl mx-auto px-4 py-6", className)}>
-      <div className="relative flex justify-between w-full">
+    <div className={cn("mx-auto w-full max-w-3xl px-4 py-6", className)}>
+      <div className="relative flex w-full justify-between">
         {/* Connector line - single line across all steps */}
-        <div className="absolute top-5 left-10 right-10 h-[2px] z-0">
+        <div className="absolute top-5 right-10 left-10 z-0 h-[2px]">
           <div
-            className="absolute left-0 right-0 h-full"
+            className="absolute right-0 left-0 h-full"
             style={{
-              background:
-                "repeating-linear-gradient(to right, #D1D5DB 0, #D1D5DB 5px, transparent 5px, transparent 8px)",
+              background: "repeating-linear-gradient(to right, #D1D5DB 0, #D1D5DB 5px, transparent 5px, transparent 8px)",
             }}
           />
           {/* Completed line */}
@@ -86,41 +75,26 @@ export default function OrderStepper({
             className="absolute left-0 h-full"
             style={{
               background: "#F2C94C",
-              width: `${
-                ((Math.min(currentStep, steps.length) - 1) /
-                  (steps.length - 1)) *
-                100
-              }%`,
+              width: `${((Math.min(currentStep, steps.length) - 1) / (steps.length - 1)) * 100}%`,
             }}
           />
         </div>
 
         {/* Step circles and labels */}
         {steps.map((step) => (
-          <div key={step.id} className="flex flex-col items-center z-10">
+          <div key={step.id} className="z-10 flex flex-col items-center">
             {/* Step circle */}
             <div
               className={cn(
-                "w-10 h-10 rounded-full flex items-center justify-center",
-                currentStep >= step.id
-                  ? "bg-yellow-400 text-black"
-                  : "bg-gray-200 text-gray-500"
+                "flex h-10 w-10 items-center justify-center rounded-full",
+                currentStep >= step.id ? "bg-yellow-400 text-black" : "bg-gray-200 text-gray-500",
               )}
             >
-              {currentStep > step.id ? (
-                <Check className="w-5 h-5" />
-              ) : (
-                <step.icon className="w-5 h-5" />
-              )}
+              {currentStep > step.id ? <Check className="h-5 w-5" /> : <step.icon className="h-5 w-5" />}
             </div>
 
             {/* Step label */}
-            <span
-              className={cn(
-                "mt-3 text-sm font-medium text-center max-w-[80px]",
-                currentStep >= step.id ? "text-gray-900" : "text-gray-500"
-              )}
-            >
+            <span className={cn("mt-3 max-w-[80px] text-center font-medium text-sm", currentStep >= step.id ? "text-gray-900" : "text-gray-500")}>
               {step.name}
             </span>
           </div>

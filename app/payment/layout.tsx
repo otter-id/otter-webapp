@@ -6,11 +6,7 @@ export const metadata = {
   description: "Complete your payment",
 };
 
-export default function PaymentLayout({
-  children,
-}: {
-  children: React.ReactNode;
-}) {
+export default function PaymentLayout({ children }: { children: React.ReactNode }) {
   return (
     <>
       {children}
