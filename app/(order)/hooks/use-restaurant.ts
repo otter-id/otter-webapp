@@ -2,6 +2,8 @@ import { useEffect, useState } from "react";
 import { ApiGetRestaurantPwa } from "@/app/api";
 import type { MenuCategory, MenuItem, Restaurant } from "@/types/restaurant";
 
+import { ConstApp } from "@/utils/client";
+
 export function useRestaurant(restaurantId: string) {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -16,7 +18,7 @@ export function useRestaurant(restaurantId: string) {
 
         const restaurantData = result.data;
         if (!restaurantData.isPublished) {
-          window.location.replace("https://app.otter.id/");
+          window.location.replace(ConstApp.url || "/");
           return;
         }
 

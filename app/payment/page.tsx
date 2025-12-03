@@ -25,7 +25,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Separator } from "@/components/ui/separator";
 import { Stepper } from "@/components/ui/stepper";
-import { formatPrice } from "@/utils/client";
+import { ConstApp, formatPrice } from "@/utils/client";
 
 interface PaymentState {
   restaurantId: string | null;
@@ -106,6 +106,7 @@ function PaymentPageContent() {
 
       setIsQrLoading(true);
       try {
+        console.log({ orderId, restId });
         const result = await ApiGenerateQris(orderId, restId);
         if (result.status >= 400) throw new Error(result.response?.message || result.statusText);
         updateState({ qrisData: result.data });
@@ -344,7 +345,7 @@ function PaymentPageContent() {
             localStorage.setItem("otter-cart", JSON.stringify(updatedCarts));
           }
         }
-        window.location.replace(`https://app.otter.id/receipt?id=${state.qrisData?.reference_id}`);
+        window.location.replace(`${ConstApp.url}/receipt?id=${state.qrisData?.reference_id}`);
       } else {
         toast("Payment is unpaid", {
           description: "Your payment has not been confirmed yet.",
