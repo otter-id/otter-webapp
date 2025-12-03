@@ -6,7 +6,7 @@ import { useRouter, useSearchParams } from "next/navigation";
 import { Suspense, useCallback, useEffect, useState } from "react";
 import { toast } from "sonner";
 import type { CartItem, CartRestourant, CartTotals } from "@/app/(order)/hooks/use-cart";
-import { ApiCheckPaymentStatus, ApiCheckStock, ApiGenerateQris, ApiPlaceOrder } from "@/app/api";
+import { ApiCheckPaymentStatus, ApiCheckStock, ApiPostCheckPwaQris, ApiPostOrderPwa } from "@/app/api";
 import { PaymentMethodDrawer } from "@/components/payment/payment-method-drawer";
 import { PhoneInput } from "@/components/payment/phone-input";
 import { QrisPayment } from "@/components/payment/qris-payment";
@@ -110,8 +110,8 @@ function PaymentPageContent() {
 
       setIsQrLoading(true);
       try {
-        const result = await ApiGenerateQris(orderId, restId);
-        if (result.status >= 400) throw new Error(result.response?.message || result.statusText);
+        const result = await ApiPostCheckPwaQris(orderId, restId);
+        if (!result.ok) throw new Error(result.response?.message || result.statusText);
         updateState({ qrisData: result.data });
         return true;
       } catch (error) {
@@ -200,7 +200,7 @@ function PaymentPageContent() {
   }> => {
     try {
       const result = await ApiCheckStock(state.restaurantId || "");
-      if (result.status >= 400) throw new Error(result.response?.message || result.statusText);
+      if (!result.ok) throw new Error(result.response?.message || result.statusText);
 
       const now = new Date();
       const outOfStockMenus: string[] = [];
@@ -303,8 +303,8 @@ function PaymentPageContent() {
       })),
     };
     try {
-      const result = await ApiPlaceOrder(orderBody);
-      if (result.status >= 400) throw new Error(result.response?.message || result.statusText);
+      const result = await ApiPostOrderPwa(orderBody);
+      if (!result.ok) throw new Error(result.response?.message || result.statusText);
 
       const { orderId, restaurantId: restId, subtotal, tax, service, total } = result.data;
       updateState({
@@ -335,7 +335,7 @@ function PaymentPageContent() {
     setIsCheckingStatus(true);
     try {
       const result = await ApiCheckPaymentStatus(state.activeOrderId);
-      if (result.status >= 400) throw new Error(result.response?.message || result.statusText);
+      if (!result.ok) throw new Error(result.response?.message || result.statusText);
 
       if (result.data === true) {
         toast("Payment confirmed", { icon: <Check className="h-4 w-4 text-green-500" /> });

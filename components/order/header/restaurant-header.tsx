@@ -63,8 +63,8 @@ export function RestaurantHeader({
           lng: pos.coords.longitude,
         });
       },
-      (err) => {
-        setGeoError(err.message);
+      (error) => {
+        setGeoError(error.message);
       },
       {
         enableHighAccuracy: true,

@@ -17,12 +17,12 @@ export const useEmailVerification = (token: string | null) => {
 
       try {
         const result = await ApiVerifyEmail(token);
-        if (result.status >= 400) throw new Error(result.response?.message || result.statusText);
+        if (!result.ok) throw new Error(result.response?.message || result.statusText);
         setUser(result);
         setError(null);
-      } catch (err) {
-        setError(err instanceof Error ? err.message : "An error occurred");
-        console.error("Error fetching user:", err);
+      } catch (error) {
+        setError(error instanceof Error ? error.message : "An error occurred");
+        console.error("Error fetching user:", error);
       } finally {
         setIsLoading(false);
       }

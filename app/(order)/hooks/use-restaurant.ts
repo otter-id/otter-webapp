@@ -13,7 +13,7 @@ export function useRestaurant(restaurantId: string) {
     const fetchRestaurant = async () => {
       try {
         const result = await ApiGetRestaurantPwa(restaurantId);
-        if (result.status >= 400) throw new Error(result.response?.message || result.statusText);
+        if (!result.ok) throw new Error(result.response?.message || result.statusText);
 
         const restaurantData = result.data;
         if (!restaurantData.isPublished) {
@@ -38,8 +38,8 @@ export function useRestaurant(restaurantId: string) {
         }
 
         setMenuCategories(allCategories);
-      } catch (err) {
-        setError(err instanceof Error ? err.message : "An error occurred");
+      } catch (error) {
+        setError(error instanceof Error ? error.message : "An error occurred");
       } finally {
         setLoading(false);
       }
