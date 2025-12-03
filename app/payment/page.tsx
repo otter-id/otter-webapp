@@ -5,7 +5,7 @@ import Image from "next/image";
 import { useRouter, useSearchParams } from "next/navigation";
 import { Suspense, useCallback, useEffect, useState } from "react";
 import { toast } from "sonner";
-import type { CartItem, CartTotals } from "@/app/(order)/hooks/use-cart";
+import type { CartItem, CartRestourant, CartTotals } from "@/app/(order)/hooks/use-cart";
 import { ApiCheckPaymentStatus, ApiCheckStock, ApiGenerateQris, ApiPlaceOrder } from "@/app/api";
 import { PaymentMethodDrawer } from "@/components/payment/payment-method-drawer";
 import { PhoneInput } from "@/components/payment/phone-input";
@@ -340,17 +340,17 @@ function PaymentPageContent() {
       if (result.data === true) {
         toast("Payment confirmed", { icon: <Check className="h-4 w-4 text-green-500" /> });
 
-        // if (state.restaurantId) {
-        //   localStorage.removeItem(`payment-${state.restaurantId}`);
-        //   const cartString = localStorage.getItem("otter-cart");
-        //   if (cartString) {
-        //     const allCarts: CartRestourant[] = JSON.parse(cartString);
-        //     const updatedCarts = allCarts.filter((cart) => cart.$id !== state.restaurantId);
-        //     localStorage.setItem("otter-cart", JSON.stringify(updatedCarts));
-        //   }
-        // }
+        if (state.restaurantId) {
+          localStorage.removeItem(`payment-${state.restaurantId}`);
+          const cartString = localStorage.getItem("otter-cart");
+          if (cartString) {
+            const allCarts: CartRestourant[] = JSON.parse(cartString);
+            const updatedCarts = allCarts.filter((cart) => cart.$id !== state.restaurantId);
+            localStorage.setItem("otter-cart", JSON.stringify(updatedCarts));
+          }
+        }
 
-        window.location.assign(`${ConstApp.url}/receipt?id=${state.qrisData?.reference_id}&sid=${state.restaurantId}`);
+        window.location.replace(`/receipt?id=${state.qrisData?.reference_id}&sid=${state.restaurantId}`);
       } else {
         toast("Payment is unpaid", {
           description: "Your payment has not been confirmed yet.",
