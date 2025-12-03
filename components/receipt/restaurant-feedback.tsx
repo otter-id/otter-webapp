@@ -10,9 +10,9 @@ import { Textarea } from "@/components/ui/textarea";
 import type { ReceiptData } from "@/types/receipt";
 import { cn } from "@/utils/client";
 
-const MotionCard = motion(Card);
-const MotionThumbsUp = motion(ThumbsUp);
-const MotionThumbsDown = motion(ThumbsDown);
+const MotionCard = motion.create(Card);
+const MotionThumbsUp = motion.create(ThumbsUp);
+const MotionThumbsDown = motion.create(ThumbsDown);
 
 export function RestaurantFeedback({ data }: { data: ReceiptData["data"] }) {
   const [feedback, setFeedback] = useState<"like" | "dislike" | null>(null);

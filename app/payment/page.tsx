@@ -5,7 +5,7 @@ import Image from "next/image";
 import { useRouter, useSearchParams } from "next/navigation";
 import { Suspense, useCallback, useEffect, useState } from "react";
 import { toast } from "sonner";
-import type { CartItem, CartRestourant, CartTotals } from "@/app/(order)/hooks/use-cart";
+import type { CartItem, CartTotals } from "@/app/(order)/hooks/use-cart";
 import { ApiCheckPaymentStatus, ApiCheckStock, ApiGenerateQris, ApiPlaceOrder } from "@/app/api";
 import { PaymentMethodDrawer } from "@/components/payment/payment-method-drawer";
 import { PhoneInput } from "@/components/payment/phone-input";
@@ -25,7 +25,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Separator } from "@/components/ui/separator";
 import { Stepper } from "@/components/ui/stepper";
-import { formatPrice } from "@/utils/client";
+import { ConstApp, formatPrice } from "@/utils/client";
 
 interface PaymentState {
   restaurantId: string | null;
@@ -87,15 +87,19 @@ function PaymentPageContent() {
 
   const steps = ["Details", "Payment"];
 
-  const updateState = useCallback((updates: Partial<PaymentState>) => {
-    setState((prevState) => {
-      const newState = { ...prevState, ...updates };
-      if (newState.restaurantId) {
-        localStorage.setItem(`payment-${newState.restaurantId}`, JSON.stringify(newState));
-      }
-      return newState;
-    });
-  }, []);
+  const updateState = useCallback(
+    (updates: Partial<PaymentState>) => {
+      setState((prevState) => {
+        const newState = { ...prevState, ...updates };
+        if (!newState.restaurantId && restaurantId) newState.restaurantId = restaurantId;
+        if (newState.restaurantId) {
+          localStorage.setItem(`payment-${newState.restaurantId}`, JSON.stringify(newState));
+        }
+        return newState;
+      });
+    },
+    [restaurantId],
+  );
 
   const generateQris = useCallback(
     async (orderId?: string, restId?: string) => {
@@ -130,6 +134,7 @@ function PaymentPageContent() {
           const savedState = JSON.parse(savedSessionString);
 
           // Check if QRIS exists and if it's expired
+
           if (savedState.qrisData && savedState.activeOrderId) {
             const now = Date.now();
             const expiry = new Date(savedState.qrisData.expires_at).getTime();
@@ -167,7 +172,7 @@ function PaymentPageContent() {
     if (restaurantId) {
       initializePaymentPage();
     }
-  }, [restaurantId, router.replace, generateQris]);
+  }, [restaurantId, generateQris, router]);
 
   useEffect(() => {
     if (state.currentStep === 1) {
@@ -335,16 +340,17 @@ function PaymentPageContent() {
       if (result.data === true) {
         toast("Payment confirmed", { icon: <Check className="h-4 w-4 text-green-500" /> });
 
-        if (state.restaurantId) {
-          localStorage.removeItem(`payment-${state.restaurantId}`);
-          const cartString = localStorage.getItem("otter-cart");
-          if (cartString) {
-            const allCarts: CartRestourant[] = JSON.parse(cartString);
-            const updatedCarts = allCarts.filter((cart) => cart.$id !== state.restaurantId);
-            localStorage.setItem("otter-cart", JSON.stringify(updatedCarts));
-          }
-        }
-        window.location.replace(`https://app.otter.id/receipt?id=${state.qrisData?.reference_id}`);
+        // if (state.restaurantId) {
+        //   localStorage.removeItem(`payment-${state.restaurantId}`);
+        //   const cartString = localStorage.getItem("otter-cart");
+        //   if (cartString) {
+        //     const allCarts: CartRestourant[] = JSON.parse(cartString);
+        //     const updatedCarts = allCarts.filter((cart) => cart.$id !== state.restaurantId);
+        //     localStorage.setItem("otter-cart", JSON.stringify(updatedCarts));
+        //   }
+        // }
+
+        window.location.assign(`${ConstApp.url}/receipt?id=${state.qrisData?.reference_id}&sid=${state.restaurantId}`);
       } else {
         toast("Payment is unpaid", {
           description: "Your payment has not been confirmed yet.",

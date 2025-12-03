@@ -173,7 +173,6 @@ export function SearchOverlay({ menuItems, onItemClick, isOpen, onOpenChange, cl
                               {items.map((item, index) => (
                                 <motion.div
                                   key={`search-result-${item.$id}-${index}`}
-                                  layout
                                   initial={{ opacity: 0 }}
                                   animate={{ opacity: 1 }}
                                   transition={{ duration: 0.3 }}

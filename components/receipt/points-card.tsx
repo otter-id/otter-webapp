@@ -5,7 +5,7 @@ import { cardVariants } from "@/app/receipt/utils/animations";
 import { Card, CardContent } from "@/components/ui/card";
 import type { ReceiptData } from "@/types/receipt";
 
-const MotionCard = motion(Card);
+const MotionCard = motion.create(Card);
 
 interface PointsCardProps {
   data: ReceiptData["data"];

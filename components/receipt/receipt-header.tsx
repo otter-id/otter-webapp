@@ -38,7 +38,7 @@ export function ReceiptHeader({ data }: ReceiptHeaderProps) {
       </CardHeader>
       <CardContent>
         <div className="py-4 text-center">
-          <p className="mb-1 font-bold text-5xl text-[#F2C94C]">#{data.orderNumber}</p>
+          <p className="mb-1 break-all font-bold text-4xl text-[#F2C94C]">#{data.orderNumber}</p>
           <Badge
             variant={data.status === "PAID" ? "default" : "secondary"}
             className={`mb-2 ${data.status === "PAID" ? "bg-green-500 text-white hover:bg-green-600" : ""}`}
