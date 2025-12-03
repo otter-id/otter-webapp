@@ -1,9 +1,7 @@
 let userConfig;
 try {
   userConfig = await import("./v0-user-next.config");
-} catch (_e) {
-  // ignore error
-}
+} catch (_) {}
 
 const nextConfig = {
   typescript: {
@@ -19,7 +17,6 @@ const nextConfig = {
     unoptimized: false,
   },
   experimental: {
-    webpackBuildWorker: true,
     parallelServerBuildTraces: true,
     parallelServerCompiles: true,
   },
@@ -27,10 +24,7 @@ const nextConfig = {
 
 mergeConfig(nextConfig, userConfig);
 function mergeConfig(nextConfig, userConfig) {
-  if (!userConfig) {
-    return;
-  }
-
+  if (!userConfig) return;
   for (const key in userConfig) {
     if (typeof nextConfig[key] === "object" && !Array.isArray(nextConfig[key])) {
       nextConfig[key] = {

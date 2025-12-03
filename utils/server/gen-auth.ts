@@ -1,5 +1,3 @@
-"use server";
-
 import CryptoJS from "crypto-js";
 import { cookies } from "next/headers";
 import type { GenAuthSaveParam, GenAuthSyncReturn } from "@/types/auth";
