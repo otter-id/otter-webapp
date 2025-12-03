@@ -59,8 +59,6 @@ const ReceiptContent = () => {
     return <ErrorState error="Receipt not found" />;
   }
 
-  console.log({ data });
-
   // If split bill is active, show only the split bill UI
   if (splitBillState.splitBillStep > 0) {
     return (

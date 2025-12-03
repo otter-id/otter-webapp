@@ -172,7 +172,7 @@ function PaymentPageContent() {
     if (restaurantId) {
       initializePaymentPage();
     }
-  }, [restaurantId, generateQris, router.replace]);
+  }, [restaurantId, generateQris, router]);
 
   useEffect(() => {
     if (state.currentStep === 1) {
