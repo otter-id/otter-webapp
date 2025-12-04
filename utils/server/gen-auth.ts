@@ -48,12 +48,12 @@ export const GenAuth = {
     }
 
     // console.log({ schema: "store", value: param.value });
-    (await cookies()).set(local_key, param.value, {
-      maxAge: 60 * 60 * 24,
-      httpOnly: true,
-      secure: true,
-      sameSite: "strict",
-    });
+    // (await cookies()).set(local_key, param.value, {
+    //   maxAge: 60 * 60 * 24,
+    //   httpOnly: true,
+    //   secure: true,
+    //   sameSite: "strict",
+    // });
 
     const cookie = await cookies();
     const _local = cookie.get(local_key)?.value;

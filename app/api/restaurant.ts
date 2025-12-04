@@ -1,5 +1,5 @@
 "use server";
-import { ConstApi, GenAuth, Respon } from "@/utils/server";
+import { ConstApi, GenAuth, Respon, ResultError } from "@/utils/server";
 
 export const ApiGetRestaurantPwa = async (restaurantId: string) => {
   try {
@@ -9,7 +9,7 @@ export const ApiGetRestaurantPwa = async (restaurantId: string) => {
     });
 
     const result = await respon.json();
-    if (result.error !== "OneTimeTokenInvalid") await GenAuth.store({ value: store });
+    await ResultError.oneTime(result, store);
     // console.log({ respon, result });
 
     return Respon.server(respon, result);
