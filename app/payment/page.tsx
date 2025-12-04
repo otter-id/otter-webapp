@@ -6,7 +6,7 @@ import { useRouter, useSearchParams } from "next/navigation";
 import { Suspense, useCallback, useEffect, useState } from "react";
 import { toast } from "sonner";
 import type { CartItem, CartRestourant, CartTotals } from "@/app/(order)/hooks/use-cart";
-import { ApiCheckPaymentStatus, ApiCheckStock, ApiPostCheckPwaQris, ApiPostOrderPwa } from "@/app/api";
+import { ApiCheckPaymentStatus, ApiCheckStock, ApiPostCheckPromotion, ApiPostCheckPwaQris, ApiPostOrderPwa } from "@/app/api";
 import { PaymentMethodDrawer } from "@/components/payment/payment-method-drawer";
 import { PhoneInput } from "@/components/payment/phone-input";
 import { QrisPayment } from "@/components/payment/qris-payment";
@@ -38,6 +38,9 @@ interface PaymentState {
   orderSubmitted: boolean;
   activeOrderId: string | null;
   orderNumber: string;
+  promotionId: string;
+  promotionCode: string;
+  promotionError: string | null;
   qrisData: {
     reference_id: string;
     type: string;
@@ -71,6 +74,9 @@ function PaymentPageContent() {
     orderSubmitted: false,
     activeOrderId: null,
     orderNumber: "",
+    promotionId: "",
+    promotionCode: "",
+    promotionError: null,
     qrisData: null,
   });
   const [isLoaded, setIsLoaded] = useState(false);
@@ -111,7 +117,7 @@ function PaymentPageContent() {
       setIsQrLoading(true);
       try {
         const result = await ApiPostCheckPwaQris(orderId, restId);
-        if (!result.ok) throw new Error(result.response?.message || result.statusText);
+        if (!result.ok) throw new Error(result?.message || result.statusText);
         updateState({ qrisData: result.data });
         return true;
       } catch (error) {
@@ -200,7 +206,7 @@ function PaymentPageContent() {
   }> => {
     try {
       const result = await ApiCheckStock(state.restaurantId || "");
-      if (!result.ok) throw new Error(result.response?.message || result.statusText);
+      if (!result.ok) throw new Error(result?.message || result.statusText);
 
       const now = new Date();
       const outOfStockMenus: string[] = [];
@@ -266,6 +272,21 @@ function PaymentPageContent() {
     }
   };
 
+  const checkPromotion = async () => {
+    if (!state.promotionCode) return;
+
+    try {
+      const result = await ApiPostCheckPromotion(state.restaurantId || "", state.promotionCode);
+      if (!result.ok) throw new Error(result?.message || result.statusText);
+
+      updateState({ promotionId: result.data.id, promotionError: null });
+      toast("Promotion applied", { icon: <Check className="h-4 w-4 text-green-500" /> });
+    } catch (error) {
+      toast("Promotion failed", { description: (error as Error).message, icon: <AlertTriangle className="h-4 w-4 text-red-500" /> });
+      updateState({ promotionId: "", promotionError: "Please enter a valid promotion code" });
+    }
+  };
+
   const handleContinue = async () => {
     if (state.currentStep !== 0 || state.orderSubmitted) {
       return;
@@ -293,6 +314,7 @@ function PaymentPageContent() {
       restaurantId: state.restaurantId,
       name: state.name,
       phone: state.phone,
+      promotionId: state.promotionId,
       orderMenus: state.cart.map((item) => ({
         menuId: item.$id,
         quantity: item.quantity,
@@ -304,7 +326,7 @@ function PaymentPageContent() {
     };
     try {
       const result = await ApiPostOrderPwa(orderBody);
-      if (!result.ok) throw new Error(result.response?.message || result.statusText);
+      if (!result.ok) throw new Error(result?.message || result.statusText);
 
       const { orderId, restaurantId: restId, subtotal, tax, service, total } = result.data;
       updateState({
@@ -335,7 +357,7 @@ function PaymentPageContent() {
     setIsCheckingStatus(true);
     try {
       const result = await ApiCheckPaymentStatus(state.activeOrderId);
-      if (!result.ok) throw new Error(result.response?.message || result.statusText);
+      if (!result.ok) throw new Error(result?.message || result.statusText);
 
       if (result.data === true) {
         toast("Payment confirmed", { icon: <Check className="h-4 w-4 text-green-500" /> });
@@ -441,6 +463,22 @@ function PaymentPageContent() {
               </div>
             </div>
             <div className="border-t bg-gray-50 px-4 py-4">
+              <div className="flex gap-2">
+                <Input
+                  placeholder="Enter promotion code"
+                  value={state.promotionCode}
+                  onChange={(e) => updateState({ promotionCode: e.target.value, promotionId: "", promotionError: null })}
+                />
+                <Button onClick={checkPromotion} disabled={!state.promotionCode}>
+                  Check
+                </Button>
+              </div>
+              {state.promotionError && <p className="mt-1 text-red-500 text-xs">{state.promotionError}</p>}
+              {!state.promotionId && state.promotionCode && !state.promotionError && (
+                <p className="mt-1 text-red-500 text-xs">Please check the promotion code</p>
+              )}
+            </div>
+            <div className="border-t bg-gray-50 px-4 py-4">
               <h2 className="mb-4 font-semibold text-base">Customer Details</h2>
               <div className="space-y-4">
                 <div className="space-y-2">
@@ -522,7 +560,7 @@ function PaymentPageContent() {
             <Button
               className="h-12 w-full bg-black hover:bg-black/90"
               onClick={handleContinue}
-              disabled={!state.name || !state.isPhoneValid || isSubmitting || state.orderSubmitted}
+              disabled={!state.name || !state.isPhoneValid || isSubmitting || state.orderSubmitted || (!!state.promotionCode && !state.promotionId)}
             >
               {isSubmitting ? (
                 <>

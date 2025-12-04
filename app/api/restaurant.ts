@@ -14,6 +14,7 @@ export const ApiGetRestaurantPwa = async (restaurantId: string) => {
 
     return Respon.server(respon, result);
   } catch (error: any) {
+    // console.error({ error })
     return { status: 500, message: error.message };
   }
 };
@@ -27,6 +28,7 @@ export const ApiGetRestaurantInfo = async (restaurantId: string) => {
     if (!result.data.isPublished) return { code: 400, error: "Restaurant is not published" };
     return Respon.server(respon, result);
   } catch (error: any) {
+    // console.error({ error })
     return { status: 500, message: error.message };
   }
 };
