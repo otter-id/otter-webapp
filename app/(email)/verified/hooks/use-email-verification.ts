@@ -17,7 +17,7 @@ export const useEmailVerification = (token: string | null) => {
 
       try {
         const result = await ApiVerifyEmail(token);
-        if (!result.ok) throw new Error(result.response?.message || result.statusText);
+        if (!result.ok) throw new Error(result?.message || result.statusText);
         setUser(result);
         setError(null);
       } catch (error) {

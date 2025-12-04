@@ -9,6 +9,7 @@ export const ApiVerifyEmail = async (token: string) => {
 
     return Respon.server(respon, result);
   } catch (error: any) {
+    // console.error({ error })
     return { status: 500, message: error.message };
   }
 };

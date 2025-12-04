@@ -17,7 +17,7 @@ export const useReceiptData = (orderId: string | null, storeId: string | null) =
 
       try {
         const result = await ApiGetReceiptData(orderId, storeId);
-        if (!result.ok) throw new Error(result.response?.message || result.statusText);
+        if (!result.ok) throw new Error(result?.message || result.statusText);
         setReceiptData(result);
         setError(null);
       } catch (error) {

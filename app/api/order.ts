@@ -12,10 +12,11 @@ export const ApiPostOrderPwa = async (orderBody: any) => {
 
     const result = await respon.json();
     if (result.error !== "OneTimeTokenInvalid") await GenAuth.store({ value: store });
-    // console.log({ respon, result });
+    console.log({ respon, result });
 
     return Respon.server(respon, result);
   } catch (error: any) {
+    // console.error({ error })
     return { status: 500, message: error.message };
   }
 };
@@ -28,6 +29,7 @@ export const ApiCheckPaymentStatus = async (orderId: string) => {
 
     return Respon.server(respon, result);
   } catch (error: any) {
+    // console.error({ error })
     return { status: 500, message: error.message };
   }
 };
