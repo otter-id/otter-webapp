@@ -3,14 +3,13 @@
 
 import { type JSX, useCallback, useEffect, useMemo, useState } from "react";
 import type { MenuItem, MenuOption, Restaurant } from "@/types/restaurant";
+import { ConstApp } from "@/utils/client/const-app";
 
 // Interface tidak perlu diubah
 interface ExtendedMenuItem extends Omit<MenuItem, "name" | "description"> {
   name: string | JSX.Element;
   description: string | JSX.Element;
 }
-
-const CART_STORAGE_KEY = "otter-cart";
 
 export interface CartRestourant {
   $id: string; // ID Restoran
@@ -49,7 +48,7 @@ export interface CartTotals {
 export function useCart(restaurant: Restaurant | null) {
   const [cart, setCart] = useState<CartRestourant[]>(() => {
     if (typeof window !== "undefined") {
-      const savedCart = localStorage.getItem(CART_STORAGE_KEY);
+      const savedCart = localStorage.getItem(ConstApp.localCart);
       return savedCart ? JSON.parse(savedCart) : [];
     }
     return [];
@@ -60,7 +59,7 @@ export function useCart(restaurant: Restaurant | null) {
 
   useEffect(() => {
     if (typeof window !== "undefined") {
-      localStorage.setItem(CART_STORAGE_KEY, JSON.stringify(cart));
+      localStorage.setItem(ConstApp.localCart, JSON.stringify(cart));
     }
   }, [cart]);
 

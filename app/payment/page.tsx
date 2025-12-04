@@ -25,7 +25,8 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Separator } from "@/components/ui/separator";
 import { Stepper } from "@/components/ui/stepper";
-import { formatPrice } from "@/utils/client";
+import { Calculate, formatPrice } from "@/utils/client";
+import { ConstApp } from "@/utils/client/const-app";
 
 interface PaymentState {
   restaurantId: string | null;
@@ -41,6 +42,7 @@ interface PaymentState {
   promotionId: string;
   promotionCode: string;
   promotionError: string | null;
+  promotion: any | null;
   qrisData: {
     reference_id: string;
     type: string;
@@ -77,6 +79,7 @@ function PaymentPageContent() {
     promotionId: "",
     promotionCode: "",
     promotionError: null,
+    promotion: null,
     qrisData: null,
   });
   const [isLoaded, setIsLoaded] = useState(false);
@@ -278,12 +281,26 @@ function PaymentPageContent() {
     try {
       const result = await ApiPostCheckPromotion(state.restaurantId || "", state.promotionCode);
       if (!result.ok) throw new Error(result?.message || result.statusText);
+      console.log({ result });
+      // {
+      //   "result": {
+      //     "data": {
+      //       "id": "68e4f1b8002c001764ba",
+      //       "name": "TOPPING",
+      //       "code": "VAlid",
+      //       "discountType": "PERCENTAGE_OFF",
+      //       "discountValue": 0,
+      //       "minTransaction": 0,
+      //       "maxDiscount": null
+      //     }
+      //   }
+      // }
 
-      updateState({ promotionId: result.data.id, promotionError: null });
+      updateState({ promotionId: result.data.id, promotion: result.data, promotionError: null });
       toast("Promotion applied", { icon: <Check className="h-4 w-4 text-green-500" /> });
     } catch (error) {
       toast("Promotion failed", { description: (error as Error).message, icon: <AlertTriangle className="h-4 w-4 text-red-500" /> });
-      updateState({ promotionId: "", promotionError: "Please enter a valid promotion code" });
+      updateState({ promotionId: "", promotion: null, promotionError: "Please enter a valid promotion code" });
     }
   };
 
@@ -328,14 +345,14 @@ function PaymentPageContent() {
       const result = await ApiPostOrderPwa(orderBody);
       if (!result.ok) throw new Error(result?.message || result.statusText);
 
-      const { orderId, restaurantId: restId, subtotal, tax, service, total } = result.data;
+      const { orderId, restaurantId, subtotal, tax, service, total } = result.data;
       updateState({
         activeOrderId: orderId,
         totals: { ...state.totals, subtotal, tax, service, total } as CartTotals,
         orderSubmitted: true,
       });
 
-      const qrisSuccess = await generateQris(orderId, restId);
+      const qrisSuccess = await generateQris(orderId, restaurantId);
       if (qrisSuccess) {
         updateState({ currentStep: 1 });
       } else {
@@ -364,11 +381,11 @@ function PaymentPageContent() {
 
         if (state.restaurantId) {
           localStorage.removeItem(`payment-${state.restaurantId}`);
-          const cartString = localStorage.getItem("otter-cart");
+          const cartString = localStorage.getItem(ConstApp.localCart);
           if (cartString) {
             const allCarts: CartRestourant[] = JSON.parse(cartString);
             const updatedCarts = allCarts.filter((cart) => cart.$id !== state.restaurantId);
-            localStorage.setItem("otter-cart", JSON.stringify(updatedCarts));
+            localStorage.setItem(ConstApp.localCart, JSON.stringify(updatedCarts));
           }
         }
 
@@ -442,11 +459,27 @@ function PaymentPageContent() {
                 ))}
               </div>
               <Separator className="my-4" />
+              <Separator className="my-4" />
               <div className="space-y-2 text-sm">
                 <div className="flex justify-between">
                   <span className="text-muted-foreground">Subtotal</span>
-                  <span>{formatPrice(state.totals.subtotal)}</span>
+                  <div className="flex items-start gap-1">
+                    {state.promotionId && state.promotion ? (
+                      <>
+                        <span className="text-muted-foreground text-xs line-through">{formatPrice(state.totals.subtotal)}</span>
+                        <span>{formatPrice(Calculate.promotion(state.totals.subtotal, state.promotion))}</span>
+                      </>
+                    ) : (
+                      <span>{formatPrice(state.totals.subtotal)}</span>
+                    )}
+                  </div>
                 </div>
+                {state.promotionId && state.promotion && (
+                  <div className="flex justify-between text-green-600">
+                    <span>Discount ({state.promotion.name})</span>
+                    <span>-{formatPrice(state.totals.subtotal - Calculate.promotion(state.totals.subtotal, state.promotion))}</span>
+                  </div>
+                )}
                 <div className="flex justify-between">
                   <span className="text-muted-foreground">Tax ({state.totals.taxPercentage}%)</span>
                   <span>{formatPrice(state.totals.tax)}</span>
@@ -458,7 +491,18 @@ function PaymentPageContent() {
                 <Separator className="my-3" />
                 <div className="flex justify-between font-medium text-base">
                   <span>Total</span>
-                  <span>{formatPrice(state.totals.total)}</span>
+                  <div className="flex items-start gap-1">
+                    {state.promotionId && state.promotion ? (
+                      <>
+                        <span className="text-muted-foreground text-xs line-through">{formatPrice(state.totals.total)}</span>
+                        <span>
+                          {formatPrice(state.totals.total - (state.totals.subtotal - Calculate.promotion(state.totals.subtotal, state.promotion)))}
+                        </span>
+                      </>
+                    ) : (
+                      <span>{formatPrice(state.totals.total)}</span>
+                    )}
+                  </div>
                 </div>
               </div>
             </div>
@@ -467,7 +511,7 @@ function PaymentPageContent() {
                 <Input
                   placeholder="Enter promotion code"
                   value={state.promotionCode}
-                  onChange={(e) => updateState({ promotionCode: e.target.value, promotionId: "", promotionError: null })}
+                  onChange={(e) => updateState({ promotionCode: e.target.value, promotionId: "", promotion: null, promotionError: null })}
                 />
                 <Button onClick={checkPromotion} disabled={!state.promotionCode}>
                   Check
@@ -567,7 +611,11 @@ function PaymentPageContent() {
                   <Loader2 className="mr-2 h-4 w-4 animate-spin" /> Please wait...
                 </>
               ) : (
-                `Continue to Payment • ${formatPrice(state.totals.total)}`
+                `Continue to Payment • ${formatPrice(
+                  state.promotionId && state.promotion
+                    ? state.totals.total - (state.totals.subtotal - Calculate.promotion(state.totals.subtotal, state.promotion))
+                    : state.totals.total,
+                )}`
               )}
             </Button>
           )}
