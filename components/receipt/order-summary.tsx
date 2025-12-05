@@ -22,7 +22,7 @@ export function OrderSummary({ data, onSplitBill }: OrderSummaryProps) {
         <div className="flex justify-between">
           <span>Subtotal</span>
           <div className="flex items-start gap-1">
-            {data.promoName ? (
+            {data.promotion ? (
               <>
                 <span className="text-muted-foreground text-xs line-through">Rp {data.priceBeforePromo?.toLocaleString()}</span>
                 <span>Rp {data.subtotal.toLocaleString()}</span>
@@ -32,20 +32,24 @@ export function OrderSummary({ data, onSplitBill }: OrderSummaryProps) {
             )}
           </div>
         </div>
-        {data.promoName && (
+        {data.promotion && (
           <div className="flex flex-col gap-1">
             <div className="flex justify-between text-green-600">
-              <span>Discount ({data.promoName})</span>
-              <span>-Rp {data.discount?.toLocaleString()}</span>
+              <span>Discount ({data.promotion.name})</span>
+              <span>-Rp {data.promotion.discountValue.toLocaleString()}</span>
             </div>
-            <div className="flex justify-between text-muted-foreground text-xs">
-              <span>Min. Transaction</span>
-              <span>Rp {data.minTransaction?.toLocaleString() || 0}</span>
-            </div>
-            <div className="flex justify-between text-muted-foreground text-xs">
-              <span>Max. Discount</span>
-              <span>Rp {data.maxDiscount?.toLocaleString() || 0}</span>
-            </div>
+            {data.promotion.minTransaction > 0 && (
+              <div className="flex justify-between text-muted-foreground text-xs">
+                <span>Min. Transaction</span>
+                <span>Rp {data.promotion.minTransaction.toLocaleString()}</span>
+              </div>
+            )}
+            {data.promotion.maxDiscount > 0 && (
+              <div className="flex justify-between text-muted-foreground text-xs">
+                <span>Max. Discount</span>
+                <span>Rp {data.promotion.maxDiscount.toLocaleString()}</span>
+              </div>
+            )}
           </div>
         )}
         <div className="flex justify-between">
@@ -60,7 +64,7 @@ export function OrderSummary({ data, onSplitBill }: OrderSummaryProps) {
         <div className="flex justify-between font-bold">
           <span>Total</span>
           <div className="flex items-start gap-1">
-            {data.promoName ? (
+            {data.promotion ? (
               <>
                 <span className="text-muted-foreground text-xs line-through">
                   Rp {((data.priceBeforePromo || 0) + data.taxesAndFees + data.service).toLocaleString()}

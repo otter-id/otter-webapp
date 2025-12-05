@@ -1,3 +1,5 @@
+import type { Promotion } from "@/types/promotion";
+
 export interface ReceiptData {
   data: {
     restaurantName: string;
@@ -22,10 +24,7 @@ export interface ReceiptData {
     }>;
     subtotal: number;
     priceBeforePromo?: number;
-    discount?: number;
-    promoName?: string;
-    minTransaction?: number;
-    maxDiscount?: number;
+    promotion?: Promotion | null;
     taxesAndFees: number;
     service: number;
     total: number;

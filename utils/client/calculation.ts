@@ -9,7 +9,6 @@ export const Calculate = {
   },
   promotion: (subtotal: number, promotion: Promotion) => {
     const { discountType, discountValue, minTransaction, maxDiscount, startDate, endDate, promoType, quota } = promotion;
-
     const now = new Date();
 
     // check if promotion is active
