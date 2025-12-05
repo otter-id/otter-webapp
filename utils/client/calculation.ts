@@ -1,4 +1,5 @@
 import type { CartItem } from "@/types/cart";
+import type { Promotion } from "@/types/promotion";
 
 export const Calculate = {
   itemTotal: (item: CartItem): number => {
@@ -6,9 +7,8 @@ export const Calculate = {
     const toppingsPrice = item.extraToppings ? item.extraToppings.reduce((sum, topping) => sum + topping.price, 0) : 0;
     return (item.price + modifierPrice + toppingsPrice) * item.quantity;
   },
-  promotion: (subtotal: number, promotion: any) => {
+  promotion: (subtotal: number, promotion: Promotion) => {
     const { discountType, discountValue, minTransaction, maxDiscount, startDate, endDate, promoType, quota } = promotion;
-
     const now = new Date();
 
     // check if promotion is active

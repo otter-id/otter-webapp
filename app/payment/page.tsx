@@ -25,6 +25,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Separator } from "@/components/ui/separator";
 import { Stepper } from "@/components/ui/stepper";
+import type { Promotion } from "@/types/promotion";
 import { Calculate, formatPrice } from "@/utils/client";
 import { ConstApp } from "@/utils/client/const-app";
 
@@ -42,7 +43,7 @@ interface PaymentState {
   promotionId: string;
   promotionCode: string;
   promotionError: string | null;
-  promotion: any | null;
+  promotion: Promotion | null;
   qrisData: {
     reference_id: string;
     type: string;
@@ -281,21 +282,6 @@ function PaymentPageContent() {
     try {
       const result = await ApiPostCheckPromotion(state.restaurantId || "", state.promotionCode);
       if (!result.ok) throw new Error(result?.message || result.statusText);
-      console.log({ result });
-      // {
-      //   "result": {
-      //     "data": {
-      //       "id": "68e4f1b8002c001764ba",
-      //       "name": "TOPPING",
-      //       "code": "VAlid",
-      //       "discountType": "PERCENTAGE_OFF",
-      //       "discountValue": 0,
-      //       "minTransaction": 0,
-      //       "maxDiscount": null
-      //     }
-      //   }
-      // }
-
       updateState({ promotionId: result.data.id, promotion: result.data, promotionError: null });
       toast("Promotion applied", { icon: <Check className="h-4 w-4 text-green-500" /> });
     } catch (error) {
@@ -355,6 +341,12 @@ function PaymentPageContent() {
       const qrisSuccess = await generateQris(orderId, restaurantId);
       if (qrisSuccess) {
         updateState({ currentStep: 1 });
+        const cartString = localStorage.getItem(ConstApp.localCart);
+        if (cartString) {
+          const allCarts: CartRestourant[] = JSON.parse(cartString);
+          const updatedCarts = allCarts.filter((cart) => cart.$id !== state.restaurantId);
+          localStorage.setItem(ConstApp.localCart, JSON.stringify(updatedCarts));
+        }
       } else {
         updateState({ orderSubmitted: false });
         toast("Could not proceed to payment", { description: "Please refresh and try again.", icon: <X className="h-4 w-4 text-red-500" /> });
@@ -381,12 +373,6 @@ function PaymentPageContent() {
 
         if (state.restaurantId) {
           localStorage.removeItem(`payment-${state.restaurantId}`);
-          const cartString = localStorage.getItem(ConstApp.localCart);
-          if (cartString) {
-            const allCarts: CartRestourant[] = JSON.parse(cartString);
-            const updatedCarts = allCarts.filter((cart) => cart.$id !== state.restaurantId);
-            localStorage.setItem(ConstApp.localCart, JSON.stringify(updatedCarts));
-          }
         }
 
         window.location.replace(`/receipt?id=${state.qrisData?.reference_id}&sid=${state.restaurantId}`);
@@ -475,9 +461,19 @@ function PaymentPageContent() {
                   </div>
                 </div>
                 {state.promotionId && state.promotion && (
-                  <div className="flex justify-between text-green-600">
-                    <span>Discount ({state.promotion.name})</span>
-                    <span>-{formatPrice(state.totals.subtotal - Calculate.promotion(state.totals.subtotal, state.promotion))}</span>
+                  <div className="flex flex-col gap-1">
+                    <div className="flex justify-between text-green-600">
+                      <span>Discount ({state.promotion.name})</span>
+                      <span>-{formatPrice(state.totals.subtotal - Calculate.promotion(state.totals.subtotal, state.promotion))}</span>
+                    </div>
+                    <div className="flex justify-between text-muted-foreground text-xs">
+                      <span>Min. Transaction</span>
+                      <span>{formatPrice(state.promotion.minTransaction || 0)}</span>
+                    </div>
+                    <div className="flex justify-between text-muted-foreground text-xs">
+                      <span>Max. Discount</span>
+                      <span>{formatPrice(state.promotion.maxDiscount || 0)}</span>
+                    </div>
                   </div>
                 )}
                 <div className="flex justify-between">

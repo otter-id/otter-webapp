@@ -7,6 +7,7 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Separator } from "@/components/ui/separator";
 import type { ReceiptData } from "@/types/receipt";
+import { Calculate, formatPrice } from "@/utils/client";
 
 const MotionCard = motion.create(Card);
 
@@ -22,43 +23,53 @@ export function OrderSummary({ data, onSplitBill }: OrderSummaryProps) {
         <div className="flex justify-between">
           <span>Subtotal</span>
           <div className="flex items-start gap-1">
-            {data.promoName ? (
+            {data.promotion ? (
               <>
-                <span className="text-muted-foreground text-xs line-through">Rp {data.priceBeforePromo?.toLocaleString()}</span>
-                <span>Rp {data.subtotal.toLocaleString()}</span>
+                <span className="text-muted-foreground text-xs line-through">{formatPrice(data.subtotal)}</span>
+                <span>{formatPrice(data.priceAfterPromo || 0)}</span>
               </>
             ) : (
-              <span>Rp {data.subtotal.toLocaleString()}</span>
+              <span>{formatPrice(data.subtotal)}</span>
             )}
           </div>
         </div>
-        {data.promoName && (
-          <div className="flex justify-between text-green-600">
-            <span>Discount ({data.promoName})</span>
-            <span>-Rp {data.discount?.toLocaleString()}</span>
+        {data.promotion && (
+          <div className="flex flex-col gap-1">
+            <div className="flex justify-between text-green-600">
+              <span>Discount ({data.promotion.name})</span>
+              <span>-{formatPrice(data.subtotal - Calculate.promotion(data.subtotal, data.promotion))}</span>
+            </div>
+            <div className="flex justify-between text-muted-foreground text-xs">
+              <span>Min. Transaction</span>
+              <span>{formatPrice(data.promotion.minTransaction)}</span>
+            </div>
+            <div className="flex justify-between text-muted-foreground text-xs">
+              <span>Max. Discount</span>
+              <span>{formatPrice(data.promotion.maxDiscount)}</span>
+            </div>
           </div>
         )}
         <div className="flex justify-between">
           <span>Tax</span>
-          <span>Rp {data.taxesAndFees.toLocaleString()}</span>
+          <span>{formatPrice(data.taxesAndFees)}</span>
         </div>
         <div className="flex justify-between">
           <span>Service Charge</span>
-          <span>Rp {data.service.toLocaleString()}</span>
+          <span>{formatPrice(data.service)}</span>
         </div>
         <Separator orientation="horizontal" />
         <div className="flex justify-between font-bold">
           <span>Total</span>
           <div className="flex items-start gap-1">
-            {data.promoName ? (
+            {data.promotion ? (
               <>
                 <span className="text-muted-foreground text-xs line-through">
-                  Rp {(data.priceBeforePromo + data.taxesAndFees + data.service).toLocaleString()}
+                  {formatPrice(data.total + (data.subtotal - Calculate.promotion(data.subtotal, data.promotion)))}
                 </span>
-                <span>Rp {data.total.toLocaleString()}</span>
+                <span>{formatPrice(data.total)}</span>
               </>
             ) : (
-              <span>Rp {data.total.toLocaleString()}</span>
+              <span>{formatPrice(data.total)}</span>
             )}
           </div>
         </div>
