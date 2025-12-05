@@ -21,6 +21,9 @@ export interface ReceiptData {
       }>;
     }>;
     subtotal: number;
+    priceBeforePromo?: number;
+    discount?: number;
+    promoName?: string;
     taxesAndFees: number;
     service: number;
     total: number;
