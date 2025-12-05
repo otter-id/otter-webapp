@@ -24,6 +24,8 @@ export interface ReceiptData {
     priceBeforePromo?: number;
     discount?: number;
     promoName?: string;
+    minTransaction?: number;
+    maxDiscount?: number;
     taxesAndFees: number;
     service: number;
     total: number;

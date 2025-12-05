@@ -33,9 +33,19 @@ export function OrderSummary({ data, onSplitBill }: OrderSummaryProps) {
           </div>
         </div>
         {data.promoName && (
-          <div className="flex justify-between text-green-600">
-            <span>Discount ({data.promoName})</span>
-            <span>-Rp {data.discount?.toLocaleString()}</span>
+          <div className="flex flex-col gap-1">
+            <div className="flex justify-between text-green-600">
+              <span>Discount ({data.promoName})</span>
+              <span>-Rp {data.discount?.toLocaleString()}</span>
+            </div>
+            <div className="flex justify-between text-muted-foreground text-xs">
+              <span>Min. Transaction</span>
+              <span>Rp {data.minTransaction?.toLocaleString() || 0}</span>
+            </div>
+            <div className="flex justify-between text-muted-foreground text-xs">
+              <span>Max. Discount</span>
+              <span>Rp {data.maxDiscount?.toLocaleString() || 0}</span>
+            </div>
           </div>
         )}
         <div className="flex justify-between">
@@ -53,7 +63,7 @@ export function OrderSummary({ data, onSplitBill }: OrderSummaryProps) {
             {data.promoName ? (
               <>
                 <span className="text-muted-foreground text-xs line-through">
-                  Rp {(data.priceBeforePromo + data.taxesAndFees + data.service).toLocaleString()}
+                  Rp {((data.priceBeforePromo || 0) + data.taxesAndFees + data.service).toLocaleString()}
                 </span>
                 <span>Rp {data.total.toLocaleString()}</span>
               </>
