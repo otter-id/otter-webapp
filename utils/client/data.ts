@@ -90,7 +90,7 @@ export const fakeReceiptData: ReceiptData = {
       },
     ],
     subtotal: 248500,
-    priceBeforePromo: 248500,
+    priceAfterPromo: 248500,
     promotion: {
       code: "PROMO123",
       discountType: "PERCENTAGE_OFF",

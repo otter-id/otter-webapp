@@ -23,7 +23,7 @@ export interface ReceiptData {
       }>;
     }>;
     subtotal: number;
-    priceBeforePromo?: number;
+    priceAfterPromo?: number;
     promotion?: Promotion | null;
     taxesAndFees: number;
     service: number;

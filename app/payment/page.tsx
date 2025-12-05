@@ -466,18 +466,14 @@ function PaymentPageContent() {
                       <span>Discount ({state.promotion.name})</span>
                       <span>-{formatPrice(state.totals.subtotal - Calculate.promotion(state.totals.subtotal, state.promotion))}</span>
                     </div>
-                    {state.promotion.minTransaction > 0 && (
-                      <div className="flex justify-between text-muted-foreground text-xs">
-                        <span>Min. Transaction</span>
-                        <span>{formatPrice(state.promotion.minTransaction)}</span>
-                      </div>
-                    )}
-                    {state.promotion.maxDiscount > 0 && (
-                      <div className="flex justify-between text-muted-foreground text-xs">
-                        <span>Max. Discount</span>
-                        <span>{formatPrice(state.promotion.maxDiscount)}</span>
-                      </div>
-                    )}
+                    <div className="flex justify-between text-muted-foreground text-xs">
+                      <span>Min. Transaction</span>
+                      <span>{formatPrice(state.promotion.minTransaction || 0)}</span>
+                    </div>
+                    <div className="flex justify-between text-muted-foreground text-xs">
+                      <span>Max. Discount</span>
+                      <span>{formatPrice(state.promotion.maxDiscount || 0)}</span>
+                    </div>
                   </div>
                 )}
                 <div className="flex justify-between">
