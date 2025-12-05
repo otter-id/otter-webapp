@@ -6,7 +6,7 @@ import { useRouter, useSearchParams } from "next/navigation";
 import { Suspense, useCallback, useEffect, useState } from "react";
 import { toast } from "sonner";
 import type { CartItem, CartRestourant, CartTotals } from "@/app/(order)/hooks/use-cart";
-import { ApiCheckPaymentStatus, ApiCheckStock, ApiPostCheckPwaQris, ApiPostOrderPwa } from "@/app/api";
+import { ApiCheckPaymentStatus, ApiCheckStock, ApiPostCheckPromotion, ApiPostCheckPwaQris, ApiPostOrderPwa } from "@/app/api";
 import { PaymentMethodDrawer } from "@/components/payment/payment-method-drawer";
 import { PhoneInput } from "@/components/payment/phone-input";
 import { QrisPayment } from "@/components/payment/qris-payment";
@@ -25,7 +25,8 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Separator } from "@/components/ui/separator";
 import { Stepper } from "@/components/ui/stepper";
-import { formatPrice } from "@/utils/client";
+import { Calculate, formatPrice } from "@/utils/client";
+import { ConstApp } from "@/utils/client/const-app";
 
 interface PaymentState {
   restaurantId: string | null;
@@ -38,6 +39,10 @@ interface PaymentState {
   orderSubmitted: boolean;
   activeOrderId: string | null;
   orderNumber: string;
+  promotionId: string;
+  promotionCode: string;
+  promotionError: string | null;
+  promotion: any | null;
   qrisData: {
     reference_id: string;
     type: string;
@@ -71,6 +76,10 @@ function PaymentPageContent() {
     orderSubmitted: false,
     activeOrderId: null,
     orderNumber: "",
+    promotionId: "",
+    promotionCode: "",
+    promotionError: null,
+    promotion: null,
     qrisData: null,
   });
   const [isLoaded, setIsLoaded] = useState(false);
@@ -111,7 +120,7 @@ function PaymentPageContent() {
       setIsQrLoading(true);
       try {
         const result = await ApiPostCheckPwaQris(orderId, restId);
-        if (!result.ok) throw new Error(result.response?.message || result.statusText);
+        if (!result.ok) throw new Error(result?.message || result.statusText);
         updateState({ qrisData: result.data });
         return true;
       } catch (error) {
@@ -200,7 +209,7 @@ function PaymentPageContent() {
   }> => {
     try {
       const result = await ApiCheckStock(state.restaurantId || "");
-      if (!result.ok) throw new Error(result.response?.message || result.statusText);
+      if (!result.ok) throw new Error(result?.message || result.statusText);
 
       const now = new Date();
       const outOfStockMenus: string[] = [];
@@ -266,6 +275,35 @@ function PaymentPageContent() {
     }
   };
 
+  const checkPromotion = async () => {
+    if (!state.promotionCode) return;
+
+    try {
+      const result = await ApiPostCheckPromotion(state.restaurantId || "", state.promotionCode);
+      if (!result.ok) throw new Error(result?.message || result.statusText);
+      console.log({ result });
+      // {
+      //   "result": {
+      //     "data": {
+      //       "id": "68e4f1b8002c001764ba",
+      //       "name": "TOPPING",
+      //       "code": "VAlid",
+      //       "discountType": "PERCENTAGE_OFF",
+      //       "discountValue": 0,
+      //       "minTransaction": 0,
+      //       "maxDiscount": null
+      //     }
+      //   }
+      // }
+
+      updateState({ promotionId: result.data.id, promotion: result.data, promotionError: null });
+      toast("Promotion applied", { icon: <Check className="h-4 w-4 text-green-500" /> });
+    } catch (error) {
+      toast("Promotion failed", { description: (error as Error).message, icon: <AlertTriangle className="h-4 w-4 text-red-500" /> });
+      updateState({ promotionId: "", promotion: null, promotionError: "Please enter a valid promotion code" });
+    }
+  };
+
   const handleContinue = async () => {
     if (state.currentStep !== 0 || state.orderSubmitted) {
       return;
@@ -293,6 +331,7 @@ function PaymentPageContent() {
       restaurantId: state.restaurantId,
       name: state.name,
       phone: state.phone,
+      promotionId: state.promotionId,
       orderMenus: state.cart.map((item) => ({
         menuId: item.$id,
         quantity: item.quantity,
@@ -304,16 +343,16 @@ function PaymentPageContent() {
     };
     try {
       const result = await ApiPostOrderPwa(orderBody);
-      if (!result.ok) throw new Error(result.response?.message || result.statusText);
+      if (!result.ok) throw new Error(result?.message || result.statusText);
 
-      const { orderId, restaurantId: restId, subtotal, tax, service, total } = result.data;
+      const { orderId, restaurantId, subtotal, tax, service, total } = result.data;
       updateState({
         activeOrderId: orderId,
         totals: { ...state.totals, subtotal, tax, service, total } as CartTotals,
         orderSubmitted: true,
       });
 
-      const qrisSuccess = await generateQris(orderId, restId);
+      const qrisSuccess = await generateQris(orderId, restaurantId);
       if (qrisSuccess) {
         updateState({ currentStep: 1 });
       } else {
@@ -335,18 +374,18 @@ function PaymentPageContent() {
     setIsCheckingStatus(true);
     try {
       const result = await ApiCheckPaymentStatus(state.activeOrderId);
-      if (!result.ok) throw new Error(result.response?.message || result.statusText);
+      if (!result.ok) throw new Error(result?.message || result.statusText);
 
       if (result.data === true) {
         toast("Payment confirmed", { icon: <Check className="h-4 w-4 text-green-500" /> });
 
         if (state.restaurantId) {
           localStorage.removeItem(`payment-${state.restaurantId}`);
-          const cartString = localStorage.getItem("otter-cart");
+          const cartString = localStorage.getItem(ConstApp.localCart);
           if (cartString) {
             const allCarts: CartRestourant[] = JSON.parse(cartString);
             const updatedCarts = allCarts.filter((cart) => cart.$id !== state.restaurantId);
-            localStorage.setItem("otter-cart", JSON.stringify(updatedCarts));
+            localStorage.setItem(ConstApp.localCart, JSON.stringify(updatedCarts));
           }
         }
 
@@ -420,11 +459,27 @@ function PaymentPageContent() {
                 ))}
               </div>
               <Separator className="my-4" />
+              <Separator className="my-4" />
               <div className="space-y-2 text-sm">
                 <div className="flex justify-between">
                   <span className="text-muted-foreground">Subtotal</span>
-                  <span>{formatPrice(state.totals.subtotal)}</span>
+                  <div className="flex items-start gap-1">
+                    {state.promotionId && state.promotion ? (
+                      <>
+                        <span className="text-muted-foreground text-xs line-through">{formatPrice(state.totals.subtotal)}</span>
+                        <span>{formatPrice(Calculate.promotion(state.totals.subtotal, state.promotion))}</span>
+                      </>
+                    ) : (
+                      <span>{formatPrice(state.totals.subtotal)}</span>
+                    )}
+                  </div>
                 </div>
+                {state.promotionId && state.promotion && (
+                  <div className="flex justify-between text-green-600">
+                    <span>Discount ({state.promotion.name})</span>
+                    <span>-{formatPrice(state.totals.subtotal - Calculate.promotion(state.totals.subtotal, state.promotion))}</span>
+                  </div>
+                )}
                 <div className="flex justify-between">
                   <span className="text-muted-foreground">Tax ({state.totals.taxPercentage}%)</span>
                   <span>{formatPrice(state.totals.tax)}</span>
@@ -436,9 +491,36 @@ function PaymentPageContent() {
                 <Separator className="my-3" />
                 <div className="flex justify-between font-medium text-base">
                   <span>Total</span>
-                  <span>{formatPrice(state.totals.total)}</span>
+                  <div className="flex items-start gap-1">
+                    {state.promotionId && state.promotion ? (
+                      <>
+                        <span className="text-muted-foreground text-xs line-through">{formatPrice(state.totals.total)}</span>
+                        <span>
+                          {formatPrice(state.totals.total - (state.totals.subtotal - Calculate.promotion(state.totals.subtotal, state.promotion)))}
+                        </span>
+                      </>
+                    ) : (
+                      <span>{formatPrice(state.totals.total)}</span>
+                    )}
+                  </div>
                 </div>
               </div>
+            </div>
+            <div className="border-t bg-gray-50 px-4 py-4">
+              <div className="flex gap-2">
+                <Input
+                  placeholder="Enter promotion code"
+                  value={state.promotionCode}
+                  onChange={(e) => updateState({ promotionCode: e.target.value, promotionId: "", promotion: null, promotionError: null })}
+                />
+                <Button onClick={checkPromotion} disabled={!state.promotionCode}>
+                  Check
+                </Button>
+              </div>
+              {state.promotionError && <p className="mt-1 text-red-500 text-xs">{state.promotionError}</p>}
+              {!state.promotionId && state.promotionCode && !state.promotionError && (
+                <p className="mt-1 text-red-500 text-xs">Please check the promotion code</p>
+              )}
             </div>
             <div className="border-t bg-gray-50 px-4 py-4">
               <h2 className="mb-4 font-semibold text-base">Customer Details</h2>
@@ -522,14 +604,18 @@ function PaymentPageContent() {
             <Button
               className="h-12 w-full bg-black hover:bg-black/90"
               onClick={handleContinue}
-              disabled={!state.name || !state.isPhoneValid || isSubmitting || state.orderSubmitted}
+              disabled={!state.name || !state.isPhoneValid || isSubmitting || state.orderSubmitted || (!!state.promotionCode && !state.promotionId)}
             >
               {isSubmitting ? (
                 <>
                   <Loader2 className="mr-2 h-4 w-4 animate-spin" /> Please wait...
                 </>
               ) : (
-                `Continue to Payment • ${formatPrice(state.totals.total)}`
+                `Continue to Payment • ${formatPrice(
+                  state.promotionId && state.promotion
+                    ? state.totals.total - (state.totals.subtotal - Calculate.promotion(state.totals.subtotal, state.promotion))
+                    : state.totals.total,
+                )}`
               )}
             </Button>
           )}

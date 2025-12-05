@@ -31,8 +31,6 @@ export function UpsellModal({ isOpen, onOpenChange, recommendations, onAddItem, 
     return null;
   }
 
-  console.log("UPSELL");
-
   const handleImageError = (itemId: string) => {
     setImageErrors((prev) => ({
       ...prev,

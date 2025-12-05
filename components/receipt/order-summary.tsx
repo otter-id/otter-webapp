@@ -21,8 +21,23 @@ export function OrderSummary({ data, onSplitBill }: OrderSummaryProps) {
       <CardContent className="space-y-2 py-4">
         <div className="flex justify-between">
           <span>Subtotal</span>
-          <span>Rp {data.subtotal.toLocaleString()}</span>
+          <div className="flex items-start gap-1">
+            {data.promoName ? (
+              <>
+                <span className="text-muted-foreground text-xs line-through">Rp {data.priceBeforePromo?.toLocaleString()}</span>
+                <span>Rp {data.subtotal.toLocaleString()}</span>
+              </>
+            ) : (
+              <span>Rp {data.subtotal.toLocaleString()}</span>
+            )}
+          </div>
         </div>
+        {data.promoName && (
+          <div className="flex justify-between text-green-600">
+            <span>Discount ({data.promoName})</span>
+            <span>-Rp {data.discount?.toLocaleString()}</span>
+          </div>
+        )}
         <div className="flex justify-between">
           <span>Tax</span>
           <span>Rp {data.taxesAndFees.toLocaleString()}</span>
@@ -34,7 +49,18 @@ export function OrderSummary({ data, onSplitBill }: OrderSummaryProps) {
         <Separator orientation="horizontal" />
         <div className="flex justify-between font-bold">
           <span>Total</span>
-          <span>Rp {data.total.toLocaleString()}</span>
+          <div className="flex items-start gap-1">
+            {data.promoName ? (
+              <>
+                <span className="text-muted-foreground text-xs line-through">
+                  Rp {(data.priceBeforePromo + data.taxesAndFees + data.service).toLocaleString()}
+                </span>
+                <span>Rp {data.total.toLocaleString()}</span>
+              </>
+            ) : (
+              <span>Rp {data.total.toLocaleString()}</span>
+            )}
+          </div>
         </div>
         <Button variant="otter" className="mt-4 w-full" onClick={onSplitBill}>
           <Users className="h-4 w-4" />

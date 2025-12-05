@@ -13,7 +13,7 @@ export function useRestaurant(restaurantId: string) {
     const fetchRestaurant = async () => {
       try {
         const result = await ApiGetRestaurantPwa(restaurantId);
-        if (!result.ok) throw new Error(result.response?.message || result.statusText);
+        if (!result.ok) throw new Error(result?.message || result.statusText);
 
         const restaurantData = result.data;
         if (!restaurantData.isPublished) {
