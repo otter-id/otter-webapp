@@ -24,6 +24,9 @@ export interface ReceiptData {
     taxesAndFees: number;
     service: number;
     total: number;
+    discount: number;
+    promotionId: string;
+    promoName: string;
     pointsEarned: number;
     paymentMethod: string;
     phoneNumber: string;

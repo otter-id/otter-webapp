@@ -12,7 +12,7 @@ export const ApiPostOrderPwa = async (orderBody: any) => {
 
     const result = await respon.json();
     await ResultError.oneTime(result, store);
-    console.log({ respon, result });
+    // console.log({ respon, result });
 
     return Respon.server(respon, result);
   } catch (error: any) {

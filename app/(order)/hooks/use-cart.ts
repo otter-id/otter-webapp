@@ -3,14 +3,13 @@
 
 import { type JSX, useCallback, useEffect, useMemo, useState } from "react";
 import type { MenuItem, MenuOption, Restaurant } from "@/types/restaurant";
+import { ConstApp } from "@/utils/client/const-app";
 
 // Interface tidak perlu diubah
 interface ExtendedMenuItem extends Omit<MenuItem, "name" | "description"> {
   name: string | JSX.Element;
   description: string | JSX.Element;
 }
-
-const CART_STORAGE_KEY = "otter-cart";
 
 export interface CartRestourant {
   $id: string; // ID Restoran
@@ -49,7 +48,7 @@ export interface CartTotals {
 export function useCart(restaurant: Restaurant | null) {
   const [cart, setCart] = useState<CartRestourant[]>(() => {
     if (typeof window !== "undefined") {
-      const savedCart = localStorage.getItem(CART_STORAGE_KEY);
+      const savedCart = localStorage.getItem(ConstApp.localCart);
       return savedCart ? JSON.parse(savedCart) : [];
     }
     return [];
@@ -60,41 +59,44 @@ export function useCart(restaurant: Restaurant | null) {
 
   useEffect(() => {
     if (typeof window !== "undefined") {
-      localStorage.setItem(CART_STORAGE_KEY, JSON.stringify(cart));
+      localStorage.setItem(ConstApp.localCart, JSON.stringify(cart));
     }
   }, [cart]);
 
   const currentCartItems = useMemo(() => cart.find((r) => r.$id === restaurant?.$id)?.item || [], [cart, restaurant]);
-
   const cartItemCount = currentCartItems.reduce((sum, item) => sum + item.quantity, 0);
 
-  const calculateCartTotals = useCallback((): CartTotals => {
-    const subtotal = currentCartItems.reduce((sum, item) => {
-      const optionsPrice = item.selectedOptions
-        ? Object.values(item.selectedOptions).reduce((optionSum, options) => {
-            return optionSum + options.reduce((total, option) => total + (option.discountPrice ?? option.price), 0);
-          }, 0)
-        : 0;
+  const calculateCartTotals = useCallback(
+    (discount: number = 0): CartTotals => {
+      const subtotal = currentCartItems.reduce((sum, item) => {
+        const optionsPrice = item.selectedOptions
+          ? Object.values(item.selectedOptions).reduce((optionSum, options) => {
+              return optionSum + options.reduce((total, option) => total + (option.discountPrice ?? option.price), 0);
+            }, 0)
+          : 0;
 
-      return sum + ((item.discountPrice ?? item.price) + optionsPrice) * item.quantity;
-    }, 0);
+        return sum + ((item.discountPrice ?? item.price) + optionsPrice) * item.quantity;
+      }, 0);
 
-    const taxPercentage = restaurant?.tax ?? 0;
-    const servicePercentage = restaurant?.service ?? 0;
-    const tax = Math.round(subtotal * (taxPercentage / 100));
-    const serviceFee = Math.round(subtotal * (servicePercentage / 100));
-    const deliveryFee = 0;
+      const taxPercentage = restaurant?.tax ?? 0;
+      const servicePercentage = restaurant?.service ?? 0;
+      const afterDiscount = Math.max(0, subtotal - discount);
+      const tax = Math.round(afterDiscount * (taxPercentage / 100));
+      const serviceFee = Math.round(afterDiscount * (servicePercentage / 100));
+      const deliveryFee = 0;
 
-    return {
-      subtotal,
-      taxPercentage,
-      tax,
-      serviceFee,
-      servicePercentage,
-      deliveryFee,
-      total: subtotal + tax + serviceFee + deliveryFee,
-    };
-  }, [currentCartItems, restaurant]);
+      return {
+        subtotal,
+        taxPercentage,
+        tax,
+        serviceFee,
+        servicePercentage,
+        deliveryFee,
+        total: afterDiscount + tax + serviceFee + deliveryFee,
+      };
+    },
+    [currentCartItems, restaurant],
+  );
 
   // Fungsi helper untuk membuat "tanda tangan" unik dari sebuah item
   const generateItemSignature = useCallback((item: CartItem): string => {
