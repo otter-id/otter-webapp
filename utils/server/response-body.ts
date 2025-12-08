@@ -4,9 +4,15 @@ import { GenAuth } from "./gen-auth";
 export const ResponBody = {
   errorOneTime: async (param: ResponErrorOneTimeParam) => {
     const { respon, store } = param;
-    if (respon.ok) {
-      if ((respon as any).error && (respon as any).error === "OneTimeTokenInvalid") return;
-      await GenAuth.store({ value: store });
+    const { url: _url, status: _status, statusText, headers: _headers, ok, error } = respon;
+    // console.log({ _url, _status, statusText, _headers, ok, error });
+
+    if (ok) {
+      if (error && error === "OneTimeTokenInvalid") return;
     }
+    if (!ok) {
+      if (statusText === "Unauthorized") return;
+    }
+    await GenAuth.store({ value: store });
   },
 };
