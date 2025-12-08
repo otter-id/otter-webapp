@@ -7,7 +7,7 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Separator } from "@/components/ui/separator";
 import type { ReceiptData } from "@/types/receipt";
-import { Calculate, formatPrice } from "@/utils/client";
+import { formatPrice } from "@/utils/client";
 
 const MotionCard = motion.create(Card);
 
