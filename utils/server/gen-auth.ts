@@ -47,7 +47,7 @@ export const GenAuth = {
       throw new Error("Failed setup one time token");
     }
 
-    // console.log({ schema: "store", value: param.value });
+    console.log({ schema: "store", value: param.value });
     (await cookies()).set(local_key, param.value, {
       maxAge: 60 * 60 * 24,
       httpOnly: true,
