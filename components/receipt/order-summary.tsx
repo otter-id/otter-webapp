@@ -23,30 +23,13 @@ export function OrderSummary({ data, onSplitBill }: OrderSummaryProps) {
         <div className="flex justify-between">
           <span>Subtotal</span>
           <div className="flex items-start gap-1">
-            {data.promotion ? (
-              <>
-                <span className="text-muted-foreground text-xs line-through">{formatPrice(data.subtotal)}</span>
-                <span>{formatPrice(data.priceAfterPromo || 0)}</span>
-              </>
-            ) : (
-              <span>{formatPrice(data.subtotal)}</span>
-            )}
+            <span>{formatPrice(data.subtotal)}</span>
           </div>
         </div>
-        {data.promotion && (
-          <div className="flex flex-col gap-1">
-            <div className="flex justify-between text-green-600">
-              <span>Discount ({data.promotion.name})</span>
-              <span>-{formatPrice(data.subtotal - Calculate.promotion(data.subtotal, data.promotion))}</span>
-            </div>
-            <div className="flex justify-between text-muted-foreground text-xs">
-              <span>Min. Transaction</span>
-              <span>{formatPrice(data.promotion.minTransaction)}</span>
-            </div>
-            <div className="flex justify-between text-muted-foreground text-xs">
-              <span>Max. Discount</span>
-              <span>{formatPrice(data.promotion.maxDiscount)}</span>
-            </div>
+        {data.promotionId && (
+          <div className="flex justify-between text-green-600">
+            <span>Discount ({data.promoName})</span>
+            <span>{formatPrice(data.discount)}</span>
           </div>
         )}
         <div className="flex justify-between">
@@ -60,17 +43,8 @@ export function OrderSummary({ data, onSplitBill }: OrderSummaryProps) {
         <Separator orientation="horizontal" />
         <div className="flex justify-between font-bold">
           <span>Total</span>
-          <div className="flex items-start gap-1">
-            {data.promotion ? (
-              <>
-                <span className="text-muted-foreground text-xs line-through">
-                  {formatPrice(data.total + (data.subtotal - Calculate.promotion(data.subtotal, data.promotion)))}
-                </span>
-                <span>{formatPrice(data.total)}</span>
-              </>
-            ) : (
-              <span>{formatPrice(data.total)}</span>
-            )}
+          <div className="flex items-center gap-1">
+            <span>{formatPrice(data.total)}</span>
           </div>
         </div>
         <Button variant="otter" className="mt-4 w-full" onClick={onSplitBill}>

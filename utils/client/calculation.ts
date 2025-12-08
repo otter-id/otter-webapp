@@ -16,20 +16,20 @@ export const Calculate = {
       const start = new Date(startDate);
       const end = new Date(endDate);
       if (now < start || now > end) {
-        return subtotal;
+        return 0;
       }
     }
 
     // check if promotion is sold out
     if (quota && quota <= 0) {
-      return subtotal;
+      return 0;
     }
 
     // check if promotion is expired
     if (endDate) {
       const end = new Date(endDate);
       if (now > end) {
-        return subtotal;
+        return 0;
       }
     }
 
@@ -54,6 +54,6 @@ export const Calculate = {
       discount = 0;
     }
 
-    return Math.floor(subtotal - discount);
+    return Math.floor(discount);
   },
 };
