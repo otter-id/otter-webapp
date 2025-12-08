@@ -1,21 +1,23 @@
 "use server";
-import { ConstApi, GenAuth, Respon, ResultError } from "@/utils/server";
+import type { ResponFetch, ResponServer } from "@/types/response";
+import { ConstApi, GenAuth, Respon, ResponBody } from "@/utils/server";
 
-export const ApiPostCheckPromotion = async (restaurantId: string, promoCode: string) => {
+export async function ApiPostCheckPromotion(restaurantId: string, promoCode: string): Promise<ResponServer> {
   try {
     const { token, store } = await GenAuth.token();
-    const respon = await fetch(`${ConstApi.url}/promotion/check`, {
+    let respon: ResponFetch = await fetch(`${ConstApi.url}/promotion/check`, {
       method: "POST",
       headers: { "Content-Type": "application/json", Authorization: `Bearer ${token}` },
       body: JSON.stringify({ restaurantId, promoCode }),
     });
-    const result = await respon.json();
-    await ResultError.oneTime(result, store);
-    // console.log({ respon, result });
 
-    return Respon.server(respon, result);
+    respon = await Respon.server({ respon });
+    await ResponBody.errorOneTime({ respon, store });
+    // console.log({ checkPromotion: respon });
+
+    return respon;
   } catch (error: any) {
     // console.error({ error });
     return { status: 500, message: error.message };
   }
-};
+}
