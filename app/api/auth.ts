@@ -1,15 +1,19 @@
 "use server";
+import type { ResponFetch, ResponServer } from "@/types/response";
 import { ConstApi, Respon } from "@/utils/server";
 
-export const ApiVerifyEmail = async (token: string) => {
+export async function ApiVerifyEmail(token: string): Promise<ResponServer> {
   try {
-    const respon = await fetch(`${ConstApi.url}/verify-email?token=${token}`, { headers: { "Content-Type": "application/json" } });
-    const result = await respon.json();
-    // console.log({ respon, result });
+    let respon: ResponFetch = await fetch(`${ConstApi.url}/verify-email?token=${token}`, {
+      headers: { "Content-Type": "application/json" },
+    });
 
-    return Respon.server(respon, result);
+    respon = await Respon.server({ respon });
+    // console.log({ verifyEmail: respon });
+
+    return respon;
   } catch (error: any) {
-    // console.error({ error })
+    // console.error({ error });
     return { status: 500, message: error.message };
   }
-};
+}

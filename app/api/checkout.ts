@@ -1,22 +1,23 @@
 "use server";
-import { ConstApi, GenAuth, Respon, ResultError } from "@/utils/server";
+import type { ResponFetch, ResponServer } from "@/types/response";
+import { ConstApi, GenAuth, Respon, ResponBody } from "@/utils/server";
 
-export const ApiPostCheckPwaQris = async (orderId: string, restaurantId: string) => {
+export async function ApiPostCheckPwaQris(orderId: string, restaurantId: string): Promise<ResponServer> {
   try {
     const { token, store } = await GenAuth.token();
-    const respon = await fetch(`${ConstApi.url}/checkout/pwa/qris`, {
+    let respon: ResponFetch = await fetch(`${ConstApi.url}/checkout/pwa/qris`, {
       method: "POST",
       headers: { "Content-Type": "application/json", Authorization: `Bearer ${token}` },
       body: JSON.stringify({ orderId, restaurantId }),
     });
 
-    const result = await respon.json();
-    await ResultError.oneTime(result, store);
-    // console.log({ respon, result });
+    respon = await Respon.server({ respon });
+    await ResponBody.errorOneTime({ respon, store });
+    // console.log({ checkPwaQris: respon });
 
-    return Respon.server(respon, result);
+    return respon;
   } catch (error: any) {
-    // console.error({ error })
+    // console.error({ error });
     return { status: 500, message: error.message };
   }
-};
+}

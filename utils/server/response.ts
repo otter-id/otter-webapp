@@ -1,6 +1,10 @@
+import type { ResponFetch, ResponServerParam } from "@/types/response";
+
 export const Respon = {
-  server: (respon: Response, result: any) => {
+  server: async (param: ResponServerParam): Promise<ResponFetch> => {
+    const { respon } = param;
     const { status, statusText, ok, url, type, headers } = respon;
-    return Object.assign(result, { status, statusText, ok, url, type, headers });
+    const body = await (respon as Response).json();
+    return Object.assign(body, { status, statusText, ok, url, type, headers });
   },
 };
