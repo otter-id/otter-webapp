@@ -450,49 +450,75 @@ function PaymentPageContent() {
                 <div className="flex justify-between">
                   <span className="text-muted-foreground">Subtotal</span>
                   <div className="flex items-start gap-1">
-                    {state.promotionId && state.promotion ? (
-                      <>
-                        <span className="text-muted-foreground text-xs line-through">{formatPrice(state.totals.subtotal)}</span>
-                        <span>{formatPrice(Calculate.promotion(state.totals.subtotal, state.promotion))}</span>
-                      </>
-                    ) : (
-                      <span>{formatPrice(state.totals.subtotal)}</span>
-                    )}
+                    <span>{formatPrice(state.totals.subtotal)}</span>
                   </div>
                 </div>
                 {state.promotionId && state.promotion && (
                   <div className="flex flex-col gap-1">
                     <div className="flex justify-between text-green-600">
                       <span>Discount ({state.promotion.name})</span>
-                      <span>-{formatPrice(state.totals.subtotal - Calculate.promotion(state.totals.subtotal, state.promotion))}</span>
+                      <span>-{formatPrice(Calculate.promotion(state.totals.subtotal, state.promotion))}</span>
                     </div>
-                    <div className="flex justify-between text-muted-foreground text-xs">
-                      <span>Min. Transaction</span>
-                      <span>{formatPrice(state.promotion.minTransaction || 0)}</span>
-                    </div>
-                    <div className="flex justify-between text-muted-foreground text-xs">
-                      <span>Max. Discount</span>
-                      <span>{formatPrice(state.promotion.maxDiscount || 0)}</span>
-                    </div>
+                    {state.promotion.minTransaction && (
+                      <div className="flex justify-between text-muted-foreground text-xs">
+                        <span>Min. Transaction</span>
+                        <span>{formatPrice(state.promotion.minTransaction || 0)}</span>
+                      </div>
+                    )}
+                    {state.promotion.maxDiscount && (
+                      <div className="flex justify-between text-muted-foreground text-xs">
+                        <span>Max. Discount</span>
+                        <span>{formatPrice(state.promotion.maxDiscount)}</span>
+                      </div>
+                    )}
                   </div>
                 )}
                 <div className="flex justify-between">
                   <span className="text-muted-foreground">Tax ({state.totals.taxPercentage}%)</span>
-                  <span>{formatPrice(state.totals.tax)}</span>
+                  <span>
+                    {formatPrice(
+                      Math.round(
+                        (state.totals.subtotal -
+                          (state.promotionId && state.promotion ? Calculate.promotion(state.totals.subtotal, state.promotion) : 0)) *
+                          (state.totals.taxPercentage / 100),
+                      ),
+                    )}
+                  </span>
                 </div>
                 <div className="flex justify-between">
                   <span className="text-muted-foreground">Service Fee ({state.totals.servicePercentage}%)</span>
-                  <span>{formatPrice(state.totals.serviceFee)}</span>
+                  <span>
+                    {formatPrice(
+                      Math.round(
+                        (state.totals.subtotal -
+                          (state.promotionId && state.promotion ? Calculate.promotion(state.totals.subtotal, state.promotion) : 0)) *
+                          (state.totals.servicePercentage / 100),
+                      ),
+                    )}
+                  </span>
                 </div>
                 <Separator className="my-3" />
                 <div className="flex justify-between font-medium text-base">
                   <span>Total</span>
-                  <div className="flex items-start gap-1">
+                  <div className="flex items-center gap-1">
                     {state.promotionId && state.promotion ? (
                       <>
-                        <span className="text-muted-foreground text-xs line-through">{formatPrice(state.totals.total)}</span>
+                        <span className="text-muted-foreground text-xs line-through">
+                          {formatPrice(state.totals.subtotal + state.totals.tax + state.totals.serviceFee)}
+                        </span>
                         <span>
-                          {formatPrice(state.totals.total - (state.totals.subtotal - Calculate.promotion(state.totals.subtotal, state.promotion)))}
+                          {formatPrice(
+                            state.totals.subtotal -
+                              Calculate.promotion(state.totals.subtotal, state.promotion) +
+                              Math.round(
+                                (state.totals.subtotal - Calculate.promotion(state.totals.subtotal, state.promotion)) *
+                                  (state.totals.taxPercentage / 100),
+                              ) +
+                              Math.round(
+                                (state.totals.subtotal - Calculate.promotion(state.totals.subtotal, state.promotion)) *
+                                  (state.totals.servicePercentage / 100),
+                              ),
+                          )}
                         </span>
                       </>
                     ) : (
@@ -609,7 +635,15 @@ function PaymentPageContent() {
               ) : (
                 `Continue to Payment • ${formatPrice(
                   state.promotionId && state.promotion
-                    ? state.totals.total - (state.totals.subtotal - Calculate.promotion(state.totals.subtotal, state.promotion))
+                    ? state.totals.subtotal -
+                        Calculate.promotion(state.totals.subtotal, state.promotion) +
+                        Math.round(
+                          (state.totals.subtotal - Calculate.promotion(state.totals.subtotal, state.promotion)) * (state.totals.taxPercentage / 100),
+                        ) +
+                        Math.round(
+                          (state.totals.subtotal - Calculate.promotion(state.totals.subtotal, state.promotion)) *
+                            (state.totals.servicePercentage / 100),
+                        )
                     : state.totals.total,
                 )}`
               )}

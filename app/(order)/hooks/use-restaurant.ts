@@ -13,6 +13,7 @@ export function useRestaurant(restaurantId: string) {
     const fetchRestaurant = async () => {
       try {
         const result = await ApiGetRestaurantPwa(restaurantId);
+        // console.log({ result });
         if (!result.ok) throw new Error(result?.message || result.statusText);
 
         const restaurantData = result.data;
