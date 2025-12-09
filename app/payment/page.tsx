@@ -88,6 +88,7 @@ function PaymentPageContent() {
   const [selectedMethod, setSelectedMethod] = useState<string>("QRIS");
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isCheckingStatus, setIsCheckingStatus] = useState(false);
+  const [isCheckingPromotion, setIsCheckingPromotion] = useState(false);
   const [isQrLoading, setIsQrLoading] = useState(true);
   const [outOfStockDialog, setOutOfStockDialog] = useState<{
     isOpen: boolean;
@@ -279,6 +280,7 @@ function PaymentPageContent() {
   const checkPromotion = async () => {
     if (!state.promotionCode) return;
 
+    setIsCheckingPromotion(true);
     try {
       const result = await ApiPostCheckPromotion(state.restaurantId || "", state.promotionCode);
       if (!result.ok) throw new Error(result?.message || result.statusText);
@@ -287,6 +289,8 @@ function PaymentPageContent() {
     } catch (error) {
       toast("Promotion failed", { description: (error as Error).message, icon: <AlertTriangle className="h-4 w-4 text-red-500" /> });
       updateState({ promotionId: "", promotion: null, promotionError: "Please enter a valid promotion code" });
+    } finally {
+      setIsCheckingPromotion(false);
     }
   };
 
@@ -533,10 +537,13 @@ function PaymentPageContent() {
                 <Input
                   placeholder="Enter promotion code"
                   value={state.promotionCode}
-                  onChange={(e) => updateState({ promotionCode: e.target.value, promotionId: "", promotion: null, promotionError: null })}
+                  onChange={(e) => {
+                    const value = e.target.value.replace(/[^a-zA-Z]/g, "").toUpperCase();
+                    updateState({ promotionCode: value, promotionId: "", promotion: null, promotionError: null });
+                  }}
                 />
-                <Button onClick={checkPromotion} disabled={!state.promotionCode}>
-                  Check
+                <Button onClick={checkPromotion} disabled={!state.promotionCode || isCheckingPromotion}>
+                  {isCheckingPromotion ? <Loader2 className="h-4 w-4 animate-spin" /> : "Check"}
                 </Button>
               </div>
               {state.promotionError && <p className="mt-1 text-red-500 text-xs">{state.promotionError}</p>}
