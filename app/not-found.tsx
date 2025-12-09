@@ -20,7 +20,7 @@ export default function NotFound() {
           <Button asChild size="lg" className="gap-2 border-none bg-[#ffca36] text-black hover:bg-amber-500">
             <Link href="https://otter.id">
               <ArrowLeft className="h-4 w-4" />
-              <span>Maybe recommend Otter to your friends?</span>
+              <span>Maybe recommend Otter to your friends 😊 ?</span>
             </Link>
           </Button>
         </div>

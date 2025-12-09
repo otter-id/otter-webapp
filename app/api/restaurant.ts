@@ -1,34 +1,36 @@
 "use server";
-import { ConstApi, GenAuth, Respon, ResultError } from "@/utils/server";
+import type { ResponFetch, ResponServer } from "@/types/response";
+import { ConstApi, GenAuth, Respon, ResponBody } from "@/utils/server";
 
-export const ApiGetRestaurantPwa = async (restaurantId: string) => {
+export async function ApiGetRestaurantPwa(restaurantId: string): Promise<ResponServer> {
   try {
     const { token, store } = await GenAuth.token();
-    const respon: Response = await fetch(`${ConstApi.url}/restaurant/pwa/${restaurantId}`, {
+    let respon: ResponFetch = await fetch(`${ConstApi.url}/restaurant/pwa/${restaurantId}`, {
       headers: { "Content-Type": "application/json", Authorization: `Bearer ${token}` },
     });
 
-    const result = await respon.json();
-    await ResultError.oneTime(result, store);
-    // console.log({ respon, result });
+    respon = await Respon.server({ respon });
+    await ResponBody.errorOneTime({ respon, store });
+    // console.log({ restaurant: respon });
 
-    return Respon.server(respon, result);
+    return respon;
   } catch (error: any) {
-    // console.error({ error })
+    // console.error({ error });
     return { status: 500, message: error.message };
   }
-};
+}
 
-export const ApiGetRestaurantInfo = async (restaurantId: string) => {
+export async function ApiGetRestaurantInfo(restaurantId: string): Promise<ResponServer> {
   try {
-    const respon = await fetch(`${ConstApi.url}/restaurant/info/${restaurantId}`, { next: { revalidate: 60 } });
-    const result = await respon.json();
-    // console.log({ respon, result });
+    let respon: ResponFetch = await fetch(`${ConstApi.url}/restaurant/info/${restaurantId}`, { next: { revalidate: 60 } });
 
-    if (!result.data.isPublished) return { code: 400, error: "Restaurant is not published" };
-    return Respon.server(respon, result);
+    respon = await Respon.server({ respon });
+    // console.log({ restaurantInfo: respon });
+
+    if (!(respon as any).data.isPublished) return { status: 400, error: "Restaurant is not published" };
+    return respon;
   } catch (error: any) {
-    // console.error({ error })
+    // console.error({ error });
     return { status: 500, message: error.message };
   }
-};
+}

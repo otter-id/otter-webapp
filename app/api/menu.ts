@@ -1,15 +1,17 @@
 "use server";
+import type { ResponFetch, ResponServer } from "@/types/response";
 import { ConstApi, Respon } from "@/utils/server";
 
-export const ApiCheckStock = async (restaurantId: string) => {
+export async function ApiCheckStock(restaurantId: string): Promise<ResponServer> {
   try {
-    const respon = await fetch(`${ConstApi.url}/menu/stock?restaurantId=${restaurantId}`);
-    const result = await respon.json();
-    // console.log({ respon, result });
+    let respon: ResponFetch = await fetch(`${ConstApi.url}/menu/stock?restaurantId=${restaurantId}`);
 
-    return Respon.server(respon, result);
+    respon = await Respon.server({ respon });
+    // console.log({ checkStock: respon });
+
+    return respon;
   } catch (error: any) {
-    // console.error({ error })
+    // console.error({ error });
     return { status: 500, message: error.message };
   }
-};
+}
