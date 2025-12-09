@@ -1,19 +1,21 @@
 "use server";
+import type { ResponFetch, ResponServer } from "@/types/response";
 import { ConstApi, Respon } from "@/utils/server";
 
-export const ApiPostCheckPromotion = async (restaurantId: string, promoCode: string) => {
+export async function ApiPostCheckPromotion(restaurantId: string, promoCode: string): Promise<ResponServer> {
   try {
-    const respon = await fetch(`${ConstApi.url}/promotion/check`, {
+    let respon: ResponFetch = await fetch(`${ConstApi.url}/promotion/check`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ restaurantId, promoCode }),
     });
-    const result = await respon.json();
-    // console.log({ respon, result });
 
-    return Respon.server(respon, result);
+    respon = await Respon.server({ respon });
+    // console.log({ checkPromotion: respon });
+
+    return respon;
   } catch (error: any) {
     // console.error({ error });
     return { status: 500, message: error.message };
   }
-};
+}

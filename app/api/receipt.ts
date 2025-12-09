@@ -1,17 +1,19 @@
 "use server";
+import type { ResponFetch, ResponServer } from "@/types/response";
 import { ConstApi, Respon } from "@/utils/server";
 
-export const ApiGetReceiptData = async (orderId: string, storeId: string | null) => {
+export async function ApiGetReceiptData(orderId: string, storeId: string | null): Promise<ResponServer> {
   try {
-    const respon = await fetch(`${ConstApi.url}/receipt?id=${orderId}&sid=${storeId}`, {
+    let respon: ResponFetch = await fetch(`${ConstApi.url}/receipt?id=${orderId}&sid=${storeId}`, {
       headers: { "Content-Type": "application/json" },
     });
-    const result = await respon.json();
-    // console.log({ respon, result });
 
-    return Respon.server(respon, result);
+    respon = await Respon.server({ respon });
+    // console.log({ receiptData: respon });
+
+    return respon;
   } catch (error: any) {
-    // console.error({ error })
+    // console.error({ error });
     return { status: 500, message: error.message };
   }
-};
+}

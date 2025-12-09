@@ -52,7 +52,7 @@ export const GenAuth = {
       maxAge: 60 * 60 * 24,
       httpOnly: true,
       secure: true,
-      sameSite: "strict",
+      // sameSite: "strict",
     });
 
     const cookie = await cookies();

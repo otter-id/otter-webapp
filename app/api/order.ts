@@ -1,35 +1,37 @@
 "use server";
-import { ConstApi, GenAuth, Respon } from "@/utils/server";
+import type { ResponFetch, ResponServer } from "@/types/response";
+import { ConstApi, GenAuth, Respon, ResponBody } from "@/utils/server";
 
-export const ApiPostOrderPwa = async (orderBody: any) => {
+export async function ApiPostOrderPwa(orderBody: any): Promise<ResponServer> {
   try {
     const { token, store } = await GenAuth.token();
-    const respon = await fetch(`${ConstApi.url}/order/pwa`, {
+    let respon: ResponFetch = await fetch(`${ConstApi.url}/order/pwa`, {
       method: "POST",
       headers: { "Content-Type": "application/json", Authorization: `Bearer ${token}` },
       body: JSON.stringify(orderBody),
     });
 
-    const result = await respon.json();
-    if (result.error !== "OneTimeTokenInvalid") await GenAuth.store({ value: store });
-    console.log({ respon, result });
+    respon = await Respon.server({ respon });
+    await ResponBody.errorOneTime({ respon, store });
+    // console.log({ postOrderPwa: respon });
 
-    return Respon.server(respon, result);
+    return respon;
   } catch (error: any) {
-    // console.error({ error })
+    // console.error({ error });
     return { status: 500, message: error.message };
   }
-};
+}
 
-export const ApiCheckPaymentStatus = async (orderId: string) => {
+export async function ApiCheckPaymentStatus(orderId: string): Promise<ResponServer> {
   try {
-    const respon = await fetch(`${ConstApi.url}/order/check?orderId=${orderId}`);
-    const result = await respon.json();
-    // console.log({ respon, result });
+    let respon: ResponFetch = await fetch(`${ConstApi.url}/order/check?orderId=${orderId}`);
 
-    return Respon.server(respon, result);
+    respon = await Respon.server({ respon });
+    // console.log({ checkPaymentStatus: respon });
+
+    return respon;
   } catch (error: any) {
-    // console.error({ error })
+    // console.error({ error });
     return { status: 500, message: error.message };
   }
-};
+}
