@@ -13,7 +13,7 @@ export async function ApiVerifyEmail(token: string): Promise<ResponServer> {
 
     return respon;
   } catch (error: any) {
-    // console.error({ error });
+    // console.error({ verifyEmailError: error });
     return { status: 500, message: error.message };
   }
 }
