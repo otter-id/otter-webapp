@@ -463,13 +463,15 @@ function PaymentPageContent() {
                       <span>Discount ({state.promotion.name})</span>
                       <span>-{formatPrice(Calculate.promotion(state.totals.subtotal, state.promotion))}</span>
                     </div>
-                    {state.promotion.minTransaction && (
-                      <div className="flex justify-between text-muted-foreground text-xs">
-                        <span>Min. Transaction</span>
-                        <span>{formatPrice(state.promotion.minTransaction || 0)}</span>
-                      </div>
-                    )}
-                    {state.promotion.maxDiscount && (
+                    {state.promotion.minTransaction !== 0 &&
+                      state.promotion.minTransaction !== null &&
+                      state.promotion.minTransaction !== undefined && (
+                        <div className="flex justify-between text-muted-foreground text-xs">
+                          <span>Min. Transaction</span>
+                          <span>{formatPrice(state.promotion.minTransaction)}</span>
+                        </div>
+                      )}
+                    {state.promotion.maxDiscount !== null && state.promotion.maxDiscount !== undefined && (
                       <div className="flex justify-between text-muted-foreground text-xs">
                         <span>Max. Discount</span>
                         <span>{formatPrice(state.promotion.maxDiscount)}</span>

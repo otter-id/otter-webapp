@@ -17,7 +17,7 @@ export async function ApiPostCheckPwaQris(orderId: string, restaurantId: string)
 
     return respon;
   } catch (error: any) {
-    // console.error({ error });
+    // console.error({ checkPwaQrisError: error });
     return { status: 500, message: error.message };
   }
 }

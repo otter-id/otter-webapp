@@ -15,7 +15,7 @@ export async function ApiGetRestaurantPwa(restaurantId: string): Promise<ResponS
 
     return respon;
   } catch (error: any) {
-    // console.error({ error });
+    // console.error({ restaurantPwaError: error });
     return { status: 500, message: error.message };
   }
 }
@@ -30,7 +30,7 @@ export async function ApiGetRestaurantInfo(restaurantId: string): Promise<Respon
     if (!(respon as any).data.isPublished) return { status: 400, error: "Restaurant is not published" };
     return respon;
   } catch (error: any) {
-    // console.error({ error });
+    // console.error({ restaurantInfoError: error });
     return { status: 500, message: error.message };
   }
 }
