@@ -13,7 +13,7 @@ export async function ApiGetReceiptData(orderId: string, storeId: string | null)
 
     return respon;
   } catch (error: any) {
-    // console.error({ error });
+    // console.error({ receiptDataError: error });
     return { status: 500, message: error.message };
   }
 }

@@ -15,7 +15,7 @@ export async function ApiPostCheckPromotion(restaurantId: string, promoCode: str
 
     return respon;
   } catch (error: any) {
-    // console.error({ error });
+    // console.error({ checkPromotionError: error });
     return { status: 500, message: error.message };
   }
 }

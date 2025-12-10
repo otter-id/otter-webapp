@@ -17,7 +17,7 @@ export async function ApiPostOrderPwa(orderBody: any): Promise<ResponServer> {
 
     return respon;
   } catch (error: any) {
-    // console.error({ error });
+    // console.error({ postOrderPwaError: error });
     return { status: 500, message: error.message };
   }
 }
@@ -31,7 +31,7 @@ export async function ApiCheckPaymentStatus(orderId: string): Promise<ResponServ
 
     return respon;
   } catch (error: any) {
-    // console.error({ error });
+    // console.error({ checkPaymentStatusError: error });
     return { status: 500, message: error.message };
   }
 }

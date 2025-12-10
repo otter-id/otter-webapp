@@ -11,7 +11,7 @@ export async function ApiCheckStock(restaurantId: string): Promise<ResponServer>
 
     return respon;
   } catch (error: any) {
-    // console.error({ error });
+    // console.error({ checkStockError: error });
     return { status: 500, message: error.message };
   }
 }
